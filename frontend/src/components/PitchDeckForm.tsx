@@ -1,3 +1,4 @@
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
 type FormData = {
@@ -80,6 +81,7 @@ async function uploadFileViaSession(sessionUrl: string, file: File) {
 
 export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
   const [isSubmitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
     companyName: "",
     domain: "",
@@ -115,6 +117,15 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
 
     // Upload the file to GCS
     if (!formData.pitchDeck) throw new Error("Pitch deck is not provided");
+    const pitchDeckFileNameRegex = /^[a-z]+(?:_[a-z]+)*_pitch_deck$/;
+    if (!pitchDeckFileNameRegex.test(formData.pitchDeck.name)) {
+      toast({
+        title: "Form errors",
+        description:
+          "Pitch deck should be of format <company_name>_pitch_deck.pdf and must be in lowercase",
+      });
+      return;
+    }
     setSubmitting(true);
     const { signedUrl } = await getUploadSessionUrl(formData?.pitchDeck.name);
     const sessionUrl = await initiateResumableSession(signedUrl);
