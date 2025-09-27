@@ -27,4 +27,5 @@ class Config:
     FIRESTORE_DATABASE = os.getenv("FIRESTORE_DATABASE", "startupevaluator")
     EXTRACT_BENCHMARK_CLOUD_RUN_JOB_NAME = os.getenv("EXTRACT_BENCHMARK_CLOUD_RUN_JOB_NAME", "extract-benchmark-pitch-agent-job")
     FIRESTORE_COMPANY_COLLECTION = os.getenv("FIRESTORE_COMPANY_COLLECTION", "companies_applied")
+    DEPLOYED_FRONTEND_URL = os.getenv("DEPLOYED_FRONTEND_URL")
 

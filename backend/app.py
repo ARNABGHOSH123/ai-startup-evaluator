@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from config import Config
 
 if os.path.exists(".env.development") and not os.getenv("PRODUCTION"):
     origins = [
@@ -11,8 +12,7 @@ if os.path.exists(".env.development") and not os.getenv("PRODUCTION"):
     ]
 else:
     origins = [
-        "https://stirring-genie-9833a8.netlify.app"
-    ]
+        Config.DEPLOYED_FRONTEND_URL] if Config.DEPLOYED_FRONTEND_URL else []
 
 
 app: FastAPI = FastAPI()
