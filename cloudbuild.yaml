@@ -1,0 +1,65 @@
+steps:
+  # Build and push backend image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-backend-service:latest",
+        "./backend",
+      ]
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-backend-service:latest",
+      ]
+
+  # Deploy backend as Cloud Run service
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "ai-analyst-backend-service",
+        "--image=us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-backend-service:latest",
+        "--region=us-central1",
+        "--platform=managed",
+      ]
+
+  # Build and push extract_benchmarking_agent_job image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest",
+        "./extract_benchmarking_agent_job",
+      ]
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest",
+      ]
+
+  # Deploy extract_benchmark as Cloud Run job
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      [
+        "run",
+        "jobs",
+        "update",
+        "extract-benchmark-pitch-agent-job",
+        "--image=us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest",
+        "--region=us-central1",
+        "--memory=1Gi",
+        "--task-timeout=1800s",
+        "--max-retries=3",
+      ]
+
+images:
+  - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-backend-service:latest"
+  - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest"
