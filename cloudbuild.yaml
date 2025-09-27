@@ -63,3 +63,6 @@ steps:
 images:
   - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-backend-service:latest"
   - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
