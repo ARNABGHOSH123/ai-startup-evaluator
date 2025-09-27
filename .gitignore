@@ -1,13 +1,9 @@
 backend/**/venv/
 backend/**/__pycache__/
 backend/**/.env.development
-
-agents/**/venv/
-agents/**/__pycache__/
-agents/**/.env.development
-agents/bucket_cors.json
-agents/sessions.db
+backend/bucket_cors.json
 agentic_jobs/**/venv/
+agentic_jobs/**/.env.development
 startupevaluator-472213-fcc6ea5bd425.json
 
 frontend/node_modules/
