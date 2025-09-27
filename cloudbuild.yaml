@@ -35,7 +35,7 @@ steps:
         "build",
         "-t",
         "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest",
-        "./extract_benchmarking_agent_job",
+        "./agentic_jobs/extract_benchmarking_agent_job",
       ]
   - name: "gcr.io/cloud-builders/docker"
     args:
