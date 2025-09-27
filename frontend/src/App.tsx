@@ -264,7 +264,6 @@ function Sidebar() {
 }
 
 function AppLayout({ children }: { children: React.ReactNode }) {
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -290,7 +289,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/home" component={Home} />
       <Route path="/investor" component={InvestorPortal} />
-      <Route path="/company/:company_name" component={CompanyDetail} />
+      <Route path="/company/:company_id" component={CompanyDetail} />
       <Route component={NotFound} />
     </Switch>
   );

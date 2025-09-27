@@ -52,7 +52,7 @@ function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
   return (
     <Card
       className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-      onClick={() => onCompanyClick(company.company_name)}
+      onClick={() => onCompanyClick(company.doc_id)}
       data-testid={`card-company-${company.doc_id}`}
     >
       <CardHeader className="pb-4">
@@ -239,9 +239,9 @@ export default function InvestorPortal() {
   //   enabled: !!user,
   // });
 
-  const handleCompanyClick = (companyName: string) => {
+  const handleCompanyClick = (companyId: string) => {
     // setSelectedCompanyId(companyName);
-    window.location.href = `/company/${companyName}`;
+    window.location.href = `/company/${companyId}`;
   };
 
   if (isLoadingCompanies) {

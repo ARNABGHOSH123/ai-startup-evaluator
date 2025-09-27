@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+google-cloud-firestore
+google-cloud-storage
+python-dotenv
+google-auth
+requests
+google-cloud-run
+google-cloud-secret-manager

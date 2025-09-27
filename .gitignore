@@ -7,6 +7,7 @@ agents/**/__pycache__/
 agents/**/.env.development
 agents/bucket_cors.json
 agents/sessions.db
+agentic_jobs/**/venv/
 startupevaluator-472213-fcc6ea5bd425.json
 
 frontend/node_modules/

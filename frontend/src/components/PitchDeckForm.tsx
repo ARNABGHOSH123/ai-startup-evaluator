@@ -1,4 +1,3 @@
-import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
 type FormData = {
@@ -81,7 +80,6 @@ async function uploadFileViaSession(sessionUrl: string, file: File) {
 
 export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
   const [isSubmitting, setSubmitting] = useState(false);
-  const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
     companyName: "",
     domain: "",
@@ -117,19 +115,11 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
 
     // Upload the file to GCS
     if (!formData.pitchDeck) throw new Error("Pitch deck is not provided");
-    const pitchDeckFileNameRegex = /^[a-z]+(?:_[a-z]+)*_pitch_deck$/;
-    if (!pitchDeckFileNameRegex.test(formData.pitchDeck.name)) {
-      toast({
-        title: "Form errors",
-        description:
-          "Pitch deck should be of format <company_name>_pitch_deck.pdf and must be in lowercase",
-      });
-      return;
-    }
     setSubmitting(true);
     const { signedUrl } = await getUploadSessionUrl(formData?.pitchDeck.name);
     const sessionUrl = await initiateResumableSession(signedUrl);
     await uploadFileViaSession(sessionUrl, formData.pitchDeck);
+
     await fetch(
       `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/add_to_companies_list`,
       {
@@ -138,10 +128,18 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          company_name: formData.pitchDeck.name
-            .split("_pitch_deck")[0]
-            .toLowerCase(),
+          company_name: formData.companyName.trim(),
           founder_name: formData.founderName,
+          domain: formData.domain,
+          company_phone_no: formData.phone,
+          company_email: formData.email,
+          company_address: formData.address,
+          stage_of_development: formData.stage,
+          business_details: formData.about,
+          usp: formData.usp,
+          revenue_model: formData.revenue,
+          comments: formData.comments,
+          pitch_deck_filename: formData.pitchDeck.name,
         }),
       }
     );

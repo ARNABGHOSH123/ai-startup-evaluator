@@ -20,7 +20,7 @@ type Company = {
 
 interface CompanyDetailProps {
   params: {
-    company_name: string;
+    company_id: string;
   };
 }
 
@@ -87,7 +87,7 @@ export default function CompanyDetail({ params }: CompanyDetailProps) {
       try {
         const response = await fetch(
           `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/get_company_details/${
-            params.company_name
+            params.company_id
           }`,
           {
             method: "POST",
@@ -97,7 +97,7 @@ export default function CompanyDetail({ params }: CompanyDetailProps) {
           }
         );
         const data = await response.json();
-        setCompDetails(data?.companies?.[0]);
+        setCompDetails(data);
       } catch (error) {
         console.error("Error fetching company details:", error);
       } finally {
@@ -106,7 +106,7 @@ export default function CompanyDetail({ params }: CompanyDetailProps) {
     };
 
     fetchCompDetails();
-  }, [params.company_name]);
+  }, [params.company_id]);
 
   if (isLoadingCompDetails) {
     return <DetailSkeleton />;

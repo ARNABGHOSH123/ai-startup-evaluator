@@ -1,0 +1,6 @@
+venv
+.env.development
+/__pycache__/
+bucket_cors.json
+startupevaluator-472213-fcc6ea5bd425.json
+code.tgz
