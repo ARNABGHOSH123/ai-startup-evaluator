@@ -5,7 +5,7 @@ from google.cloud import secretmanager
 # Load environment variables (only once)
 if os.path.exists(".env.development") and not os.getenv("PRODUCTION"):
     load_dotenv(dotenv_path=os.path.join(os.getcwd(), '.env.development'), override=True)
-elif os.getenv("GOOGLE_CLOUD_PROJECT") and os.getenv("GOOGLE_CLOUD_REGION"):
+elif os.getenv("GOOGLE_CLOUD_PROJECT"):
     project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
     settings_name = os.getenv("SETTINGS_NAME", "env-keys-extract-benchmark-job")
     client = secretmanager.SecretManagerServiceClient()
