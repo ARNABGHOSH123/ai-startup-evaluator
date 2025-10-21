@@ -43,8 +43,7 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
         raise HTTPException(status_code=400, detail="Invalid object_name")
 
     try:
-        credentials, project_id = auth.default(
-            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        credentials, project_id = auth.default()
         storage_client = storage.Client(
             project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
 
