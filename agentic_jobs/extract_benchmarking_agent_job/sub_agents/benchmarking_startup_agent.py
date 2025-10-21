@@ -8,13 +8,14 @@
 
 from google.adk.agents import LlmAgent, SequentialAgent, ParallelAgent
 from google.adk.planners import PlanReActPlanner, BuiltInPlanner
-from google.adk.models.google_llm import Gemini
 from google.genai import types
 from math import ceil
 from datetime import date
 from config import Config
 from .benchmarking_focus_points import focus_points
+from .base_model import base_model
 from tools import get_file_content_from_gcs, save_file_content_to_gcs, extract_webpage_text, tavily_search, clear_site_extract_cache
+from .visualisation_agent import focus_points_visualisation_agent_list
 
 AGENT_MODEL = Config.AGENT_MODEL
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
@@ -27,15 +28,7 @@ print(f"Using agent model: {AGENT_MODEL}")
 # fetch pitch deck analysis content (created by extraction agent) from GCS bucket
 fetcher_agent = LlmAgent(
     name="PitchDeckFetcher",
-    model=Gemini(
-        model=AGENT_MODEL,
-        retry_options=types.HttpRetryOptions(
-            initial_delay=1,
-            attempts=10,
-            max_delay=120,
-        )
-    ),
-    # planner=PlanReActPlanner(),
+    model=base_model,
     description="An agent that fetches the processed pitch-deck JSON from GCS and place its content into state['pitch_deck'] as a JSON object.",
     instruction=f"""
     You will receive the **base filename** (without extension) for a processed pitch deck JSON produced by the previous step as: {{extracted_filename}}
@@ -49,9 +42,10 @@ fetcher_agent = LlmAgent(
 
     1) Use the 'get_file_content_from_gcs' tool to fetch the file from GCS with the arguments as:-
         - bucket_name: '{GCS_BUCKET_NAME}', 
-        - folder_name: '{GCP_PITCH_DECK_OUTPUT_FOLDER}', 
+        - folder_name: '{GCP_PITCH_DECK_OUTPUT_FOLDER}/{{firestore_doc_id}}/analysis', 
         - file_name: {{extracted_filename}}, 
         - file_extension: 'json'
+
     2) Return the JSON content which was extracted in step 1. Do not return anything else.
     If file fetch fails respond like 'Sorry! I was unable to fetch the file. Please check the file details and try again.'.
     Do not make anything up on your own.
@@ -65,16 +59,7 @@ fetcher_agent = LlmAgent(
 # extract the company official websites
 company_info_agent = LlmAgent(
     name="company_info_agent",
-    # model=AGENT_MODEL,
-    model=Gemini(
-        model=AGENT_MODEL,
-        retry_options=types.HttpRetryOptions(
-            initial_delay=1,
-            attempts=10,
-            max_delay=120
-        ),
-    ),
-    # planner=PlanReActPlanner(),
+    model=base_model,
     description="An agent that fetches the company information from the JSON pitch deck",
     instruction=f"""
         You are an expert in fetching basic company information from the given company websites provided to you.
@@ -119,14 +104,7 @@ for i in range(no_of_agents):
         focus_points[i * FOCUS_POINTS_PER_AGENT: min((i + 1) * FOCUS_POINTS_PER_AGENT, no_of_focus_agents)])
     agent = LlmAgent(
         name=f"data_extraction_agent_{i+1}",
-        model=Gemini(
-            model=AGENT_MODEL,
-            retry_options=types.HttpRetryOptions(
-                initial_delay=1,
-                attempts=10,
-                max_delay=120
-            )
-        ),
+        model=base_model,
         planner=PlanReActPlanner(),
         description=f"An agent that extracts relevant information for the company for some focus points starting from point number {i * FOCUS_POINTS_PER_AGENT + 1}",
         instruction=f"""
@@ -206,23 +184,16 @@ for i in range(no_of_agents):
     focus_points_analyser_agent_list.append(agent)
 
 # Put all the data extraction agent into a single parallel agent
-data_extracter_parallel_agent = ParallelAgent(
-    name="data_extracter_parallel_agent",
-    sub_agents=focus_points_analyser_agent_list,
+data_extraction_visualisation_agent = ParallelAgent(
+    name="data_extraction_visualisation_agent",
+    sub_agents=focus_points_analyser_agent_list + focus_points_visualisation_agent_list,
     description="An agent that runs multiple data extraction on different focus points in parallel."
 )
 
-# Analyse the extraction and create the human readble imvestment memo for the startup
+# Analyse the extraction and create the human readable investment memo for the startup
 synthesis_agent = LlmAgent(
     name="synthesis_agent",
-    model=Gemini(
-        model=AGENT_MODEL,
-        retry_options=types.HttpRetryOptions(
-            initial_delay=1,
-            attempts=10,
-            max_delay=120
-        )
-    ),
+    model=base_model,
     planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=False)),
     description="An agent that synthesises company and its related information from a JSON like input and produces a comprehensive investment memo.",
     instruction=f"""
@@ -267,9 +238,8 @@ synthesis_agent = LlmAgent(
 
 # Complete data extraction pipeline
 data_extraction_synthesis_agent = SequentialAgent(
-    name="data_extraction_agent",
-    sub_agents=[fetcher_agent, company_info_agent,
-                data_extracter_parallel_agent, synthesis_agent],
+    name="data_extraction_synthesis_agent",
+    sub_agents=[data_extraction_visualisation_agent, synthesis_agent],
     description="An agent that gathers all the necessary company information using web search and advanced web crawl and provides JSON response"
 )
 
@@ -278,14 +248,7 @@ data_extraction_synthesis_agent = SequentialAgent(
 # Note:- This is used because LLM can query same website multiple times. Caching is done to speedup the workflow.
 save_response_to_gcs_agent = LlmAgent(
     name="save_response_to_gcs_agent",
-    model=Gemini(
-        model=AGENT_MODEL,
-        retry_options=types.HttpRetryOptions(
-            initial_delay=1,
-            attempts=10,
-            max_delay=120
-        )
-    ),
+    model=base_model,
     description="An agent that saves the final markdown response to a file in the GCS (Google Cloud Storage) bucket.",
     planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
         include_thoughts=False
@@ -305,13 +268,12 @@ save_response_to_gcs_agent = LlmAgent(
         TASK:
             You must save the final markdown response to a file in the GCS (Google Cloud Storage) bucket using the tool 'save_file_content_to_gcs' with the following parameters:
                 - bucket_name: '{GCS_BUCKET_NAME}'
-                - folder_name: '{GCP_PITCH_DECK_OUTPUT_FOLDER}'
-                - file_name: '{{extracted_filename}}_investment_memo'
+                - folder_name: '{GCP_PITCH_DECK_OUTPUT_FOLDER}/{{firestore_doc_id}}/investment_memos'
+                - file_name: '{{extracted_filename}}_investment_memo_v1'
                 - file_extension: 'md'
                 - file_content: the markdown response
-        
-        
-        After both the tasks are done in sequence, just return the string '{{extracted_filename}}_investment_memo.md'
+
+        After both the tasks are done in sequence, just return the string '{{extracted_filename}}_investment_memo_v1.md'
 
         You must return only the string as mentioned above. Do not add any other commentary or text.
     """,
@@ -323,7 +285,7 @@ save_response_to_gcs_agent = LlmAgent(
 # Clear the cache which was used for site extraction. Note:- This is used because LLM can query same website multiple times. Caching is done to speedup the workflow.
 clear_cache_agent = LlmAgent(
     name="clear_cache_agent",
-    model=AGENT_MODEL,
+    model=base_model,
     description="Clears the in-memory site_extract cache after pipeline finishes",
     planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=False)),
     instruction="""
@@ -343,8 +305,7 @@ clear_cache_agent = LlmAgent(
 # Create the final benchmarking agent
 benchmarking_startup_agent = SequentialAgent(
     name="benchmarking_startup_agent",
-    sub_agents=[data_extraction_synthesis_agent,
-                save_response_to_gcs_agent, clear_cache_agent],
+    sub_agents = [fetcher_agent, company_info_agent, data_extraction_synthesis_agent, save_response_to_gcs_agent, clear_cache_agent],
     description="An agent that benchmarks a startup against its competitors using a processed pitch deck JSON file and web search. Saves the human readable markdown response to Google Cloud Storage.",
 )
 
