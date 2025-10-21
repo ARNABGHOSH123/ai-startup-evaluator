@@ -44,6 +44,7 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
 
     try:
         credentials, project_id = auth.default()
+        credentials.refresh(Request())
         storage_client = storage.Client(
             project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
 
