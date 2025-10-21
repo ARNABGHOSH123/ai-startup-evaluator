@@ -1,1 +1,1 @@
-from .read_content_from_gcs_uri import read_text_from_gcs
+from .helpers import read_text_from_gcs, get_charts_for_a_company

@@ -1,3 +1,5 @@
 extract_benchmarking_agent_job/.env.development
 extract_benchmarking_agent_job/venv
 extract_benchmarking_agent_job/code.tgz
+extract_benchmarking_agent_job/**/.env.development
+extract_benchmarking_agent_job/__pycache__/

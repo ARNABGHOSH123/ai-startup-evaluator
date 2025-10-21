@@ -11,7 +11,7 @@ CONTENT_TYPE_MAP = {
 }
 
 
-def save_file_content_to_gcs(bucket_name: str, folder_name: str, file_content: str, file_extension: str, file_name: str) -> None:
+async def save_file_content_to_gcs(bucket_name: str, folder_name: str, file_content: str, file_extension: str, file_name: str) -> None:
     """
     Saves content to a file in a Google Cloud Storage bucket. If the file
     already exists, it will be overwritten.

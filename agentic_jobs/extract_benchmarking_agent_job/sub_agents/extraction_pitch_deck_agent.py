@@ -10,8 +10,8 @@
 
 from google.adk.agents import LlmAgent
 from google.adk.planners import BuiltInPlanner
-from google.adk.models.google_llm import Gemini
 from google.genai import types
+from .base_model import base_model
 from tools import get_gcs_uri_for_file, save_file_content_to_gcs, analyze_pdf_from_uri
 from config import Config
 
@@ -25,14 +25,7 @@ print(f"Using agent model: {AGENT_MODEL}")
 
 extraction_pitch_deck_agent = LlmAgent(
     name="extraction_pitch_deck_agent",
-    model=Gemini(
-        model=AGENT_MODEL,
-        retry_options=types.HttpRetryOptions(
-            initial_delay=1,
-            attempts=10,
-            max_delay=120,
-        )
-    ),
+    model=base_model,
     planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
         include_thoughts=False
     )),
@@ -60,7 +53,7 @@ extraction_pitch_deck_agent = LlmAgent(
     
     2.  **Analyze PDF:** Take the GCS URI from Step 1 and pass it to the `analyze_pdf_from_uri` tool. This tool will read the PDF (including all text and visuals) and return a structured JSON string.
     
-    3.  **Save JSON:** Take the JSON string from Step 2. Generate a suitable filename (e.g., 'company_name_analysis'). Call the `save_file_content_to_gcs` tool with bucket '{GCS_BUCKET_NAME}', folder '{GCP_PITCH_DECK_OUTPUT_FOLDER}', the JSON content, the filename you generated, and extension 'json'.
+    3.  **Save JSON:** Take the JSON string from Step 2. Generate a suitable filename (e.g., 'company_name_analysis'). Call the `save_file_content_to_gcs` tool with bucket '{GCS_BUCKET_NAME}', folder '{GCP_PITCH_DECK_OUTPUT_FOLDER}/{{firestore_doc_id}}/analysis', the JSON content, the filename you generated, and extension 'json'.
     
     4.  **Return only the filename (no extension):** After saving the file, you MUST return only the generated filename without any extension (e.g., 'company_name_analysis').
     """,

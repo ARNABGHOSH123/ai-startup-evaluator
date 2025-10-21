@@ -1,0 +1,634 @@
+{
+  "AreaChart": {
+    "description": "An area chart is similar to a line chart, but the area between the line and the axis is filled. It emphasises the magnitude of values.",
+    "usecase": "Often used to show accumulated totals or to highlight the volume under a trend, especially over time or continuous domain.",
+    "documentation": "https://recharts.github.io/en-US/api/AreaChart",
+    "applicability": "Use when you have a continuous or time-series domain (x-axis) and numeric values for one or more series.",
+    "format": {
+      "title": "<Title of Area Chart>",
+      "description": "<Description of Area Chart>",
+      "xKey": "<X-axis Key>",
+      "yKey": "<Y-axis Key>",
+      "data": [
+        {
+          "<X-axis Key>": "<Value1>",
+          "<Y-axis Key>": [
+            "<NumericValue1>",
+            "<NumericValue2>",
+            "<NumericValue3>"
+          ]
+        }
+      ],
+      "formatInstructions": "Array of objects where each object contains the X-axis key and Y-axis key. The Y-axis values should be an array of numeric values (for multiple series). If only one series, array with a single numeric value is permissible.",
+      "config": {
+        "yAxisUnit": "<Unit for Y-axis values>",
+        "xAxisUnit": "<Unit for X-axis values>",
+        "orientation": "<Orientation of the chart: 'horizontal' or 'vertical'>",
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Monthly Sales Overview",
+      "description": "This area chart represents the monthly sales figures for the year 2023.",
+      "xKey": "Month",
+      "yKey": "Sales",
+      "data": [
+        { "Month": "January", "Sales": [5000] },
+        { "Month": "February", "Sales": [7000] },
+        { "Month": "March", "Sales": [6000] },
+        { "Month": "April", "Sales": [8000] },
+        { "Month": "May", "Sales": [7500] }
+      ],
+      "config": {
+        "yAxisUnit": "USD",
+        "xAxisUnit": "Month",
+        "orientation": "vertical",
+        "showLegend": "true"
+      }
+    }
+  },
+
+  "BarChart": {
+    "description": "A bar chart displays categorical data as rectangular bars whose heights (or lengths) correspond to data values. Bars may be vertical or horizontal.",
+    "usecase": "Commonly used for comparing values across categories or discrete groups (e.g., revenue by region, counts per category).",
+    "documentation": "https://recharts.github.io/en-US/api/BarChart",
+    "applicability": "Use when you have categorical X‐axis and a single numeric measure (or multiple numeric series) per category.",
+    "format": {
+      "title": "<Title of Bar Chart>",
+      "description": "<Description of Bar Chart>",
+      "xKey": "<X-axis Key>",
+      "yKey": "<Y-axis Key>",
+      "data": [
+        {
+          "<X-axis Key>": "<Value1>",
+          "<Y-axis Key>": ["<NumericValue1>", "<NumericValue2>"]
+        }
+      ],
+      "formatInstructions": "Array of objects where each object contains the X-axis key and Y-axis key. The Y-axis values array supports multiple series; if single series, array with one numeric value.",
+      "config": {
+        "yAxisUnit": "<Unit for Y-axis values>",
+        "xAxisUnit": "<Unit for X-axis values>",
+        "orientation": "<Orientation: 'horizontal' or 'vertical'>",
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Quarterly Revenue Comparison",
+      "description": "This bar chart compares revenue generated in each quarter of 2023.",
+      "xKey": "Quarter",
+      "yKey": "Revenue",
+      "data": [
+        { "Quarter": "Q1", "Revenue": [15000] },
+        { "Quarter": "Q2", "Revenue": [20000] },
+        { "Quarter": "Q3", "Revenue": [18000] },
+        { "Quarter": "Q4", "Revenue": [22000] }
+      ],
+      "config": {
+        "yAxisUnit": "USD",
+        "xAxisUnit": "Quarter",
+        "orientation": "horizontal",
+        "showLegend": "false"
+      }
+    }
+  },
+
+  "LineChart": {
+    "description": "A line chart plots a series of data points connected by line segments, typically to show trends over a continuous domain. The horizontal axis is usually a continuous variable (often time), and the vertical axis is the value.",
+    "usecase": "Ideal for visualizing how a value changes over time or another continuous scale (e.g., sales over months, temperature over days). Supports multiple series.",
+    "documentation": "https://recharts.github.io/en-US/api/LineChart",
+    "applicability": "Use when you have a continuous/time domain for X-axis and numeric Y values across one or more series.",
+    "format": {
+      "title": "<Title of Line Chart>",
+      "description": "<Description of Line Chart>",
+      "xKey": "<X-axis Key>",
+      "yKeys": ["<Y-axis Key1>", "<Y-axis Key2>"],
+      "data": [
+        {
+          "<X-axis Key>": "<Value1>",
+          "<Y-axis Key1>": "<NumericValue1>",
+          "<Y-axis Key2>": "<NumericValue2>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object contains the X-axis key and one or more Y-axis keys. Each Y-axis key must map to a numeric value.",
+      "config": {
+        "yAxisUnit": "<Unit for Y-axis values>",
+        "xAxisUnit": "<Unit for X-axis values>",
+        "orientation": "<Orientation: 'horizontal' or 'vertical'>",
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Website Traffic Over Time",
+      "description": "This line chart shows the number of visitors and page views over the first half of 2023.",
+      "xKey": "Month",
+      "yKeys": ["Visitors", "PageViews"],
+      "data": [
+        { "Month": "January", "Visitors": 1200, "PageViews": 3500 },
+        { "Month": "February", "Visitors": 1500, "PageViews": 4000 },
+        { "Month": "March", "Visitors": 1700, "PageViews": 4500 },
+        { "Month": "April", "Visitors": 1600, "PageViews": 4200 },
+        { "Month": "May", "Visitors": 1800, "PageViews": 4800 },
+        { "Month": "June", "Visitors": 2000, "PageViews": 5000 }
+      ],
+      "config": {
+        "yAxisUnit": "Count",
+        "xAxisUnit": "Month",
+        "orientation": "vertical",
+        "showLegend": "true"
+      }
+    }
+  },
+
+  "PieChart": {
+    "description": "A pie chart divides a circle into slices to represent parts of a whole. Each slice’s angle (or area) is proportional to its value.",
+    "usecase": "Ideal for showing how a total is broken into categories (e.g., market share, budget allocation). Best for a small number of categories; not suitable for time series.",
+    "documentation": "https://recharts.github.io/en-US/api/PieChart",
+    "applicability": "Use when you have categorical data where values sum to a meaningful whole and a small number of categories.",
+    "format": {
+      "title": "<Title of Pie Chart>",
+      "description": "<Description of Pie Chart>",
+      "nameKey": "<Name Key>",
+      "valueKey": "<Value Key>",
+      "data": [
+        {
+          "<Name Key>": "<Category1>",
+          "<Value Key>": "<NumericValue1>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object contains the name key (category) and value key (numeric) that represents part of the whole.",
+      "config": {
+        "showLegend": "<true/false>",
+        "innerRadius": "<Inner radius for donut charts, if applicable>"
+      }
+    },
+    "example": {
+      "title": "Market Share Distribution",
+      "description": "This pie chart illustrates the market share distribution among different companies in 2023.",
+      "nameKey": "Company",
+      "valueKey": "MarketShare",
+      "data": [
+        { "Company": "Company A", "MarketShare": 40 },
+        { "Company": "Company B", "MarketShare": 30 },
+        { "Company": "Company C", "MarketShare": 20 },
+        { "Company": "Company D", "MarketShare": 10 }
+      ],
+      "config": {
+        "showLegend": "true",
+        "innerRadius": "0"
+      }
+    }
+  },
+
+  "DonutChart": {
+    "description": "A donut chart is a pie chart with a hole in the centre (inner radius > 0). It provides the same data mapping but leaves room for a central label or key metric.",
+    "usecase": "Use when you want the aesthetics of a pie but also want to highlight a central metric or label.",
+    "documentation": "https://recharts.github.io/en-US/api/PieChart",
+    "applicability": "Same as PieChart but when you want to highlight a centre statistic or have a chart with a hole.",
+    "format": {
+      "title": "<Title of Donut Chart>",
+      "description": "<Description of Donut Chart>",
+      "nameKey": "<Name Key>",
+      "valueKey": "<Value Key>",
+      "data": [
+        {
+          "<Name Key>": "<Category1>",
+          "<Value Key>": "<NumericValue1>"
+        }
+      ],
+      "formatInstructions": "Similar to PieChart. The config must specify `innerRadius` to produce the donut effect.",
+      "config": {
+        "showLegend": "<true/false>",
+        "innerRadius": "<Inner radius>",
+        "outerRadius": "<Outer radius>"
+      }
+    },
+    "example": {
+      "title": "Revenue by Product Category",
+      "description": "This donut chart shows revenue distribution by product category for 2023.",
+      "nameKey": "Category",
+      "valueKey": "Revenue",
+      "data": [
+        { "Category": "Subscriptions", "Revenue": 60000 },
+        { "Category": "Services", "Revenue": 30000 },
+        { "Category": "Hardware", "Revenue": 15000 }
+      ],
+      "config": {
+        "showLegend": "true",
+        "innerRadius": "50%",
+        "outerRadius": "70%"
+      }
+    }
+  },
+
+  "Histogram": {
+    "description": "A histogram shows the distribution of a continuous numeric variable by grouping it into bins and plotting counts of observations in each bin.",
+    "usecase": "Use when you have one numeric variable (continuous) and you want to reflect its frequency distribution.",
+    "documentation": "https://recharts.github.io/en-US/api/BarChart",
+    "applicability": "Use when you have a single numeric variable and want to show its distribution via bins (counts per bin). Usually implemented via BarChart with bins.",
+    "format": {
+      "title": "<Title of Histogram>",
+      "description": "<Description of Histogram>",
+      "xKey": "<Bin Label Key>",
+      "yKey": "<Count Key>",
+      "data": [
+        {
+          "<Bin Label Key>": "<Bin1>",
+          "<Count Key>": "<NumericCount1>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object is a bin with label and count. The Y-axis must be numeric counts.",
+      "config": {
+        "xAxisUnit": "<Bin Unit>",
+        "yAxisUnit": "<Count Unit>",
+        "orientation": "<Orientation: 'vertical' or 'horizontal'>"
+      }
+    },
+    "example": {
+      "title": "Score Distribution",
+      "description": "Histogram of test scores in bins of size 10.",
+      "xKey": "ScoreRange",
+      "yKey": "Count",
+      "data": [
+        { "ScoreRange": "0–10", "Count": 5 },
+        { "ScoreRange": "10–20", "Count": 12 },
+        { "ScoreRange": "20–30", "Count": 9 },
+        { "ScoreRange": "30–40", "Count": 2 }
+      ],
+      "config": {
+        "xAxisUnit": "Points",
+        "yAxisUnit": "Students",
+        "orientation": "vertical"
+      }
+    }
+  },
+
+  "ComposedChart": {
+    "description": "A composed chart allows mixing multiple chart types (e.g., bar + line + area) over the same domain for richer context.",
+    "usecase": "Use when you want to show more than one type of measure in the same chart with a shared axis (e.g., revenue as bars, margin as line).",
+    "documentation": "https://recharts.github.io/en-US/api/ComposedChart",
+    "applicability": "Use when you have a common domain (X-axis) and multiple measures where different visual types make sense for each measure.",
+    "format": {
+      "title": "<Title of Composed Chart>",
+      "description": "<Description of Composed Chart>",
+      "xKey": "<X-axis Key>",
+      "series": [
+        {
+          "name": "<Series Name>",
+          "dataKey": "<DataKey>",
+          "type": "<'bar'|'line'|'area'>"
+        }
+      ],
+      "data": [
+        {
+          "<X-axis Key>": "<Value1>",
+          "<DataKey1>": "<NumericValue1>",
+          "<DataKey2>": "<NumericValue2>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object has the X-axis key and multiple measure keys. The `series` array determines which field uses which chart type.",
+      "config": {
+        "yAxisUnit": "<Unit>",
+        "xAxisUnit": "<Unit>",
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Revenue vs Margin Over Time",
+      "description": "This composed chart shows revenue (bars) and margin percentage (line) over months.",
+      "xKey": "Month",
+      "series": [
+        { "name": "Revenue", "dataKey": "revenue", "type": "bar" },
+        { "name": "Margin", "dataKey": "margin", "type": "line" }
+      ],
+      "data": [
+        { "Month": "2025-01", "revenue": 120000, "margin": 0.24 },
+        { "Month": "2025-02", "revenue": 140000, "margin": 0.27 },
+        { "Month": "2025-03", "revenue": 180000, "margin": 0.3 }
+      ],
+      "config": {
+        "yAxisUnit": "USD or %",
+        "xAxisUnit": "Month",
+        "showLegend": "true"
+      }
+    }
+  },
+
+  "ScatterChart": {
+    "description": "A scatter chart displays points defined by two numeric values (and optionally a third for size or color). It’s used for correlation or distribution analysis.",
+    "usecase": "Use when you want to show the relationship between two numeric variables (or three with size/color).",
+    "documentation": "https://recharts.github.io/en-US/api/ScatterChart",
+    "applicability": "Use when you have two or more numeric axes (X and Y, optionally Z) and you want to show their relationship rather than simple category-value comparisons.",
+    "format": {
+      "title": "<Title of Scatter Chart>",
+      "description": "<Description of Scatter Chart>",
+      "xKey": "<X-axis Key>",
+      "yKey": "<Y-axis Key>",
+      "data": [
+        {
+          "<X-axis Key>": "<NumericValue1>",
+          "<Y-axis Key>": "<NumericValue2>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object has numeric values for both X and Y axes. Optionally size or category keys can be included.",
+      "config": {
+        "xAxisUnit": "<Unit>",
+        "yAxisUnit": "<Unit>",
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Height vs Weight Scatter Plot",
+      "description": "This scatter plot shows relationship between height (cm) and weight (kg) for a sample dataset.",
+      "xKey": "Height_cm",
+      "yKey": "Weight_kg",
+      "data": [
+        { "Height_cm": 160, "Weight_kg": 60 },
+        { "Height_cm": 170, "Weight_kg": 68 },
+        { "Height_cm": 180, "Weight_kg": 75 }
+      ],
+      "config": {
+        "xAxisUnit": "cm",
+        "yAxisUnit": "kg",
+        "showLegend": "false"
+      }
+    }
+  },
+
+  "RadarChart": {
+    "description": "A radar chart (aka spider or web chart) compares multiple quantitative variables across one or more observations on a radial layout.",
+    "usecase": "Use when you have multiple metrics for each entity (e.g., skill ratings across categories) and you want to compare them across entities.",
+    "documentation": "https://recharts.github.io/en-US/api/RadarChart",
+    "applicability": "Use when you have several quantitative variables per category/entity and the comparison across entities is the goal.",
+    "format": {
+      "title": "<Title of Radar Chart>",
+      "description": "<Description of Radar Chart>",
+      "angleKey": "<Angle Axis Key>",
+      "series": [{ "name": "<Series Name>", "dataKey": "<DataKey>" }],
+      "data": [
+        {
+          "<Angle Axis Key>": "<Category1>",
+          "<DataKey1>": "<NumericValue1>",
+          "<DataKey2>": "<NumericValue2>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object has the angleKey (category) plus numeric values for each series to compare.",
+      "config": {
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Skills Matrix",
+      "description": "This radar chart compares skill ratings of two team members across subjects.",
+      "angleKey": "subject",
+      "series": [
+        { "name": "Alice", "dataKey": "A" },
+        { "name": "Bob", "dataKey": "B" }
+      ],
+      "data": [
+        { "subject": "Math", "A": 120, "B": 110, "fullMark": 150 },
+        { "subject": "English", "A": 98, "B": 130, "fullMark": 150 },
+        { "subject": "History", "A": 86, "B": 130, "fullMark": 150 }
+      ],
+      "config": {
+        "showLegend": "true"
+      }
+    }
+  },
+
+  "FunnelChart": {
+    "description": "A funnel chart visualises a sequential process (e.g., lead → opportunity → customer) and shows drop-off between stages.",
+    "usecase": "Use when you have ordered stages of a process and want to show the quantity at each stage and how it declines.",
+    "documentation": "https://recharts.github.io/en-US/api/FunnelChart",
+    "applicability": "Use when you have sequential categories (stages) and numeric values for each stage.",
+    "format": {
+      "title": "<Title of Funnel Chart>",
+      "description": "<Description of Funnel Chart>",
+      "nameKey": "<Stage Key>",
+      "valueKey": "<Value Key>",
+      "data": [
+        {
+          "<Stage Key>": "<Stage1>",
+          "<Value Key>": "<NumericValue1>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object has a stage name key and numeric value key.",
+      "config": {
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Sales Funnel",
+      "description": "This funnel chart shows pipeline conversion for Q1.",
+      "nameKey": "Stage",
+      "valueKey": "Count",
+      "data": [
+        { "Stage": "Leads", "Count": 1000 },
+        { "Stage": "MQL", "Count": 600 },
+        { "Stage": "SQL", "Count": 300 },
+        { "Stage": "Closed", "Count": 120 }
+      ],
+      "config": {
+        "showLegend": "false"
+      }
+    }
+  },
+
+  "StackedBarChart": {
+    "description": "A stacked bar chart is a variation of the bar chart where multiple numeric series are stacked on top of each other per category, showing total plus component breakdown.",
+    "usecase": "Use when you have categorical X-axis and multiple numeric measures per category that you want to display both individually and aggregated.",
+    "documentation": "https://recharts.github.io/en-US/api/BarChart",
+    "applicability": "Use when you have one category axis and multiple numeric fields per category, and you want to show part-to-whole or breakdown stacked within categories.",
+    "format": {
+      "title": "<Title of Stacked Bar Chart>",
+      "description": "<Description of Stacked Bar Chart>",
+      "xKey": "<X-axis Key>",
+      "series": [{ "name": "<Series Name>", "dataKey": "<DataKey>" }],
+      "data": [
+        {
+          "<X-axis Key>": "<Category1>",
+          "<DataKey1>": "<NumericValue1>",
+          "<DataKey2>": "<NumericValue2>"
+        }
+      ],
+      "formatInstructions": "Array of objects. Each object has the category key and multiple numeric fields (one per series) that will be stacked. The `series` array lists each numeric field to use.",
+      "config": {
+        "yAxisUnit": "<Unit>",
+        "xAxisUnit": "<Unit>",
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Revenue & Cost Breakdown by Region",
+      "description": "This stacked bar chart shows revenue (blue) and cost (red) for each region, stacked for total view plus breakdown.",
+      "xKey": "Region",
+      "series": [
+        { "name": "Revenue", "dataKey": "revenue" },
+        { "name": "Cost", "dataKey": "cost" }
+      ],
+      "data": [
+        { "Region": "North America", "revenue": 500000, "cost": 300000 },
+        { "Region": "Europe", "revenue": 400000, "cost": 250000 },
+        { "Region": "Asia", "revenue": 300000, "cost": 200000 }
+      ],
+      "config": {
+        "yAxisUnit": "USD",
+        "xAxisUnit": "Region",
+        "showLegend": "true"
+      }
+    }
+  },
+
+  "TreeMap": {
+    "description": "A treemap visualises hierarchical or nested data by representing each node as a rectangle, with children nested inside parent rectangles. The size of each rectangle corresponds to a numeric value.",
+    "usecase": "Use when you have hierarchical categories with numeric values for each leaf or node (e.g., budget by department and team, file system size by folder).",
+    "documentation": "https://recharts.github.io/en-US/api/Treemap",
+    "applicability": "Use when you have hierarchical data (parent → children) and numeric size metrics; not just flat category-value pairs.",
+    "format": {
+      "title": "<Title of TreeMap>",
+      "description": "<Description of TreeMap>",
+      "nameKey": "<Name Key>",
+      "childrenKey": "<Children Key>",
+      "valueKey": "<Size Key>",
+      "data": [
+        {
+          "<Name Key>": "<Category1>",
+          "<childrenKey>": [
+            {
+              "<Name Key>": "<SubCategory1>",
+              "<valueKey>": "<NumericValue1>"
+            }
+          ]
+        }
+      ],
+      "formatInstructions": "Array of objects where each object may contain nested `children` arrays. Each leaf object must have the `valueKey` numeric field indicating size.",
+      "config": {
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Budget Allocation by Department and Team",
+      "description": "This treemap shows budget size allocated across departments and sub-teams.",
+      "nameKey": "Department",
+      "childrenKey": "teams",
+      "valueKey": "budgetUSD",
+      "data": [
+        {
+          "Department": "Engineering",
+          "teams": [
+            { "Department": "Frontend", "budgetUSD": 120000 },
+            { "Department": "Backend", "budgetUSD": 150000 }
+          ]
+        },
+        {
+          "Department": "Marketing",
+          "teams": [
+            { "Department": "SEO", "budgetUSD": 80000 },
+            { "Department": "Content", "budgetUSD": 60000 }
+          ]
+        }
+      ],
+      "config": {
+        "showLegend": "true"
+      }
+    }
+  },
+
+  "SankeyChart": {
+    "description": "A Sankey diagram visualises flow from one set of nodes to another, showing amounts flowing through links. The width of links is proportional to the quantity.",
+    "usecase": "Use when you want to show how values move through a system (e.g., traffic flows, user conversion paths, resource transfer) or many-to-many relationships between nodes.",
+    "documentation": "https://app.unpkg.com/recharts@2.4.3/files/types/chart/Sankey.d.ts",
+    "applicability": "Use when you have a network of nodes and numeric flows (links) between them, rather than simple category-value pairs.",
+    "format": {
+      "title": "<Title of Sankey Chart>",
+      "description": "<Description of Sankey Chart>",
+      "nodesKey": "nodes",
+      "linksKey": "links",
+      "data": {
+        "nodes": [{ "<Name Key>": "<NodeName1>" }],
+        "links": [
+          {
+            "source": "<NodeName1>",
+            "target": "<NodeName2>",
+            "value": "<NumericValue>"
+          }
+        ]
+      },
+      "formatInstructions": "An object with `nodes` array (listing node names or ids) and `links` array with `source`, `target` and numeric `value` for each link. Numeric `value` shows flow magnitude.",
+      "config": {
+        "nodeWidth": "<width in px>",
+        "nodePadding": "<padding between nodes>",
+        "linkCurvature": "<curvature factor>",
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "Website Traffic Flow",
+      "description": "This Sankey diagram shows how website visitors move from referral sources to landing pages to purchase.",
+      "data": {
+        "nodes": [
+          { "name": "Organic" },
+          { "name": "Paid" },
+          { "name": "Landing Page" },
+          { "name": "Checkout" }
+        ],
+        "links": [
+          { "source": "Organic", "target": "Landing Page", "value": 5000 },
+          { "source": "Paid", "target": "Landing Page", "value": 2000 },
+          { "source": "Landing Page", "target": "Checkout", "value": 3000 }
+        ]
+      },
+      "config": {
+        "nodeWidth": 20,
+        "nodePadding": 10,
+        "linkCurvature": 0.5,
+        "showLegend": "false"
+      }
+    }
+  },
+
+  "ParallelSetsChart": {
+    "description": "A parallel sets diagram visualises multi-categorical data across dimensions, showing categories and how they cross between dimensions (alternative to parallel coordinates for categorical data).",
+    "usecase": "Use when you have multiple categorical dimensions (e.g., user segment → product category → region) and you want to show flows or relationships between categories across those dimensions.",
+    "documentation": "Not a native built-in component of Recharts; treat as custom implementation or fallback to other visualisation.",
+    "applicability": "Use when you have multi-dimensional categorical data and want to visualise relationships across those dimensions rather than numeric trends.",
+    "format": {
+      "title": "<Title of Parallel Sets Chart>",
+      "description": "<Description of Parallel Sets Chart>",
+      "dimensions": ["<Dimension1>", "<Dimension2>", "<Dimension3>"],
+      "data": [
+        {
+          "<Dimension1>": "<CategoryA>",
+          "<Dimension2>": "<CategoryB>",
+          "<Dimension3>": "<CategoryC>",
+          "value": "<NumericValue>"
+        }
+      ],
+      "formatInstructions": "Array of objects where each object has values for each categorical dimension plus a numeric value representing size of flow or count.",
+      "config": {
+        "showLegend": "<true/false>"
+      }
+    },
+    "example": {
+      "title": "User Journey Across Segments",
+      "description": "This parallel sets diagram shows how users move from segment to product to region.",
+      "dimensions": ["Segment", "ProductCategory", "Region"],
+      "data": [
+        {
+          "Segment": "New",
+          "ProductCategory": "Subscription",
+          "Region": "EMEA",
+          "value": 1200
+        },
+        {
+          "Segment": "Returning",
+          "ProductCategory": "Upgrade",
+          "Region": "APAC",
+          "value": 800
+        }
+      ],
+      "config": {
+        "showLegend": "true"
+      }
+    }
+  }
+}

@@ -7,11 +7,12 @@ from datetime import timedelta
 from pydantic import BaseModel
 from config import Config
 from app import app
-from utils import read_text_from_gcs
+from utils import read_text_from_gcs, get_charts_for_a_company
 from firestore_models import CompanyDoc
 from routes.trigger_extract_benchmark_job import trigger_job_with_filename
 
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
+GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
 GOOGLE_CLOUD_PROJECT = Config.GOOGLE_CLOUD_PROJECT
 GCP_PITCH_DECK_INPUT_FOLDER = Config.GCP_PITCH_DECK_INPUT_FOLDER
 FIRESTORE_DATABASE = Config.FIRESTORE_DATABASE
@@ -21,13 +22,6 @@ FIRESTORE_COMPANY_COLLECTION = Config.FIRESTORE_COMPANY_COLLECTION
 class SignedUrlRequest(BaseModel):
     object_name: str
     expiration_seconds: int = 3600
-
-def get_service_account_email():      
-    metadata_server_url = "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/email"
-    headers = {"Metadata-Flavor":"Google"}
-    response = requests.get(metadata_server_url, headers=headers)
-    response.raise_for_status()
-    return response.text
 
 
 @app.get("/hello")
@@ -49,15 +43,14 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
         raise HTTPException(status_code=400, detail="Invalid object_name")
 
     try:
-        credentials, project_id  = auth.default()
-        credentials.refresh(Request())
-        storage_client = storage.Client(project=project_id, credentials=credentials)
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        storage_client = storage.Client(
+            project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
 
         bucket = storage_client.bucket(GCS_BUCKET_NAME)
 
         blob = bucket.blob(f"{GCP_PITCH_DECK_INPUT_FOLDER}/{object_name}")
-
-        service_account_email = get_service_account_email()
 
         # include x-goog-resumable header in SignedURL options, so client can send that header
         url = blob.generate_signed_url(
@@ -124,10 +117,11 @@ async def add_to_companies_list(req: CompanyDoc):
     }
 
     try:
-        credentials, project_id  = auth.default()
-        credentials.refresh(Request())
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
 
-        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials)
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
         collection_ref = firestore_client.collection(
             FIRESTORE_COMPANY_COLLECTION)
         doc_ref = collection_ref.document()
@@ -167,9 +161,10 @@ async def add_to_companies_list(req: CompanyDoc):
 @app.post("/get_companies_list")
 async def get_companies_list():
     try:
-        credentials, project_id  = auth.default()
-        credentials.refresh(Request())
-        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials)
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
 
         collection_ref = firestore_client.collection(
             FIRESTORE_COMPANY_COLLECTION)
@@ -216,10 +211,12 @@ async def get_company_details(company_id: str = Path(..., description="Company i
             status_code=400, detail="company_id cannot be empty")
 
     try:
-        credentials, project_id  = auth.default()
-        credentials.refresh(Request())
-        storage_client = storage.Client(project=project_id, credentials=credentials)
-        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials)
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        storage_client = storage.Client(
+            project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
 
         collection_ref = firestore_client.collection(
             FIRESTORE_COMPANY_COLLECTION)
@@ -253,6 +250,11 @@ async def get_company_details(company_id: str = Path(..., description="Company i
             "founder_name": data.get("founder_name", ""),
             "comments": data.get("comments", ""),
             "extract_benchmark_agent_response": data.get("extract_benchmark_agent_response", ""),
+            "charts": get_charts_for_a_company(
+                storage_client=storage_client,
+                bucket_name=GCS_BUCKET_NAME,
+                folder_name=f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/{company_id}/visualisations"
+            ) if len(data.get("benchmark_gcs_uri")) > 0 else {}
         }
 
     except HTTPException:
@@ -260,47 +262,6 @@ async def get_company_details(company_id: str = Path(..., description="Company i
     except Exception as exc:
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch company details: {exc}")
-
-    #     docs = list(query.stream())
-
-    #     if not docs:
-    #         raise HTTPException(
-    #             status_code=404, detail=f"No company found with company_name='{company_name}'")
-
-    #     results = []
-    #     for doc in docs:
-    #         data = doc.to_dict() or {}
-    #         created_at = data.get("created_at")
-    #         if created_at is not None and hasattr(created_at, "isoformat"):
-    #             data["created_at"] = created_at.isoformat()
-
-    #         data["extract_benchmark_agent_response"] = None
-    #         # only try to fetch the GCS content if the flag is True and the URI exists
-    #         try:
-    #             gcs_uri = "gs://pitching_decks/processed/sia_analytics_pitch_deck_analysis_investment_memo.md"
-    #             content = read_text_from_gcs(
-    #                 storage_client=storage_client, gs_uri=gcs_uri)
-    #             # if content is None, you could populate an error string instead, e.g. "failed to load"
-    #             data["extract_benchmark_agent_response"] = content
-
-    #             # if bool(data.get("is_deck_extracted_and_benchmarked")) is True and data.get("extract_benchmark_gcs_uri"):
-    #             #     gcs_uri = data["extract_benchmark_gcs_uri"]
-    #             #     content = read_text_from_gcs(storage_client=storage_client, gs_uri=gcs_uri)
-    #             #     # if content is None, you could populate an error string instead, e.g. "failed to load"
-    #             #     data["extract_benchmark_agent_response"] = content
-    #         except Exception:
-    #             # keep it robust: don't crash the whole loop if one download fails
-    #             data["extract_benchmark_agent_response"] = None
-    #         results.append({"doc_id": doc.id, **data})
-
-    #     return {"status": "ok", "count": len(results), "companies": results}
-
-    # except HTTPException:
-    #     # re-raise HTTP errors we intentionally raised
-    #     raise
-    # except Exception as exc:
-    #     raise HTTPException(
-    #         status_code=500, detail=f"Failed to fetch company details: {exc}")
 
 
 # @app.post("/pubsub/pitchdeck-event")
