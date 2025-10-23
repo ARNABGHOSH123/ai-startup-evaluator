@@ -1,5 +1,7 @@
-from typing import Optional;
+from typing import Optional
 from google.cloud import storage
+from typing import Dict, Any, List, Tuple
+import asyncio
 import json
 
 MAX_BYTES_TO_READ = 5 * 1024 * 1024  # 5 MB safety cap (adjust as needed)
@@ -55,39 +57,75 @@ def read_text_from_gcs(storage_client, gs_uri: str, max_bytes: int = MAX_BYTES_T
         # You might want to log the exception in real code
         return None
 
-def get_charts_for_a_company(storage_client: storage.Client, bucket_name: str, folder_name: str) -> dict:
+
+async def get_charts_for_a_company_async(storage_client: storage.Client, bucket_name: str, folder_name: str, max_concurrency: int = 10) -> Dict[str, List[Any]]:
     """
-    Returns the charts generated while creating investment deal note v1 for a company by extract_benchmarking_agent_job.
+    Async version: fetch JSON files under `folder_name` in parallel using threads.
+
+    Returns a dict mapping subfolder -> list of parsed JSON contents.
     """
-    charts = {}
+    charts: Dict[str, List[Any]] = {}
 
     try:
-
         bucket = storage_client.bucket(bucket_name)
-        prefix = folder_name + "/" if not folder_name.endswith("/") else folder_name
-        blobs = bucket.list_blobs(prefix=prefix)
+        prefix = folder_name.rstrip("/") + "/"
+        blobs = list(bucket.list_blobs(prefix=prefix))
+    except Exception:
+        return {}
 
-        for blob in blobs:
-            if blob.name.endswith('/'):
-                continue  # skip folders
-            relative_path = blob.name[len(prefix):]  # path relative to folder_name
-            path_parts = relative_path.split('/')
+    # prepare work items (subfolder, gs_uri)
+    work_items: List[Tuple[str, str]] = []
+    for blob in blobs:
+        if blob.name.endswith("/"):
+            continue
+        relative_path = blob.name[len(prefix):]
+        if not relative_path:
+            continue
+        path_parts = relative_path.split("/")
+        if len(path_parts) <= 1:
+            # skip files directly under the folder
+            continue
+        subfolder_name = path_parts[0]
+        gs_uri = f"gs://{bucket_name}/{blob.name}"
+        work_items.append((subfolder_name, gs_uri))
 
-            if len(path_parts) > 1:
-                subfolder_name = path_parts[0]
-            else:
-                # Skip files directly under the 'visualisations' folder
-                print(f"Skipping file not in a subfolder: {blob.name}")
-                continue
+    semaphore = asyncio.Semaphore(max_concurrency)
 
-            content = json.loads(read_text_from_gcs(storage_client, f"gs://{bucket_name}/{blob.name}"))
+    async def _load_item(subfolder: str, uri: str):
+        async with semaphore:
+            try:
+                text = await asyncio.to_thread(read_text_from_gcs, storage_client, uri)
+                if not text:
+                    return subfolder, None, f"empty:{uri}"
+                data = json.loads(text)
+                return subfolder, data, None
+            except json.JSONDecodeError as je:
+                return subfolder, None, f"json_error:{je}"
+            except Exception as e:
+                return subfolder, None, str(e)
 
-            charts.setdefault(subfolder_name, []).append(content)
-        
-    except json.JSONDecodeError as e_json:
-        print(f"Error occured while decoding JSON: {e_json}")
-        
-    except Exception as e:
-        print(f"Error while fetching charts from GCS: {e}")
+    tasks = [asyncio.create_task(_load_item(s, u)) for s, u in work_items]
+    if not tasks:
+        return {}
+
+    results = await asyncio.gather(*tasks)
+
+    for subfolder, content, err in results:
+        if content is None:
+            continue
+        charts.setdefault(subfolder, []).append(content)
 
     return charts
+
+
+def get_charts_for_a_company(storage_client: storage.Client, bucket_name: str, folder_name: str, max_concurrency: int = 10) -> Dict[str, List[Any]]:
+    """
+    Synchronous wrapper for compatibility: runs the async loader if no running event loop.
+    If called from an active event loop, raises RuntimeError and caller should use the async API.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(get_charts_for_a_company_async(storage_client, bucket_name, folder_name, max_concurrency))
+    else:
+        raise RuntimeError("get_charts_for_a_company called inside running event loop; use get_charts_for_a_company_async instead")

@@ -7,7 +7,7 @@ from datetime import timedelta
 from pydantic import BaseModel
 from config import Config
 from app import app
-from utils import read_text_from_gcs, get_charts_for_a_company
+from utils import read_text_from_gcs, get_charts_for_a_company, get_charts_for_a_company_async
 from firestore_models import CompanyDoc
 from routes.trigger_extract_benchmark_job import trigger_job_with_filename
 
@@ -250,7 +250,7 @@ async def get_company_details(company_id: str = Path(..., description="Company i
             "founder_name": data.get("founder_name", ""),
             "comments": data.get("comments", ""),
             "extract_benchmark_agent_response": data.get("extract_benchmark_agent_response", ""),
-            "charts": get_charts_for_a_company(
+            "charts": await get_charts_for_a_company_async(
                 storage_client=storage_client,
                 bucket_name=GCS_BUCKET_NAME,
                 folder_name=f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/{company_id}/visualisations"
