@@ -1,1 +1,1 @@
-from .helpers import read_text_from_gcs, get_charts_for_a_company
+from .helpers import read_text_from_gcs, get_charts_for_a_company, get_charts_for_a_company_async
