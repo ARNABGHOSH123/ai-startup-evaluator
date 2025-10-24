@@ -1,10 +1,12 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Link, useLocation } from "wouter";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
-// import { useAuth } from "@/hooks/useAuth";
-// import Landing from "@/pages/Landing";
+import { useAuth0 } from "@auth0/auth0-react";
 import Home from "@/pages/Home";
+import RoleBasedLanding from "./pages/RoleBasedLanding";
 import InvestorPortal from "@/pages/InvestorPortal";
 import CompanyDetail from "@/pages/CompanyDetail";
 import NotFound from "@/pages/not-found";
@@ -17,6 +19,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useTheme } from "@/components/ThemeProvider";
 import {
   Home as HomeIcon,
@@ -24,25 +33,36 @@ import {
   Settings,
   Sun,
   Moon,
-  LogOut,
   Menu,
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import Landing from "./pages/Landing";
+import NewLanding from "./pages/NewLanding";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import FounderPitch from "./pages/FounderPitch";
+// import Landing from "./pages/Landing";
 
-const user = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "abc@example.com",
-};
-
-function Header() {
+function Header({
+  user,
+  setUser,
+}: {
+  user: any;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
+}) {
   // const { user, isLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false); // for main modal
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [signUpDialogOpen, setSignUpDialogOpen] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  // const handleLogin = (role: string) => {
+  //   console.log(`Logging in as ${role}`);
+  //   setOpen(false);
+  // };
   const getInitials = (user: any) => {
     if (user?.firstName && user?.lastName) {
       return `${user.firstName[0]}${user.lastName[0]}`;
@@ -140,53 +160,406 @@ function Header() {
               )}
             </Button>
 
-            {/* User Profile Dropdown */}
-            {user && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-3 p-2 rounded-md hover:bg-accent transition-colors"
-                    data-testid="button-profile-menu"
-                  >
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                        {getInitials(user)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="hidden md:block text-left">
-                      <p
-                        className="text-sm font-medium text-foreground"
-                        data-testid="text-user-name"
+            {/* Initial Landing for register or login*/}
+            <div className="flex items-center space-x-4">
+              {user ? (
+                <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center space-x-1 p-2 rounded-md hover:bg-accent transition-colors"
+                        data-testid="button-profile-menu"
                       >
-                        {getDisplayName(user)}
-                      </p>
-                      <p
-                        className="text-xs text-muted-foreground"
-                        data-testid="text-last-login"
-                      >
-                        {getLastLogin(user)}
-                      </p>
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                            {getInitials(user)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="hidden md:block text-left">
+                          <p
+                            className="text-sm font-medium text-foreground"
+                            data-testid="text-user-name"
+                          >
+                            {getDisplayName(user)}
+                          </p>
+                          <p
+                            className="text-xs text-muted-foreground"
+                            data-testid="text-last-login"
+                          >
+                            {getLastLogin(user)}
+                          </p>
+                        </div>
+                      </Button>
+                    </DropdownMenuTrigger>
 
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem data-testid="menu-item-settings">
-                    <Settings className="w-4 h-4 mr-3" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => (window.location.href = "/api/logout")}
-                    data-testid="menu-item-logout"
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem data-testid="menu-item-settings">
+                        <Settings className="w-4 h-4 mr-3" />
+                        Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button
+                    size="sm"
+                    className="bg-white text-blue-500 border-blue-500 border-2"
+                    onClick={() => {
+                      setUser(null);
+                      navigate("/");
+                    }}
                   >
-                    <LogOut className="w-4 h-4 mr-3" />
                     Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                  </Button>{" "}
+                </>
+              ) : (
+                <>
+                  <div className="relative">
+                    {/* Non-blocking dropdown for role selection */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="sm"
+                          className="bg-white text-blue-500 border-blue-500 border-2"
+                        >
+                          Login
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="end" className="w-60">
+                        {["Pitch as Founder", "Fund as Investor"].map(
+                          (label, i) => (
+                            <DropdownMenuItem
+                              key={i}
+                              onClick={() => {
+                                setSelectedRole(label);
+                                setRoleDialogOpen(true);
+                              }}
+                            >
+                              {label}
+                            </DropdownMenuItem>
+                          )
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* Center modal for login */}
+                    {/* Center modal for login */}
+                    <Dialog
+                      open={roleDialogOpen}
+                      onOpenChange={setRoleDialogOpen}
+                    >
+                      <DialogContent className="sm:max-w-md rounded-xl">
+                        <DialogHeader>
+                          <DialogTitle>{selectedRole || "Login"}</DialogTitle>
+                          <DialogDescription>
+                            {showForgotPassword
+                              ? "Reset your password by entering your registered email address."
+                              : "Sign in using your email and password, or continue with Google."}
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        {!showForgotPassword ? (
+                          <>
+                            {/* Email + Password Login */}
+                            <form
+                              className="flex flex-col gap-3 mt-4"
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                const email = (
+                                  e.currentTarget.elements.namedItem(
+                                    "email"
+                                  ) as HTMLInputElement
+                                ).value;
+                                const password = (
+                                  e.currentTarget.elements.namedItem(
+                                    "password"
+                                  ) as HTMLInputElement
+                                ).value;
+                                console.log("Logging in with:", {
+                                  role: selectedRole,
+                                  email,
+                                  password,
+                                });
+
+                                // Fake API logic:
+                                const accountExists = false; // TODO: Replace with actual API call to check
+
+                                if (!accountExists) {
+                                  alert(
+                                    "Account not found. Please create one."
+                                  );
+                                  setRoleDialogOpen(false);
+                                  setSignUpDialogOpen(true);
+                                  return;
+                                }
+
+                                // ✅ Successful login:
+                                setUser({
+                                  email,
+                                  role: selectedRole,
+                                  password,
+                                });
+
+                                setRoleDialogOpen(false);
+                              }}
+                            >
+                              <input
+                                type="email"
+                                name="email"
+                                required
+                                placeholder="Email address"
+                                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                              <input
+                                type="password"
+                                name="password"
+                                required
+                                placeholder="Password"
+                                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+
+                              <div className="flex justify-between items-center text-xs">
+                                <button
+                                  type="button"
+                                  className="text-blue-600 hover:underline"
+                                  onClick={() => setShowForgotPassword(true)}
+                                >
+                                  Forgot password?
+                                </button>
+
+                                {/* ✅ Switch to Sign Up */}
+                                <button
+                                  type="button"
+                                  className="text-blue-600 hover:underline"
+                                  onClick={() => {
+                                    setRoleDialogOpen(false);
+                                    setSignUpDialogOpen(true);
+                                  }}
+                                >
+                                  Create account
+                                </button>
+                              </div>
+
+                              <Button
+                                type="submit"
+                                size="sm"
+                                className="w-full bg-blue-600 text-white hover:bg-blue-700 mt-2"
+                              >
+                                Sign In
+                              </Button>
+                            </form>
+
+                            {/* Divider */}
+                            <div className="flex items-center my-3">
+                              <div className="flex-grow h-px bg-gray-200" />
+                              <span className="px-2 text-xs text-gray-400 uppercase">
+                                or
+                              </span>
+                              <div className="flex-grow h-px bg-gray-200" />
+                            </div>
+
+                            {/* Google Login */}
+                            <div className="flex justify-center">
+                              <GoogleLogin
+                                onSuccess={(credentialResponse) => {
+                                  const decoded = jwtDecode(
+                                    credentialResponse.credential!
+                                  );
+                                  console.log("Google Login Success:", decoded);
+                                  setRoleDialogOpen(false);
+                                }}
+                                onError={() =>
+                                  console.log("Google Login Failed")
+                                }
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          /* Forgot Password View */
+                          <form
+                            className="flex flex-col gap-3 mt-4"
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              const email = (
+                                e.currentTarget.elements.namedItem(
+                                  "resetEmail"
+                                ) as HTMLInputElement
+                              ).value;
+                              console.log("Sending reset link to:", email);
+                              // TODO: call password reset API
+                              alert(`Password reset link sent to ${email}`);
+                              setShowForgotPassword(false);
+                            }}
+                          >
+                            <input
+                              type="email"
+                              name="resetEmail"
+                              required
+                              placeholder="Registered email address"
+                              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+
+                            <Button
+                              type="submit"
+                              size="sm"
+                              className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                              Send Reset Link
+                            </Button>
+
+                            <button
+                              type="button"
+                              className="text-xs text-gray-600 hover:underline mt-1"
+                              onClick={() => setShowForgotPassword(false)}
+                            >
+                              Back to Login
+                            </button>
+                          </form>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="ml-2 bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
+                      onClick={() => setSignUpDialogOpen(true)}
+                    >
+                      Sign Up
+                    </Button>
+
+                    {/* Sign Up Dialog */}
+                    {/* Signup Modal */}
+                    <Dialog
+                      open={signUpDialogOpen}
+                      onOpenChange={setSignUpDialogOpen}
+                    >
+                      <DialogContent className="sm:max-w-md rounded-xl">
+                        <DialogHeader>
+                          <DialogTitle>Sign Up</DialogTitle>
+                          <DialogDescription>
+                            Create your account to access the platform.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <form
+                          className="flex flex-col gap-3 mt-4"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const firstName = (
+                              e.currentTarget.elements.namedItem(
+                                "firstName"
+                              ) as HTMLInputElement
+                            ).value;
+                            const lastName = (
+                              e.currentTarget.elements.namedItem(
+                                "lastName"
+                              ) as HTMLInputElement
+                            ).value;
+                            const email = (
+                              e.currentTarget.elements.namedItem(
+                                "email"
+                              ) as HTMLInputElement
+                            ).value;
+                            const password = (
+                              e.currentTarget.elements.namedItem(
+                                "password"
+                              ) as HTMLInputElement
+                            ).value;
+                            const role = (
+                              e.currentTarget.elements.namedItem(
+                                "role"
+                              ) as HTMLSelectElement
+                            ).value;
+
+                            console.log("Signing up:", {
+                              firstName,
+                              lastName,
+                              email,
+                              password,
+                              role,
+                            });
+
+                            // ✅ Update user state after signup (or after API call)
+                            setUser({ firstName, lastName, email, role });
+
+                            // TODO: Replace with your real signup API call
+                            setSignUpDialogOpen(false);
+                          }}
+                        >
+                          <input
+                            type="text"
+                            name="firstName"
+                            required
+                            placeholder="First Name"
+                            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <input
+                            type="text"
+                            name="lastName"
+                            required
+                            placeholder="Last Name"
+                            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <input
+                            type="email"
+                            name="email"
+                            required
+                            placeholder="Email address"
+                            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <input
+                            type="password"
+                            name="password"
+                            required
+                            placeholder="Password"
+                            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+
+                          <select
+                            name="role"
+                            required
+                            className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select Role</option>
+                            <option value="Founder">Founder</option>
+                            <option value="Investor">Investor</option>
+                          </select>
+
+                          <Button
+                            type="submit"
+                            size="sm"
+                            className="w-full bg-blue-600 text-white hover:bg-blue-700 mt-2"
+                          >
+                            Sign Up
+                          </Button>
+                        </form>
+
+                        {/* ✅ "Already have an account?" link */}
+                        <div className="text-center mt-3 text-sm text-gray-600">
+                          Already have an account?{" "}
+                          <button
+                            type="button"
+                            className="text-blue-600 hover:underline"
+                            onClick={() => {
+                              // Close Sign Up dialog
+                              setSignUpDialogOpen(false);
+                              // Open existing Login dialog
+                              setRoleDialogOpen(true);
+                              // Optionally set a default login role
+                              setSelectedRole("Login");
+                            }}
+                          >
+                            Login
+                          </button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -263,10 +636,18 @@ function Sidebar() {
   );
 }
 
-function AppLayout({ children }: { children: React.ReactNode }) {
+function AppLayout({
+  children,
+  user,
+  setUser,
+}: {
+  children: React.ReactNode;
+  user: any;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
+}) {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header user={user} setUser={setUser} />
       <div className="flex">
         {user && <Sidebar />}
         <main
@@ -281,12 +662,13 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Router() {
-  // const { isAuthenticated } = useAuth();
-
+function Router({ user }: { user: any }) {
   return (
     <Switch>
-      <Route path="/" component={Landing} />
+      <Route path="/">
+        <RoleBasedLanding user={user} />
+      </Route>
+      <Route path="/pitch/:founderName" component={FounderPitch} />
       <Route path="/home" component={Home} />
       <Route path="/investor" component={InvestorPortal} />
       <Route path="/company/:company_id" component={CompanyDetail} />
@@ -296,15 +678,18 @@ function Router() {
 }
 
 function App() {
+  const [user, setUser] = useState(null);
   return (
-    <ThemeProvider>
-      <TooltipProvider>
-        <AppLayout>
-          <Router />
-        </AppLayout>
-        <Toaster />
-      </TooltipProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <AppLayout user={user} setUser={setUser}>
+            <Router user={user}/>
+          </AppLayout>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 
