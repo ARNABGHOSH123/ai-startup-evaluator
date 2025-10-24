@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, User, Download, Building2 } from "lucide-react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 
 type Company = {
   company_name: string;
@@ -316,7 +316,7 @@ export default function InvestorPortal() {
                 Discover and analyze promising startups in our portfolio
               </p>
             </div>
-            <Link href="/">
+            <Link to="/">
               <Button
                 variant="outline"
                 className="flex items-center space-x-2"

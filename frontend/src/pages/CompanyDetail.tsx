@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useParams } from "react-router-dom";
 
 type Company = {
   company_name: string;
@@ -17,12 +17,6 @@ type Company = {
   extract_benchmark_agent_response: string;
   doc_id: string;
 };
-
-interface CompanyDetailProps {
-  params: {
-    company_id: string;
-  };
-}
 
 function DetailSkeleton() {
   return (
@@ -77,7 +71,8 @@ function DetailSkeleton() {
   );
 }
 
-export default function CompanyDetail({ params }: CompanyDetailProps) {
+export default function CompanyDetail() {
+  const { company_id } = useParams();
   const [isLoadingCompDetails, setLoadingCompDetails] = useState(false);
   const [company, setCompDetails] = useState<Company | null>(null);
 
@@ -86,9 +81,9 @@ export default function CompanyDetail({ params }: CompanyDetailProps) {
       setLoadingCompDetails(true);
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/get_company_details/${
-            params.company_id
-          }`,
+          `${
+            import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
+          }/get_company_details/${company_id}`,
           {
             method: "POST",
             headers: {
@@ -106,7 +101,7 @@ export default function CompanyDetail({ params }: CompanyDetailProps) {
     };
 
     fetchCompDetails();
-  }, [params.company_id]);
+  }, [company_id]);
 
   if (isLoadingCompDetails) {
     return <DetailSkeleton />;
@@ -116,7 +111,7 @@ export default function CompanyDetail({ params }: CompanyDetailProps) {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <Link href="/investor">
+          <Link to="/investor">
             <Button
               variant="ghost"
               className="flex items-center space-x-2 text-muted-foreground hover:text-foreground mb-4"
