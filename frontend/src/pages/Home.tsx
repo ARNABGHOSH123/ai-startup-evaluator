@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import { useToast } from "@/hooks/use-toast";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { TrendingUp, Users, Building2, Zap, BarChart3 } from "lucide-react";
 
 const user = {
@@ -77,7 +77,7 @@ export default function Home() {
                 Have a groundbreaking idea? Submit your startup for
                 consideration by our network of investors.
               </p>
-              <Link href="/">
+              <Link to="/">
                 <Button className="w-full" data-testid="button-submit-startup">
                   Get Started
                 </Button>
@@ -99,7 +99,7 @@ export default function Home() {
                 Browse our curated portfolio of promising startups and discover
                 your next investment opportunity.
               </p>
-              <Link href="/investor">
+              <Link to="/investor">
                 <Button
                   variant="outline"
                   className="w-full"

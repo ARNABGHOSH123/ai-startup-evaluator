@@ -1,11 +1,7 @@
-"use client";
-
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
 
 export default function FounderLanding({
   user,
@@ -15,14 +11,19 @@ export default function FounderLanding({
   investorCount?: number;
 }) {
   const navigate = useNavigate();
-  const founderName = user?.firstName?.toLowerCase().replace(/\s+/g, "") || "founder";
+  const founderName =
+    user?.firstName?.toLowerCase().replace(/\s+/g, "") || "founder";
 
   const handlePitchClick = () => {
     navigate(`/pitch/${founderName}`);
   };
   const hours = new Date().getHours();
   const greeting =
-    hours < 12 ? "Good morning" : hours < 18 ? "Good afternoon" : "Good evening";
+    hours < 12
+      ? "Good morning"
+      : hours < 18
+      ? "Good afternoon"
+      : "Good evening";
 
   return (
     <div className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden bg-gradient-to-br from-indigo-100 via-white to-blue-50 text-center px-6">
@@ -42,7 +43,8 @@ export default function FounderLanding({
         </h1>
 
         <p className="mt-3 text-gray-600 text-lg">
-          Empower your vision — connect with active investors ready to fund innovation.
+          Empower your vision — connect with active investors ready to fund
+          innovation.
         </p>
 
         {/* Investors Count */}
@@ -55,7 +57,9 @@ export default function FounderLanding({
           <div className="flex items-center gap-3 bg-white/70 backdrop-blur-md px-10 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <Users className="w-8 h-8 text-indigo-600" />
             <div className="text-left">
-              <p className="text-5xl font-bold text-indigo-700">{investorCount}</p>
+              <p className="text-5xl font-bold text-indigo-700">
+                {investorCount}
+              </p>
               <p className="text-gray-600 text-lg font-medium">
                 Investors available to invest
               </p>
@@ -70,8 +74,10 @@ export default function FounderLanding({
           transition={{ delay: 0.7 }}
           className="mt-14 flex flex-wrap justify-center gap-4"
         >
-          
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2" onClick={handlePitchClick}>
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+            onClick={handlePitchClick}
+          >
             Pitch Your Deck
           </Button>
         </motion.div>
