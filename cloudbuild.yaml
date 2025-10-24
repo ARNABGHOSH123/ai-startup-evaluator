@@ -60,9 +60,34 @@ steps:
         "--max-retries=3",
       ]
 
+  # Build and push frontend image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-frontend-service:latest"
+      - "./frontend"
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-frontend-service:latest"
+
+  # Deploy frontend as Cloud Run service
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "ai-analyst-frontend-service"
+      - "--image=us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-frontend-service:latest"
+      - "--region=us-central1"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+
 images:
   - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-backend-service:latest"
   - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest"
+  - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-frontend-service:latest"
 
 options:
   logging: CLOUD_LOGGING_ONLY
