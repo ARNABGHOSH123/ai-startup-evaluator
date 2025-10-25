@@ -11,14 +11,14 @@ export default function PitchCall() {
     setTimeout(() => {
       setIsCalling(false);
       setCallStarted(true);
-      alert("📞 AI Assistant is calling the founder...");
+      alert("AI Assistant is calling the founder...");
       // Here, you could trigger an API or backend call (e.g., Twilio / Voiceflow webhook)
     }, 2000);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-indigo-50 to-blue-100 px-6 py-12">
-        {/* ✅ Thank You Message */}
+        {/*Thank You Message */}
         <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
           Thank You for Submitting Your Deck!
         </h2>
@@ -26,7 +26,7 @@ export default function PitchCall() {
           We’ve received your pitch. Our AI Assistant will review it and get back to you shortly.
         </p>
 
-        {/* ✅ Call Trigger Section */}
+        {/*Call Trigger Section */}
         <div className="border-t border-gray-200 pt-6">
 
           <button
@@ -49,10 +49,10 @@ export default function PitchCall() {
             )}
           </button>
 
-          {/* ✅ Optional confirmation after call */}
+          {/*Optional confirmation after call */}
           {callStarted && (
             <p className="text-green-600 font-medium mt-4">
-              ✅ AI Assistant call initiated successfully!
+              AI Assistant call initiated successfully!
             </p>
           )}
         </div>

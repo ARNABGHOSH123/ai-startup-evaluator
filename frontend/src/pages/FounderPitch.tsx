@@ -33,53 +33,55 @@ export default function FounderPitchDeck() {
         </h2>
 
         {/* Stepper Header */}
-        <div className="relative flex justify-between items-center">
-          {/* Connecting Line (background) */}
-          <div className="absolute top-1/2 right-0 w-full h-1 bg-gray-300 -translate-y-1/2 -mt-3"></div>
+        {/* Stepper Header */}
+<div className="relative flex justify-between items-center">
+  {/* Connecting Line (background) */}
+  <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-300 -translate-y-1/2 -mt-3"></div>
 
-          {/* Progress Line (foreground) */}
-          <div
-            className="absolute top-1/2 left-0 h-1 bg-indigo-600 -translate-y-1/2 transition-all duration-500"
-            style={{
-              width: `${(activeStep / (steps.length - 1)) * 100}%`,
-            }}
-          ></div>
+  {/* Progress Line (foreground) */}
+  <div
+    className="absolute top-1/2 left-0 h-1 bg-indigo-600 -translate-y-1/2 transition-all duration-500 -mt-3"
+    style={{
+      width: `${(activeStep / (steps.length - 1)) * 100}%`,
+    }}
+  ></div>
 
-          {/* Steps */}
-          {steps?.map((step, index) => (
-            <div
-              key={step?.id}
-              className="relative z-10 flex flex-col items-center"
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
-                  index < activeStep
-                    ? "bg-green-500 text-white"
-                    : index === activeStep
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {index < activeStep ? (
-                  <Check size={20} className="text-white" />
-                ) : (
-                  index + 1
-                )}
-              </div>
-              <p
-                className={`text-sm mt-2 transition-all text-center ${
-                  index === activeStep
-                    ? "text-blue-600 font-medium"
-                    : index < activeStep
-                    ? "text-green-600 font-medium"
-                    : "text-gray-500"
-                }`}
-              >
-                {step?.stepperName}
-              </p>
-            </div>
-          ))}
-        </div>
+  {/* Steps */}
+  {steps?.map((step, index) => (
+    <div
+      key={step?.id}
+      className="relative z-10 flex flex-col items-center"
+    >
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
+          index < activeStep
+            ? "bg-green-500 text-white"
+            : index === activeStep
+            ? "bg-blue-600 text-white"
+            : "bg-gray-200 text-gray-600"
+        }`}
+      >
+        {index < activeStep ? (
+          <Check size={20} className="text-white" />
+        ) : (
+          index + 1
+        )}
+      </div>
+      <p
+        className={`text-sm mt-2 transition-all text-center ${
+          index === activeStep
+            ? "text-blue-600 font-medium"
+            : index < activeStep
+            ? "text-green-600 font-medium"
+            : "text-gray-500"
+        }`}
+      >
+        {step?.stepperName}
+      </p>
+    </div>
+  ))}
+</div>
+
 
         {/* Step Content */}
         <div className="mt-8">
