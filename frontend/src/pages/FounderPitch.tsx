@@ -3,23 +3,28 @@ import { useParams } from "react-router-dom";
 import { Check } from "lucide-react";
 import PitchForm from "@/components/PitchDeckForm";
 import PitchCall from "./PitchCall";
+import UploadDoc from "./UploadDoc";
 
 export default function FounderPitchDeck() {
   const { founderName } = useParams<{ founderName?: string }>();
   const [activeStep, setActiveStep] = useState(0);
-
-  const goNext = () => setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
+  console.log(founderName);
+  const goNext = () =>
+    setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
   const goBack = () => setActiveStep((prev) => Math.max(prev - 1, 0));
 
-  const steps = [{
-    id: 0,
-    stepperName: "Startup Info",
-    form: true
-  },
-{id:1,
-  stepperName: "Pitch Call",
-  form: false
-}]
+  const steps = [
+    {
+      id: 0,
+      stepperName: "Startup Info",
+    },
+    {
+      id: 1,
+      stepperName: "Upload Documents",
+    },
+    { id: 2, stepperName: "Pitch Call" },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-indigo-50 to-blue-100 flex flex-col items-center justify-center px-6 py-12">
       <div className="max-w-3xl w-full bg-white shadow-xl rounded-2xl p-10">
@@ -30,7 +35,7 @@ export default function FounderPitchDeck() {
         {/* Stepper Header */}
         <div className="relative flex justify-between items-center">
           {/* Connecting Line (background) */}
-          <div className="absolute top-1/2 right-0 w-full h-1 bg-gray-300 -translate-y-1/2"></div>
+          <div className="absolute top-1/2 right-0 w-full h-1 bg-gray-300 -translate-y-1/2 -mt-3"></div>
 
           {/* Progress Line (foreground) */}
           <div
@@ -42,13 +47,16 @@ export default function FounderPitchDeck() {
 
           {/* Steps */}
           {steps?.map((step, index) => (
-            <div key={step?.id} className="relative z-10 flex flex-col items-center">
+            <div
+              key={step?.id}
+              className="relative z-10 flex flex-col items-center"
+            >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
                   index < activeStep
                     ? "bg-green-500 text-white"
                     : index === activeStep
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-blue-600 text-white"
                     : "bg-gray-200 text-gray-600"
                 }`}
               >
@@ -58,26 +66,30 @@ export default function FounderPitchDeck() {
                   index + 1
                 )}
               </div>
-              {/* <p
+              <p
                 className={`text-sm mt-2 transition-all text-center ${
                   index === activeStep
-                    ? "text-indigo-600 font-medium"
+                    ? "text-blue-600 font-medium"
                     : index < activeStep
                     ? "text-green-600 font-medium"
                     : "text-gray-500"
                 }`}
               >
-                {step}
-              </p> */}
+                {step?.stepperName}
+              </p>
             </div>
           ))}
         </div>
 
         {/* Step Content */}
         <div className="mt-8">
-            <div>
-              {activeStep === 0 ? <PitchForm/> : <PitchCall/>}
-            </div>
+          <div>{activeStep === 0 && <PitchForm founderName={founderName}/>}</div>
+        </div>
+        <div className="mt-8">
+          <div>{activeStep === 1 && <UploadDoc/>}</div>
+        </div>
+        <div className="mt-8">
+          <div>{activeStep === 2 && <PitchCall />}</div>
         </div>
 
         {/* Navigation Buttons */}
