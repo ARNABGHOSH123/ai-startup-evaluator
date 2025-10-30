@@ -35,94 +35,216 @@ const somData = [
   { year: 2034, value: 200 },
 ];
 
+const overviewData = [
+  {
+    id: "problem",
+    borderColor: "border-red-500",
+    bgColor: "bg-red-50/40",
+    icon: <AlertTriangle className="text-red-600" />,
+    titleColor: "text-red-700",
+    title: "Problem: The AI Crisis",
+    description:
+      "90% of AI projects fail due to centralized, fragile data teams causing operational bottlenecks.",
+    points: [
+      "High cost of analytics",
+      "Manual data dependency",
+      "Fragmented pipelines",
+      "Talent shortages",
+      "Security risks",
+    ],
+    impact: "",
+    footer:
+      "➤ 68% of data remains unused in silos, and 76% of decisions still rely on spreadsheets.",
+    features: [],
+  },
+  {
+    id: "solution",
+    borderColor: "border-green-500",
+    bgColor: "bg-green-50/40",
+    icon: <Bot className="text-green-600" />,
+    titleColor: "text-green-700",
+    title: "Solution: Sia - Agentic AI for Data Analytics",
+    description:
+      "Sia democratizes analytics with a chat-based interface that acts like a full data team for every employee.",
+    points: [
+      "Connects fragmented systems",
+      "Contextualizes insights",
+      "Removes technical bottlenecks",
+    ],
+    impact:
+      "Enables self-serve analytics, faster insights, and reduced dependency on data experts.",
+    footer: "",
+    features: [],
+  },
+  {
+    id: "features",
+    borderColor: "border-blue-500",
+    bgColor: "bg-blue-50/40",
+    icon: <Zap className="text-blue-600" />,
+    titleColor: "text-blue-700",
+    title: "Key Capabilities",
+    description: "",
+    points: [],
+    impact: "",
+    footer: "",
+    features: [
+      { icon: <Cpu />, title: "Recommender Engine" },
+      { icon: <BarChart3 />, title: "Auto Visualizations" },
+      { icon: <Database />, title: "Data Quality Reports" },
+      { icon: <Shield />, title: "Security & Governance" },
+      { icon: <Zap />, title: "No-code Model Builder" },
+      { icon: <Bot />, title: "Instant Insights" },
+    ],
+  },
+];
+
+export const accordionData = [
+  {
+    id: "market",
+    title: "Market Size & Position",
+    color: "text-purple-700",
+    sections: [
+      {
+        type: "insights",
+        cards: [
+          {
+            title: "109 Active Startups",
+            desc: "Indicative of early but competitive landscape.",
+            borderColor: "border-indigo-500",
+            textColor: "text-indigo-700",
+          },
+          {
+            title: "Rapid Innovation Cycles",
+            desc: "High opportunity for differentiation and category leadership.",
+            borderColor: "border-green-500",
+            textColor: "text-green-700",
+          },
+        ],
+      },
+      {
+        type: "chart",
+        title: "Total Addressable Market (TAM)",
+        chartType: "radialBar",
+        value: "$300B",
+        subValue: "13% CAGR",
+        fill: "#22c55e",
+        data: [{ name: "TAM", value: 300 }],
+      },
+      {
+        type: "chart",
+        title: "Serviceable Obtainable Market (SOM)",
+        chartType: "bar",
+        projection: "Projected from $5B → $200B by 2034 (43% CAGR)",
+        fill: "#6366f1",
+        data: [
+          { year: "2024", value: 5 },
+          { year: "2026", value: 20 },
+          { year: "2028", value: 80 },
+          { year: "2030", value: 150 },
+          { year: "2034", value: 200 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "technology",
+    title: "Technology & Innovation",
+    color: "text-yellow-700",
+    sections: [
+      {
+        type: "info",
+        borderColor: "border-blue-500",
+        title: "Technology Stack",
+        items: [
+          "Agentic AI with multi-agent architecture.",
+          "Automates ML lifecycle and feature engineering.",
+          "Integrates with multiple data sources.",
+          "Built for scalability and real-time analytics.",
+        ],
+      },
+      {
+        type: "text",
+        borderColor: "border-purple-500",
+        title: "Innovation & R&D",
+        content:
+          "Co-founders Divya Krishna R and Sumalata Kamat jointly hold 10 patents from prior work at Bosch, highlighting deep R&D expertise.",
+      },
+      {
+        type: "info",
+        borderColor: "border-green-500",
+        title: "Vision & USP",
+        items: [
+          "Vision: Make AI/ML accessible to every business.",
+          "USP: Chat-based interface for non-technical users.",
+          "Rapid deployment (2–3 weeks) & insights in <5 min.",
+          "4× reduction in analytics costs.",
+        ],
+      },
+    ],
+  },
+];
+
+
 export default function Overview() {
   return (
     <TabsContent value="overview" className="space-y-4 p-4">
       {/* Problem Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="border-l-4 border-red-500 bg-red-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="text-red-600" />
-              <CardTitle className="text-lg font-semibold text-red-700">
-                Problem: The AI Crisis
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-gray-700 text-sm space-y-2">
-            <p>
-              90% of AI projects fail due to centralized, fragile data teams
-              causing operational bottlenecks.
-            </p>
-            <ul className="list-disc ml-5 space-y-1">
-              <li>High cost of analytics</li>
-              <li>Manual data dependency</li>
-              <li>Fragmented pipelines</li>
-              <li>Talent shortages</li>
-              <li>Security risks</li>
-            </ul>
-            <p className="text-gray-600 mt-2 italic">
-              ➤ 68% of data remains unused in silos, and 76% of decisions still
-              rely on spreadsheets.
-            </p>
-          </CardContent>
-        </Card>
+        {overviewData?.length > 0 && overviewData?.map((card) => (
+          <Card
+            key={card?.id}
+            className={`border-l-4 ${card?.borderColor} ${card?.bgColor}`}
+          >
+            <CardHeader className="pb-2">
+              <div className={`flex items-center gap-2 ${card?.titleColor}`}>
+                {card?.icon}
+                <CardTitle
+                  className={`text-lg font-semibold ${card?.titleColor}`}
+                >
+                  {card?.title}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-gray-700 text-sm space-y-2">
+              {card?.description && <p>{card?.description}</p>}
+              {card?.points && (
+                <ul className="list-disc ml-5 space-y-1">
+                  {card?.points.map((p, i) => (
+                    <li key={i}>{p}</li>
+                  ))}
+                </ul>
+              )}
+              {card?.footer && (
+                <p className="text-gray-600 mt-2 italic">{card?.footer}</p>
+              )}
 
-        {/* Solution Section */}
-        <Card className="border-l-4 border-green-500 bg-green-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Bot className="text-green-600" />
-              <CardTitle className="text-lg font-semibold text-green-700">
-                Solution: Sia - Agentic AI for Data Analytics
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-gray-700 text-sm space-y-2">
-            <p>
-              Sia democratizes analytics with a chat-based interface that acts
-              like a full data team for every employee.
-            </p>
-            <p>
-              It connects fragmented systems, contextualizes insights, and
-              removes technical bottlenecks for rapid, scalable decision-making.
-            </p>
-            <div className="mt-3 text-sm bg-green-100 text-green-800 p-2 rounded-md">
-              <strong>Impact:</strong> Enables self-serve analytics, faster
-              insights, and reduced dependency on data experts.
-            </div>
-          </CardContent>
-        </Card>
+              {card?.impact && (
+                <div className="mt-3 text-sm bg-green-100 text-green-800 p-2 rounded-md">
+                  <strong>Impact:</strong> {card?.impact}
+                </div>
+              )}
 
-        {/* Features */}
-        <Card className="border-l-4 border-blue-500 bg-blue-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Zap className="text-blue-600" />
-              <CardTitle className="text-lg font-semibold text-blue-700">
-                Key Capabilities
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-2">
-              <Feature icon={<Cpu />} title="Recommender Engine" />
-              <Feature icon={<BarChart3 />} title="Auto Visualizations" />
-              <Feature icon={<Database />} title="Data Quality Reports" />
-              <Feature icon={<Shield />} title="Security & Governance" />
-              <Feature icon={<Zap />} title="No-code Model Builder" />
-              <Feature icon={<Bot />} title="Instant Insights" />
-            </div>
-          </CardContent>
-        </Card>
+              {card?.features && (
+                <div className="grid grid-cols-2 gap-2">
+                  {card?.features?.map((feature) => (
+                    <Feature
+                      key={feature?.title}
+                      icon={feature?.icon}
+                      title={feature?.title}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Market & Technology Accordions */}
       <Accordion type="single" collapsible className="space-y-3">
-        {/* Market Accordion */}
-        <AccordionItem value="market">
-          <AccordionTrigger className="text-lg font-semibold text-purple-700">
-            Market Size & Position
+        {accordionData?.length > 0 && accordionData?.map((accordion) => (<AccordionItem value="market">
+          <AccordionTrigger className={`text-lg font-semibold ${accordion?.color}`}>
+{accordion?.title}
           </AccordionTrigger>
           <AccordionContent>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -214,7 +336,7 @@ export default function Overview() {
               </div>
             </div>
           </AccordionContent>
-        </AccordionItem>
+        </AccordionItem>))}
 
         {/* Technology Accordion */}
         <AccordionItem value="technology">

@@ -10,6 +10,7 @@ import BusinessModel from "./BussinessModel";
 import PartnershipsAndAnalysis from "./PartnershipsAndAnalysis";
 import InvestmentRecommendation from "./InvestmentMemo";
 import Overview from "./Overview";
+import InvestmentWeightage from "./InvestmentWeightage";
 
 export default function DashboardTabs() {
   const [activeTab, setActiveTab] = useState<string>("competitors");
@@ -136,6 +137,8 @@ export default function DashboardTabs() {
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
+
+      {/* <InvestmentWeightage/>commented for now if need we can uncomment or we can delete */}
       {/* ---------------- Summary Card ---------------- */}
       <SummaryCard companyInfo={companyInfo} />
 

@@ -12,6 +12,7 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
+import { TabsContent } from "@/components/ui/tabs";
 
 interface CardProps {
   icon: ReactNode;
@@ -39,6 +40,7 @@ interface RiskCardProps {
 
 export default function PartnershipsAndAnalysis() {
   return (
+    <TabsContent value="partnership">
     <div className="p-6 bg-gray-50 min-h-screen">
       <Accordion type="multiple" className="space-y-4">
         {/* Partnerships & Alliances */}
@@ -187,6 +189,7 @@ export default function PartnershipsAndAnalysis() {
         </AccordionItem>
       </Accordion>
     </div>
+    </TabsContent>
   );
 }
 

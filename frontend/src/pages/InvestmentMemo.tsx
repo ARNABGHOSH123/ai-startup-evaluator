@@ -1,15 +1,61 @@
-import React from "react";
+import { useMemo, useState } from "react";
 import { Star, TrendingUp } from "lucide-react";
 import { TabsContent } from "@/components/ui/tabs";
 
 export default function InvestmentRecommendation() {
-  const data = [
-    { category: "Team", observation: "Deep Bosch experience; 10 patents", rating: 4 },
-    { category: "Market", observation: "Fast-growing Agentic AI sector", rating: 5 },
-    { category: "Traction", observation: "Bosch, Mercedes-Benz pilots", rating: 4 },
-    { category: "Financials", observation: "Early stage, ambitious projections", rating: 2 },
-    { category: "Risk", observation: "Long sales cycle, security concerns", rating: 1 },
-  ];
+  // const data = [
+  //   { category: "Team", observation: "Deep Bosch experience; 10 patents", rating: 4 },
+  //   { category: "Market", observation: "Fast-growing Agentic AI sector", rating: 5 },
+  //   { category: "Traction", observation: "Bosch, Mercedes-Benz pilots", rating: 4 },
+  //   { category: "Financials", observation: "Early stage, ambitious projections", rating: 2 },
+  //   { category: "Risk", observation: "Long sales cycle, security concerns", rating: 1 },
+  // ];
+
+  const [data, setData] = useState([
+    {
+      category: "Market Potential",
+      rating: 3,
+      observation: "Large TAM with moderate competition",
+    },
+    {
+      category: "Product Strength",
+      rating: 4,
+      observation: "Strong IP and differentiation",
+    },
+    {
+      category: "Team Capability",
+      rating: 2,
+      observation: "Good core team but limited scaling experience",
+    },
+    {
+      category: "Financial Stability",
+      rating: 3,
+      observation: "Reasonable runway, early-stage revenue",
+    },
+    {
+      category: "Risk Profile",
+      rating: 4,
+      observation: "Moderate risk due to early-stage market bets",
+    },
+  ]);
+
+  // Calculate average rating (0–5 scale)
+  const averageRating = useMemo(() => {
+    const total = data.reduce((sum, item) => sum + item.rating, 0);
+    return total / data.length;
+  }, [data]);
+
+  // Convert average to % for the progress bar
+  const progressPercentage = (averageRating / 5) * 100;
+
+  // 🌟 Handle rating change
+  const handleRatingChange = (index: number, rating: number) => {
+    setData((prevData) =>
+      prevData.map((item, i) =>
+        i === index ? { ...item, rating } : item
+      )
+    );
+  };
 
   return (
     <TabsContent value="investmentMemo">
@@ -63,55 +109,58 @@ export default function InvestmentRecommendation() {
           </div>
 
           {/* Key Evaluation Metrics (Right Column) */}
-          <div className="bg-white border-l-4 border-yellow-400 rounded-2xl shadow p-6">
-            <h3 className="text-lg font-semibold text-yellow-700 mb-4">
-              Key Evaluation Metrics
-            </h3>
-            <div className="space-y-4">
-              {data.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col border-b border-gray-100 pb-3 last:border-b-0"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-700">
-                      {item.category}
-                    </span>
-                    <div className="flex">
-                      {Array.from({ length: item.rating }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className="w-4 h-4 text-yellow-500 fill-yellow-400"
-                        />
-                      ))}
-                      {Array.from({ length: 5 - item.rating }).map((_, i) => (
-                        <Star key={i} className="w-4 h-4 text-gray-300" />
-                      ))}
-                    </div>
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {item.observation}
-                  </span>
-                </div>
-              ))}
-            </div>
+        <div className="bg-white border-l-4 border-yellow-400 rounded-2xl shadow p-6">
+      <h3 className="text-lg font-semibold text-yellow-700 mb-4">
+        Key Evaluation Metrics
+      </h3>
 
-            {/* Risk-Reward Indicator */}
-            <div className="mt-6">
-              <h4 className="text-sm font-semibold text-gray-600 mb-2">
-                Risk-Reward Profile
-              </h4>
-              <div className="w-full bg-gray-200 h-3 rounded-full">
-                <div
-                  className="h-3 rounded-full bg-gradient-to-r from-yellow-400 via-orange-500 to-green-500 w-3/4"
-                  title="High risk, high reward"
-                />
+      <div className="space-y-4">
+        {data.map((item, index) => (
+          <div
+            key={index}
+            className="flex flex-col border-b border-gray-100 pb-3 last:border-b-0"
+          >
+            <div className="flex justify-between items-center">
+              <span className="font-medium text-gray-700">
+                {item.category}
+              </span>
+              <div className="flex cursor-pointer">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    onClick={() => handleRatingChange(index, i + 1)}
+                    className={`w-5 h-5 transition-all ${
+                      i < item.rating
+                        ? "text-yellow-500 fill-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1 text-right">
-                High Risk → High Reward
-              </p>
             </div>
+            <span className="text-sm text-gray-500">{item.observation}</span>
           </div>
+        ))}
+      </div>
+
+      {/* 📊 Dynamic Risk-Reward Indicator */}
+      <div className="mt-6">
+        <h4 className="text-sm font-semibold text-gray-600 mb-2">
+          Risk-Reward Profile
+        </h4>
+        <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+          <div
+            className="h-3 rounded-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 transition-all duration-500"
+            style={{ width: `${progressPercentage}%` }}
+            title="Dynamic Risk-Reward Indicator"
+          />
+        </div>
+        <p className="text-xs text-gray-500 mt-1 text-right">
+          Low → High Risk & Reward ({averageRating.toFixed(1)} / 5)
+        </p>
+      </div>
+    </div>
+
         </div>
       </div>
     </TabsContent>
