@@ -1,12 +1,12 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
-import { Tooltip } from "@/components/ui/tooltip";
 import {
   Bar,
   BarChart,
   Cell,
   Legend,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -20,6 +20,7 @@ type Competitor = {
   market: string;
   description: string;
   url: string;
+  region?: string;
 };
 
 type CompetitorData = {
@@ -35,122 +36,136 @@ type CompetitorsTabProps = {
 };
 
 export default function CompetitorsTab({
-  indianCompetitors,
-  globalCompetitors,
-  chartData,
+  indianCompetitors = [],
+  globalCompetitors = [],
+  chartData = [],
 }: CompetitorsTabProps) {
+  const sections = [
+    { title: "Indian Competitors", competitors: indianCompetitors },
+    { title: "Global Competitors", competitors: globalCompetitors },
+  ];
+
+  const hasAnyData =
+    indianCompetitors.length > 0 ||
+    globalCompetitors.length > 0 ||
+    chartData.length > 0;
+
+  if (!hasAnyData) {
+    return (
+      <TabsContent value="competitors">
+        <div className="p-6 text-center text-gray-500 text-sm">
+          No competitor data available.
+        </div>
+      </TabsContent>
+    );
+  }
+
   return (
     <TabsContent value="competitors">
-      {/* Existing Competitor UI */}
-        <Card className="max-h-[600px] overflow-y-auto">
-          <CardHeader>
-            <div className="font-semibold">Indian Competitors</div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-2 border">Company</th>
-                    <th className="p-2 border">Founded</th>
-                    <th className="p-2 border">HQ</th>
-                    <th className="p-2 border">Total Raised ($M)</th>
-                    <th className="p-2 border">Offerings</th>
-                    <th className="p-2 border">Target Market</th>
-                    <th className="p-2 border">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {indianCompetitors.map((c, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2 text-blue-600 underline">
-                        <a href={c.url} target="_blank">
-                          {c.name}
-                        </a>
-                      </td>
-                      <td className="p-2">{c.founded}</td>
-                      <td className="p-2">{c.hq}</td>
-                      <td className="p-2">{c.raised}</td>
-                      <td className="p-2">{c.offerings}</td>
-                      <td className="p-2">{c.market}</td>
-                      <td className="p-2">{c.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+      <Card className="max-h-[600px] overflow-y-auto border border-gray-200 shadow-sm">
+        {/* ✅ Dynamic Sections */}
+        {sections.map(
+          (section, idx) =>
+            section.competitors.length > 0 && (
+              <div key={idx}>
+                <CardHeader>
+                  <CardTitle className="text-base font-semibold">
+                    {section.title}
+                  </CardTitle>
+                </CardHeader>
 
-          <CardHeader>
-            <div className="font-semibold">Global Competitors</div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-2 border">Company</th>
-                    <th className="p-2 border">Founded</th>
-                    <th className="p-2 border">HQ</th>
-                    <th className="p-2 border">Total Raised ($M)</th>
-                    <th className="p-2 border">Offerings</th>
-                    <th className="p-2 border">Target Market</th>
-                    <th className="p-2 border">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {globalCompetitors.map((c, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2 text-blue-600 underline">
-                        <a href={c.url} target="_blank">
-                          {c.name}
-                        </a>
-                      </td>
-                      <td className="p-2">{c.founded}</td>
-                      <td className="p-2">{c.hq}</td>
-                      <td className="p-2">{c.raised}</td>
-                      <td className="p-2">{c.offerings}</td>
-                      <td className="p-2">{c.market}</td>
-                      <td className="p-2">{c.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border border-gray-200">
+                      <thead className="bg-gray-100 text-gray-700">
+                        <tr>
+                          {[
+                            "Company",
+                            "Founded",
+                            "HQ",
+                            "Total Raised ($M)",
+                            "Offerings",
+                            "Target Market",
+                            "Description",
+                          ].map((header, i) => (
+                            <th
+                              key={i}
+                              className="p-2 border text-left font-medium"
+                            >
+                              {header}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {section.competitors.map((c, i) => (
+                          <tr
+                            key={i}
+                            className="border-t hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="p-2 text-blue-600 underline">
+                              <a
+                                href={c.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="hover:text-blue-800"
+                              >
+                                {c.name}
+                              </a>
+                            </td>
+                            <td className="p-2">{c.founded}</td>
+                            <td className="p-2">{c.hq}</td>
+                            <td className="p-2">{c.raised}</td>
+                            <td className="p-2">{c.offerings}</td>
+                            <td className="p-2">{c.market}</td>
+                            <td className="p-2">{c.description}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </div>
+            )
+        )}
 
-          {/* <Card> */}
-          <CardHeader className="pb-1">
-            <div className="font-semibold text-sm">Total Raised Comparison</div>
-          </CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                layout="vertical"
-                margin={{ top: 5, right: 10, left: 50, bottom: 5 }}
-                barCategoryGap="20%"
-              >
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={80} />
-                <Tooltip
-                  {...({
-                    formatter: (value: number) => `$${value}M`,
-                  } as any)}
-                />{" "}
-                <Legend />
-                <Bar dataKey="raised">
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.region === "Indian" ? "#6366f1" : "#22c55e"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* ✅ Chart (only if data exists) */}
+        {chartData.length > 0 && (
+          <>
+            <CardHeader className="pb-1">
+              <CardTitle className="text-sm font-semibold">
+                Total Raised Comparison
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  layout="vertical"
+                  margin={{ top: 5, right: 10, left: 50, bottom: 5 }}
+                  barCategoryGap="20%"
+                >
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" width={100} />
+                  <Tooltip formatter={(value: number) => `$${value}M`} />
+                  <Legend />
+                  <Bar dataKey="raised">
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.region === "Indian" ? "#6366f1" : "#22c55e"
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </>
+        )}
+      </Card>
     </TabsContent>
   );
 }
