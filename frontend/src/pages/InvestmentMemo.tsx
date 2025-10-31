@@ -107,15 +107,14 @@ export default function InvestmentRecommendation() {
       <div className="p-6 bg-gray-50 min-h-screen">
         {/* Intro paragraph */}
         <p className="text-gray-600 mb-6">
-          {investmentData.intro
-            .split(/(high-risk, high-reward)/gi)
-            .map((part, i) =>
+          {investmentData.intro.split(/(high-risk, high-reward)/gi).map(
+            (part, i) =>
               part.toLowerCase().includes("high-risk, high-reward") ? (
                 <strong key={i}>{part}</strong>
               ) : (
                 part
               )
-            )}
+          )}
         </p>
 
         {/* Grid Layout */}
