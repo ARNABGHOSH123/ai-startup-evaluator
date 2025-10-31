@@ -7,7 +7,7 @@ agentic_jobs/**/.env.development
 agentic_jobs/**/__pycache__/
 agentic_jobs/extract_benchmarking_agent_job/**/__pycache__/ */
 startupevaluator-472213-fcc6ea5bd425.json
-
+agents/ai-to-founder-voice-agent/**/venv/
 frontend/node_modules/
 
 # Local Netlify folder
