@@ -12,12 +12,13 @@ type FormData = {
   usp: string;
   revenue: string;
   comments: string;
-  pitchDeck: File | null;
+  // pitchDeck: File | null;
 };
 
 type PitchFormProps = {
   onSubmit?: (formData: FormData) => void;
   onSuccess?: (formData: FormData) => void;
+  founderName?:string;
 };
 
 async function getUploadSessionUrl(filename: string) {
@@ -78,22 +79,21 @@ async function uploadFileViaSession(sessionUrl: string, file: File) {
   return res;
 }
 
-export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
+export default function PitchForm({ founderName, onSubmit, onSuccess }: PitchFormProps) {
   const [isSubmitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     companyName: "",
     domain: "",
     phone: "",
     email: "",
-    founderName: "",
+    founderName: founderName ?? "",
     address: "",
     stage: "",
     about: "",
     usp: "",
     revenue: "",
     comments: "",
-    pitchDeck: null as File | null,
-  });
+   });
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -104,21 +104,21 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, pitchDeck: e.target.files[0] });
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     setFormData({ ...formData, pitchDeck: e.target.files[0] });
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Upload the file to GCS
-    if (!formData.pitchDeck) throw new Error("Pitch deck is not provided");
+    // if (!formData.pitchDeck) throw new Error("Pitch deck is not provided");
     setSubmitting(true);
-    const { signedUrl } = await getUploadSessionUrl(formData?.pitchDeck.name);
-    const sessionUrl = await initiateResumableSession(signedUrl);
-    await uploadFileViaSession(sessionUrl, formData.pitchDeck);
+    // const { signedUrl } = await getUploadSessionUrl(formData?.pitchDeck.name);
+    // const sessionUrl = await initiateResumableSession(signedUrl);
+    // await uploadFileViaSession(sessionUrl, formData.pitchDeck);
 
     await fetch(
       `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/add_to_companies_list`,
@@ -139,7 +139,6 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
           usp: formData.usp,
           revenue_model: formData.revenue,
           comments: formData.comments,
-          pitch_deck_filename: formData.pitchDeck.name,
         }),
       }
     );
@@ -221,6 +220,7 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
           <input
             type="text"
             name="founderName"
+            disabled={founderName ? true:false}
             value={formData.founderName}
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-primary"
@@ -314,7 +314,7 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
         </div>
 
         {/* Pitch Deck */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium mb-1">Pitch Deck *</label>
           <input
             type="file"
@@ -323,7 +323,7 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
             className="w-full border rounded-lg px-3 py-2"
             required
           />
-        </div>
+        </div> */}
 
         {/* Submit Button */}
         <button
