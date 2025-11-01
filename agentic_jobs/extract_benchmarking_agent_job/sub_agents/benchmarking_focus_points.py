@@ -8,6 +8,7 @@ focus_points = [
     """- **Market Position**: How does the startup's market size and growth compare to competitors?""",
     """- **Team member profiling**: Profile the team members. Link their valid LinkedIn / valid available business profile and provide their work details.""",
     """- **Team Strength**: How does the experience and background of the startup's team compare to competitors?.""",
+    """- **MOAT Analysis**: What are the startup's competitive advantages and barriers to entry?""",
     """- **USP**: What is the startup's Unique Selling Proposition and how does it stand out in the market? (2-3 points)""",
     """- **Funding Analysis**: What are the details of the startup's funding rounds? (date, amount, investors, valuation, etc.) Example: Crowdfunding - 12th Dec 2023 - $1M - Lead investor - Sequoia Capital India, Valuation - $10M, etc. Funding details must be in tabular format along with dates. Include total funding amount raised to date.""",
     """- **Vision**: What is the startup's vision and long-term goals?""",

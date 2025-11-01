@@ -1,8 +1,12 @@
 from google.cloud import storage, firestore
 from google import auth
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path as PathlibPath
+import os
 import requests
 from google.auth.transport.requests import Request
-from fastapi import HTTPException, Path
+from fastapi import HTTPException, Path as FastAPIPath
 from datetime import timedelta
 from pydantic import BaseModel
 from config import Config
@@ -205,7 +209,7 @@ async def get_companies_list():
 
 
 @app.post("/get_company_details/{company_id}")
-async def get_company_details(company_id: str = Path(..., description="Company id")):
+async def get_company_details(company_id: str = FastAPIPath(..., description="Company id")):
     if not company_id or not company_id.strip():
         raise HTTPException(
             status_code=400, detail="company_id cannot be empty")

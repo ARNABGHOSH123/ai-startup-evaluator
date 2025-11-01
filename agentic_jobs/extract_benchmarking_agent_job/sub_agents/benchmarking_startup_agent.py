@@ -14,7 +14,7 @@ from datetime import date
 from config import Config
 from .benchmarking_focus_points import focus_points
 from .base_model import base_model
-from tools import get_file_content_from_gcs, save_file_content_to_gcs, extract_webpage_text, tavily_search, clear_site_extract_cache
+from tools import save_file_content_to_gcs, extract_webpage_text, tavily_search, clear_site_extract_cache
 from .visualisation_agent import focus_points_visualisation_agent_list
 
 AGENT_MODEL = Config.AGENT_MODEL
@@ -23,75 +23,6 @@ GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
 FOCUS_POINTS_PER_AGENT = int(Config.FOCUS_POINTS_PER_AGENT) or 3
 
 print(f"Using agent model: {AGENT_MODEL}")
-
-
-# fetch pitch deck analysis content (created by extraction agent) from GCS bucket
-fetcher_agent = LlmAgent(
-    name="PitchDeckFetcher",
-    model=base_model,
-    description="An agent that fetches the processed pitch-deck JSON from GCS and place its content into state['pitch_deck'] as a JSON object.",
-    instruction=f"""
-    You will receive the **base filename** (without extension) for a processed pitch deck JSON produced by the previous step as: {{extracted_filename}}
-
-    You have access to ONLY the following TOOL:
-        'get_file_content_from_gcs': Use this tool to fetch the file content from GCS (Google Cloud Storage) bucket.
-    
-    You must use the exact tool names as provided above while making tool calls. Dont make up any tool name of your own.
-
-    WORKFLOW (MUST BE IMPLEMENTED SERIALLY IN ORDER):
-
-    1) Use the 'get_file_content_from_gcs' tool to fetch the file from GCS with the arguments as:-
-        - bucket_name: '{GCS_BUCKET_NAME}', 
-        - folder_name: '{GCP_PITCH_DECK_OUTPUT_FOLDER}/{{firestore_doc_id}}/analysis', 
-        - file_name: {{extracted_filename}}, 
-        - file_extension: 'json'
-
-    2) Return the JSON content which was extracted in step 1. Do not return anything else.
-    If file fetch fails respond like 'Sorry! I was unable to fetch the file. Please check the file details and try again.'.
-    Do not make anything up on your own.
-
-    """,
-    tools=[get_file_content_from_gcs],
-    output_key="pitch_deck",
-    generate_content_config=types.GenerateContentConfig(temperature=0)
-)
-
-# extract the company official websites
-company_info_agent = LlmAgent(
-    name="company_info_agent",
-    model=base_model,
-    description="An agent that fetches the company information from the JSON pitch deck",
-    instruction=f"""
-        You are an expert in fetching basic company information from the given company websites provided to you.
-
-        INPUT:
-            - Pitch deck JSON under the key named 'pitch_deck'
-        
-        You have access to ONLY the following TOOLS:
-            1. 'tavily_search' : Use this tool to perform a web search using the Tavily API to gather information as instructed in the "TASK" section.
-            2. 'extract_webpage_text' : Use this tool to extract textual content from a given webpage URL as instructed in the "TASK" section.
-        
-        Example of how to call the tools:-
-            tavily_search(query="What is the weather in New York?") 
-            extract_webpage_text(url="https://www.example.com")
-        
-        You must use the exact tool names as provided above while making tool calls. Dont make up any tool name of your own.
-
-        TASK:
-            Your task is to extract the company website URLs from the **company_websites** field from the input JSON and use the 'tavily_search' tool first and then the 'extract_webpage_text' tool to extract the company information.
-            IMPORTANT:- 'extract_webpage_text' tool takes only 1 URL at a time as a string.
-        
-        OUTPUT:
-            Just output the fetched details in JSON format. Do not output anything else. Do not make up anything on your own.
-        
-        Return the fetched results in JSON format.
-
-        If you cannot find any relevant information, respond with an empty JSON object: {{}}
-    """,
-    output_key="company_info",
-    generate_content_config=types.GenerateContentConfig(temperature=0),
-    tools=[tavily_search, extract_webpage_text]
-)
 
 no_of_focus_agents = len(focus_points)
 no_of_agents = ceil(no_of_focus_agents / FOCUS_POINTS_PER_AGENT)
@@ -186,7 +117,8 @@ for i in range(no_of_agents):
 # Put all the data extraction agent into a single parallel agent
 data_extraction_visualisation_agent = ParallelAgent(
     name="data_extraction_visualisation_agent",
-    sub_agents=focus_points_analyser_agent_list + focus_points_visualisation_agent_list,
+    sub_agents=focus_points_analyser_agent_list +
+    focus_points_visualisation_agent_list,
     description="An agent that runs multiple data extraction on different focus points in parallel."
 )
 
@@ -194,7 +126,8 @@ data_extraction_visualisation_agent = ParallelAgent(
 synthesis_agent = LlmAgent(
     name="synthesis_agent",
     model=base_model,
-    planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=False)),
+    planner=BuiltInPlanner(
+        thinking_config=types.ThinkingConfig(include_thoughts=False)),
     description="An agent that synthesises company and its related information from a JSON like input and produces a comprehensive investment memo.",
     instruction=f"""
     You are a master AI Startup analyst and writer.
@@ -287,7 +220,8 @@ clear_cache_agent = LlmAgent(
     name="clear_cache_agent",
     model=base_model,
     description="Clears the in-memory site_extract cache after pipeline finishes",
-    planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=False)),
+    planner=BuiltInPlanner(
+        thinking_config=types.ThinkingConfig(include_thoughts=False)),
     instruction="""
     Your only job is to call the provided tool to clear the in-memory site extract cache.
     Return the string 'cache_cleared' if successful, otherwise return an error message.
@@ -305,7 +239,8 @@ clear_cache_agent = LlmAgent(
 # Create the final benchmarking agent
 benchmarking_startup_agent = SequentialAgent(
     name="benchmarking_startup_agent",
-    sub_agents = [fetcher_agent, company_info_agent, data_extraction_synthesis_agent, save_response_to_gcs_agent, clear_cache_agent],
+    sub_agents=[data_extraction_synthesis_agent,
+                save_response_to_gcs_agent, clear_cache_agent],
     description="An agent that benchmarks a startup against its competitors using a processed pitch deck JSON file and web search. Saves the human readable markdown response to Google Cloud Storage.",
 )
 
