@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Star, TrendingUp } from "lucide-react";
+import { PhoneCallIcon, Star, TrendingUp } from "lucide-react";
 import { TabsContent } from "@/components/ui/tabs";
 
 export default function InvestmentRecommendation() {
@@ -40,6 +40,13 @@ export default function InvestmentRecommendation() {
         paragraphs: [
           "Despite high risks typical of the seed stage, Sia’s strong team, IP ownership, and early enterprise traction make it an attractive investment candidate. With the right execution and focus on enterprise sales scaling, it holds potential for substantial returns.",
         ],
+      },
+      {
+        type: "summary",
+        title: "Smart Call Insights",
+        color: "purple",
+        icon: <PhoneCallIcon className="w-5 h-5 text-purple-600" />,
+        paragraphs: ["Add the summary here of the voice agent"],
       },
     ],
   };
@@ -100,14 +107,15 @@ export default function InvestmentRecommendation() {
       <div className="p-6 bg-gray-50 min-h-screen">
         {/* Intro paragraph */}
         <p className="text-gray-600 mb-6">
-          {investmentData.intro.split(/(high-risk, high-reward)/gi).map(
-            (part, i) =>
+          {investmentData.intro
+            .split(/(high-risk, high-reward)/gi)
+            .map((part, i) =>
               part.toLowerCase().includes("high-risk, high-reward") ? (
                 <strong key={i}>{part}</strong>
               ) : (
                 part
               )
-          )}
+            )}
         </p>
 
         {/* Grid Layout */}
@@ -123,7 +131,7 @@ export default function InvestmentRecommendation() {
               >
                 <h3
                   className={`text-lg font-semibold mb-3 flex items-center gap-2 ${
-                    colorMap[sec.color].split(" ")[1]
+                    colorMap[sec?.color].split(" ")[1]
                   }`}
                 >
                   {sec.icon && sec.icon}

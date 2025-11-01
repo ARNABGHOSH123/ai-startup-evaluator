@@ -21,63 +21,63 @@ type PitchFormProps = {
   founderName?: string;
 };
 
-async function getUploadSessionUrl(filename: string) {
-  const resp = await fetch(
-    `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/generate_v4_signed_url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        object_name: filename,
-      }),
-    }
-  );
-  return resp.json();
-}
+// async function getUploadSessionUrl(filename: string) {
+//   const resp = await fetch(
+//     `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/generate_v4_signed_url`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         object_name: filename,
+//       }),
+//     }
+//   );
+//   return resp.json();
+// }
 
-// new function to initiate resumable session (POST)
-async function initiateResumableSession(signedUrl: string) {
-  const res = await fetch(signedUrl, {
-    method: "POST",
-    // Must include this header because server included it when signing
-    headers: {
-      "x-goog-resumable": "start",
-      // don't include Content-Type/Length here
-    },
-    // body can be empty
-  });
+// // new function to initiate resumable session (POST)
+// async function initiateResumableSession(signedUrl: string) {
+//   const res = await fetch(signedUrl, {
+//     method: "POST",
+//     // Must include this header because server included it when signing
+//     headers: {
+//       "x-goog-resumable": "start",
+//       // don't include Content-Type/Length here
+//     },
+//     // body can be empty
+//   });
 
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Failed to start resumable session: ${res.status} ${txt}`);
-  }
+//   if (!res.ok) {
+//     const txt = await res.text().catch(() => "");
+//     throw new Error(`Failed to start resumable session: ${res.status} ${txt}`);
+//   }
 
-  // The resumable session URL is returned in Location header
-  const sessionUrl = res.headers.get("Location");
-  if (!sessionUrl)
-    throw new Error("No Location header returned for resumable session");
-  return sessionUrl;
-}
+//   // The resumable session URL is returned in Location header
+//   const sessionUrl = res.headers.get("Location");
+//   if (!sessionUrl)
+//     throw new Error("No Location header returned for resumable session");
+//   return sessionUrl;
+// }
 
-async function uploadFileViaSession(sessionUrl: string, file: File) {
-  // Put entire file in a single request (works for many 70-100MB uploads but chunking recommended)
-  const res = await fetch(sessionUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type,
-      "Content-Length": file.size.toString(),
-    },
-    body: file,
-  });
+// async function uploadFileViaSession(sessionUrl: string, file: File) {
+//   // Put entire file in a single request (works for many 70-100MB uploads but chunking recommended)
+//   const res = await fetch(sessionUrl, {
+//     method: "PUT",
+//     headers: {
+//       "Content-Type": file.type,
+//       "Content-Length": file.size.toString(),
+//     },
+//     body: file,
+//   });
 
-  if (!res.ok) {
-    // check res.status, implement resume logic (query upload status)
-    throw new Error("Upload failed");
-  }
-  return res;
-}
+//   if (!res.ok) {
+//     // check res.status, implement resume logic (query upload status)
+//     throw new Error("Upload failed");
+//   }
+//   return res;
+// }
 
 export default function PitchForm({
   founderName,

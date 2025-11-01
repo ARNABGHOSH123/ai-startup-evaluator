@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { PhoneCall, Loader2 } from "lucide-react";
+import { PhoneCall, Loader2, CheckCircle } from "lucide-react";
 import AudioConversation from "../components/AudioConversation";
+import { Button } from "@/components/ui/button";
 
 export default function PitchCall(): JSX.Element {
   const [isCalling, setIsCalling] = useState(false);
   const [callStarted, setCallStarted] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
+  const [callEnded, setCallEnded] = useState(false);
   const handleCall = () => {
     setShowModal(true);
     setIsCalling(true);
@@ -16,7 +17,7 @@ export default function PitchCall(): JSX.Element {
     }, 800);
   };
 
-  return (
+  return !callEnded ? (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-indigo-50 to-blue-100 px-6 py-12">
       <h2 className="text-2xl font-semibold text-indigo-700 mb-4">
         Thank You for Submitting Your Deck!
@@ -56,8 +57,32 @@ export default function PitchCall(): JSX.Element {
       </div>
 
       {showModal && (
-        <AudioConversation isOpen={showModal} onChange={setShowModal} />
+        <AudioConversation
+          isOpen={showModal}
+          onChange={setShowModal}
+          setCallEnded={setCallEnded}
+        />
       )}
+    </div>
+  ) : (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-indigo-50 to-blue-100 px-6 py-12">
+      {/* <Card className="max-w-md mx-auto mt-10 text-center p-6 shadow-lg rounded-2xl bg-green-50 border border-green-200"> */}
+      <div className="flex flex-col items-center space-y-4">
+        <div className="bg-green-100 p-3 rounded-full">
+          <CheckCircle className="text-green-600 w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-semibold text-green-700">
+          Thank You for Your Time! It was great hearing your insights.
+        </h2>
+        <p className="text-gray-700 justify-center items-center">
+          Our team will review the conversation and reach out once an investor
+          expresses interest or for next steps. Have a great day ahead!
+        </p>
+        <Button className="mt-4 bg-green-600 text-white hover:bg-green-700">
+          Return to Dashboard
+        </Button>
+      </div>
+      {/* </Card> */}
     </div>
   );
 }

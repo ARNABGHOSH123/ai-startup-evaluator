@@ -18,11 +18,14 @@ interface ConversationMessage {
 interface AudioConversationProps {
   isOpen: boolean;
   onChange: (open: boolean) => void;
+  setCallEnded: (open: boolean) => void;
 }
 
 // Generate session id and WebSocket URL
 const sessionId = Math.random().toString().substring(10);
-const wsBaseUrl = `ws://localhost:8000/ws/${sessionId}`;
+const wsBaseUrl = `ws://${
+  import.meta.env.VITE_CLOUD_RUN_AUDIO_AGENT_URL
+}/ws/${sessionId}`;
 
 // Helper functions
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
@@ -45,9 +48,15 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return window.btoa(binary);
 }
 
+// Farewell detection helper (case-insensitive, matches "goodbye" or "good bye")
+function isFarewell(text: string): boolean {
+  return /\bgood\s*bye\b/i.test(text);
+}
+
 export default function AudioConversation({
   isOpen,
   onChange,
+  setCallEnded,
 }: AudioConversationProps) {
   // State management
   const [status, setStatus] = useState("Ready to connect");
@@ -59,7 +68,7 @@ export default function AudioConversation({
       {
         id: "welcome",
         sender: "assistant",
-        text: "Hello! I'm your AI startup advisor. Click the microphone to start our conversation.",
+        text: "Hello! I'm your AI startup risk assessor. Click the microphone and say hello to start our conversation.",
         timestamp: Date.now(),
       },
     ]
@@ -72,6 +81,7 @@ export default function AudioConversation({
   const websocketRef = useRef<WebSocket | null>(null);
   const currentMessageIdRef = useRef<string | null>(null);
   const audioPlayerRef = useRef<any>(null);
+  const audioPlayerCtxRef = useRef<AudioContext | null>(null);
   const audioRecorderRef = useRef<any>(null);
   const audioRecorderCtxRef = useRef<AudioContext | null>(null);
   const audioRecorderStreamRef = useRef<MediaStream | null>(null);
@@ -79,10 +89,13 @@ export default function AudioConversation({
   const callStartTimeRef = useRef<number>(0);
   const connectionCounterRef = useRef(0);
   const isAudioModeRef = useRef(false);
+  const shouldReconnectRef = useRef(true);
+  const pendingEndRef = useRef(false);
   const audioBufferRef = useRef<Uint8Array[]>([]);
   const bufferTimerRef = useRef<number | null>(null);
 
   const [audioLevel, setAudioLevel] = useState(0);
+  const [endingCall, setEndingCall] = useState(false);
 
   // Call timer
   useEffect(() => {
@@ -137,7 +150,7 @@ export default function AudioConversation({
       const thisConnectionId = connectionCounterRef.current;
       isAudioModeRef.current = is_audio;
 
-      const url = `${wsBaseUrl}?is_audio=${is_audio}`;
+      const url = `${wsBaseUrl}?is_audio=${is_audio}&company_doc_id=abcde&founder_name=Sumalata`;
       const ws = new WebSocket(url);
       websocketRef.current = ws;
       setConnecting(true);
@@ -159,6 +172,19 @@ export default function AudioConversation({
             const message_from_server = JSON.parse(event.data as string);
 
             if (message_from_server.turn_complete) {
+              // If we scheduled end of call based on farewell text, finish after audio turn completes
+              if (pendingEndRef.current) {
+                // Signal player to flush, then end after a brief delay to allow final samples to play
+                try {
+                  if (audioPlayerRef.current?.port) {
+                    audioPlayerRef.current.port.postMessage({
+                      command: "endOfAudio",
+                    });
+                  }
+                } catch {}
+                scheduleEndCall(600);
+                pendingEndRef.current = false;
+              }
               currentMessageIdRef.current = null;
               return;
             }
@@ -204,6 +230,10 @@ export default function AudioConversation({
                     ...updated[lastIdx],
                     text: updated[lastIdx].text + message_from_server.data,
                   };
+                  // Detect farewell phrase to schedule end (wait for turn_complete to actually end)
+                  if (isFarewell(updated[lastIdx].text || "")) {
+                    pendingEndRef.current = true;
+                  }
                   return updated;
                 }
                 return prev;
@@ -220,10 +250,14 @@ export default function AudioConversation({
           setIsConnected(false);
           websocketRef.current = null;
           setConnecting(true);
-          setTimeout(() => {
-            setStatus("Reconnecting...");
-            connectWebSocket(isAudioModeRef.current);
-          }, 3000);
+          if (shouldReconnectRef.current) {
+            setTimeout(() => {
+              setStatus("Reconnecting...");
+              connectWebSocket(isAudioModeRef.current);
+            }, 3000);
+          } else {
+            setConnecting(false);
+          }
         };
 
         ws.onerror = (e) => {
@@ -293,8 +327,9 @@ export default function AudioConversation({
     setStartingMic(true);
     try {
       if (!audioPlayerRef.current) {
-        const [playerNode] = await startAudioPlayerWorklet();
+        const [playerNode, playerCtx] = await startAudioPlayerWorklet();
         audioPlayerRef.current = playerNode;
+        audioPlayerCtxRef.current = playerCtx;
       }
 
       if (!audioRecorderRef.current) {
@@ -359,6 +394,55 @@ export default function AudioConversation({
     setStatus("Connected");
   };
 
+  // Play short call-end tone and end sequence
+  const playCallEndTone = async () => {
+    try {
+      const ctx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 440; // A4 beep
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      // quick ramp up and down like phone end-tone
+      gain.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+      osc.stop(ctx.currentTime + 0.3);
+      setTimeout(() => ctx.close().catch(() => {}), 400);
+    } catch {}
+  };
+
+  const scheduleEndCall = (delayMs = 300) => {
+    if (endingCall) return;
+    setEndingCall(true);
+    playCallEndTone();
+    // Stop mic if active
+    stopAudioRecording();
+    // Prevent reconnects and close socket now
+    shouldReconnectRef.current = false;
+    try {
+      websocketRef.current?.close();
+    } catch {}
+    websocketRef.current = null;
+    // Close player context to release audio
+    try {
+      audioPlayerCtxRef.current?.close();
+    } catch {}
+    audioPlayerCtxRef.current = null;
+    audioPlayerRef.current = null;
+
+    // Small animation window then close dialog
+    setTimeout(() => {
+      setIsConnected(false);
+      setIsListening(false);
+      setEndingCall(false);
+      onChange(false);
+      setCallEnded(true);
+    }, delayMs);
+  };
+
   const toggleMicrophone = () => {
     if (startingMic || connecting) return;
     if (isListening) {
@@ -371,14 +455,8 @@ export default function AudioConversation({
   };
 
   const endCall = () => {
-    stopAudioRecording();
-    try {
-      websocketRef.current?.close();
-    } catch (e) {}
-    setIsConnected(false);
-    setIsListening(false);
     setCallDuration(0);
-    onChange(false);
+    scheduleEndCall(500);
   };
 
   // Initialize WebSocket connection
@@ -394,6 +472,14 @@ export default function AudioConversation({
     };
   }, [isOpen, connectWebSocket]);
 
+  useEffect(() => {
+    const last = conversationLog.at?.(-1)?.text || "";
+    if (isFarewell(last)) {
+      // Mark to end after the speaking turn actually completes
+      pendingEndRef.current = true;
+    }
+  }, [conversationLog.at?.(-1)?.text]);
+
   // Format call duration
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -407,6 +493,16 @@ export default function AudioConversation({
     <Dialog open={isOpen} onOpenChange={onChange}>
       <DialogContent className="sm:max-w-4xl h-[600px] p-0" dismissible={false}>
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden h-full flex flex-col">
+          {endingCall && (
+            <div className="absolute inset-0 z-50 bg-black/50 flex items-center justify-center">
+              <div className="bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-lg flex items-center gap-3 animate-[fade-in_150ms_ease-out]">
+                <span className="inline-block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                <span className="text-gray-800 dark:text-gray-100 font-medium">
+                  Ending call…
+                </span>
+              </div>
+            </div>
+          )}
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
             <div className="flex items-center justify-between">
@@ -542,7 +638,7 @@ export default function AudioConversation({
                   Conversation
                 </h4>
                 <p className="text-sm text-gray-500">
-                  Real-time AI conversation
+                  Real-time Founder - AI Risk Assessor conversation
                 </p>
               </div>
 
