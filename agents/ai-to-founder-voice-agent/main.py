@@ -17,29 +17,19 @@ import json
 import asyncio
 import base64
 import warnings
-
-from pathlib import Path
-from dotenv import load_dotenv
-
-# Load environment variables BEFORE importing the agent
-load_dotenv()
-
+import uvicorn
 from google.genai import types
 from google.genai.types import (
     Part,
     Content,
     Blob,
 )
-
 from google.adk.runners import Runner
 from google.adk.agents import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
-
 from fastapi import FastAPI, WebSocket
-from fastapi.responses import FileResponse
 from fastapi.websockets import WebSocketDisconnect
-
 from agent import root_agent
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
@@ -61,7 +51,7 @@ runner = Runner(
     session_service=session_service,
 )
 
-async def start_agent_session(user_id, is_audio=False):
+async def start_agent_session(user_id, founder_name, company_doc_id):
     """Starts an agent session"""
 
     # Get or create session (recommended pattern for production)
@@ -76,7 +66,7 @@ async def start_agent_session(user_id, is_audio=False):
             app_name=APP_NAME,
             user_id=user_id,
             session_id=session_id,
-            state={"firestore_doc_id": "abcde"},
+            state={"company_doc_id": company_doc_id, "founder_name": founder_name}, # Initial state,
         )
 
     # Configure response format based on client preference
@@ -93,7 +83,10 @@ async def start_agent_session(user_id, is_audio=False):
         streaming_mode=StreamingMode.BIDI,
         response_modalities=[modality],
         session_resumption=types.SessionResumptionConfig(),
+        input_audio_transcription=types.AudioTranscriptionConfig(),
         output_audio_transcription=types.AudioTranscriptionConfig(),
+        enable_affective_dialog=True,
+        proactivity=types.ProactivityConfig(proactive_audio=True)
     )
 
     # Create LiveRequestQueue in async context (recommended best practice)
@@ -135,7 +128,7 @@ async def agent_to_client_messaging(websocket, live_events):
             if part:
                 # Audio data must be Base64-encoded for JSON transport
                 is_audio = part.inline_data and part.inline_data.mime_type.startswith("audio/pcm")
-                if True:
+                if is_audio:
                     audio_data = part.inline_data and part.inline_data.data
                     if audio_data:
                         message = {
@@ -205,7 +198,7 @@ app = FastAPI()
 
 
 @app.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: int, is_audio: str):
+async def websocket_endpoint(websocket: WebSocket, user_id: int, is_audio: str, founder_name: str, company_doc_id: str):
     """Client websocket endpoint
 
     This async function creates the LiveRequestQueue in an async context,
@@ -214,10 +207,10 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int, is_audio: str):
     """
 
     await websocket.accept()
-    print(f"Client #{user_id} connected, audio mode: {is_audio}")
+    print(f"Client #{user_id} connected, audio mode: {is_audio}, founder_name: {founder_name}, company_doc_id: {company_doc_id}")
 
-    user_id_str = str(user_id)
-    live_events, live_request_queue = await start_agent_session(user_id_str, is_audio == "true")
+
+    live_events, live_request_queue = await start_agent_session(str(user_id), founder_name, company_doc_id)
 
     # Run bidirectional messaging concurrently
     agent_to_client_task = asyncio.create_task(
@@ -242,3 +235,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int, is_audio: str):
         # Clean up resources (always runs, even if asyncio.wait fails)
         live_request_queue.close()
         print(f"Client #{user_id} disconnected")
+
+if __name__ == "__main__":
+    # Use the PORT environment variable provided by Cloud Run, defaulting to 8080
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))

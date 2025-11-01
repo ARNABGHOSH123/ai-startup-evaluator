@@ -12,6 +12,14 @@ live_model = Gemini(
         attempts=10,
         max_delay=120,
     ),
+    speech_config=types.SpeechConfig(
+        language_code="en-US",
+        voice_config=types.VoiceConfig(
+            prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                voice_name="Aoede"
+            )
+        )
+    )
 )
 
 base_model = Gemini(

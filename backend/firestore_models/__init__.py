@@ -1,1 +1,1 @@
-from .models import CompanyDoc
+from .models import CompanyDoc, FounderDoc, InvestorDoc
