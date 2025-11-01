@@ -12,5 +12,6 @@ agents/ai-to-founder-voice-agent/**/__pycache__/
 agents/ai-to-founder-voice-agent/.env.development
 frontend/node_modules/
 
-# Local Netlify folder
-.netlify
+agents/**/venv/
+agents/**/__pycache__/
+agents/**/.env.development

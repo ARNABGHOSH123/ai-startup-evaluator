@@ -18,7 +18,7 @@ type FormData = {
 type PitchFormProps = {
   onSubmit?: (formData: FormData) => void;
   onSuccess?: (formData: FormData) => void;
-  founderName?:string;
+  founderName?: string;
 };
 
 async function getUploadSessionUrl(filename: string) {
@@ -79,7 +79,11 @@ async function uploadFileViaSession(sessionUrl: string, file: File) {
   return res;
 }
 
-export default function PitchForm({ founderName, onSubmit, onSuccess }: PitchFormProps) {
+export default function PitchForm({
+  founderName,
+  onSubmit,
+  onSuccess,
+}: PitchFormProps) {
   const [isSubmitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     companyName: "",
@@ -93,7 +97,7 @@ export default function PitchForm({ founderName, onSubmit, onSuccess }: PitchFor
     usp: "",
     revenue: "",
     comments: "",
-   });
+  });
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -220,7 +224,7 @@ export default function PitchForm({ founderName, onSubmit, onSuccess }: PitchFor
           <input
             type="text"
             name="founderName"
-            disabled={founderName ? true:false}
+            disabled={founderName ? true : false}
             value={formData.founderName}
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-primary"
