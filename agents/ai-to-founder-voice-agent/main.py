@@ -30,7 +30,7 @@ from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from fastapi import FastAPI, WebSocket
 from fastapi.websockets import WebSocketDisconnect
-from agent import root_agent
+from agent import risk_clarification_audio_agent
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -47,7 +47,7 @@ session_service = InMemorySessionService()
 # APP_NAME and session_service are defined in the Initialization section above
 runner = Runner(
     app_name=APP_NAME,
-    agent=root_agent,
+    agent=risk_clarification_audio_agent,
     session_service=session_service,
 )
 

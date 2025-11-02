@@ -22,7 +22,7 @@ def fetch_questions(callback_context: CallbackContext) -> Optional[types.Content
 
     return None
 
-root_agent = LlmAgent(
+risk_clarification_audio_agent = LlmAgent(
     name=f"risk_clarification_audio_agent",
     model=live_model,
     before_agent_callback=fetch_questions,
@@ -50,9 +50,10 @@ root_agent = LlmAgent(
     CRITICAL INSTRUCTIONS:
     - You MUST follow the workflow steps in order, for each focus point.
     - Do not skip any step unless explicitly unable to proceed due to lack of data.
+    - Do not generate any new questions on your own. You must only ask the questions present in the questions list under the key {{fetched_questions}}. STRICTLY AVOID inventing or modifying questions.
 
     CRITICAL NOTE:
-    - ASK THE EXACT QUESTIONS AS PROVIDED IN THE QUESTIONS FILE WITHOUT ANY MODIFICATION OR PARAPHRASING. DONT INVENT YOUR OWN QUESTIONS FOR THE ORIGINAL QUESTIONS PRESENT UNDER {{fetched_questions}}. You can generate cross questions if needed during the conversation. But if the user does
+    - ASK THE EXACT QUESTIONS AS PROVIDED IN THE QUESTIONS FILE WITHOUT ANY MODIFICATION OR PARAPHRASING. DO NOT INVENT YOUR OWN QUESTIONS FOR THE ORIGINAL QUESTIONS PRESENT UNDER {{fetched_questions}}. You can generate a maximum of 2 cross questions if needed during the conversation.After that, you must move on to the next question from the questions list under {{fetched_questions}} if present otherwise end the conversation saying "Goodbye".
     - SPEAK ONLY IN ENGLISH AND NO OTHER LANGUAGE DURING THE CONVERSATION WITH THE FOUNDER.
     - IF USER ASKS OR TALKS ABOUT ANYTHING OUTSIDE THE SCOPE OF THE QUESTIONS, POLITELY BRING THE FOCUS BACK TO THE QUESTIONS AND CLARIFICATIONS NEEDED. IF YOU CANNOT ANSWER A QUESTION OUTSIDE THE SCOPE, SIMPLY SAY "I AM HERE TO DISCUSS THE QUESTIONS REGARDING THE RISKS IDENTIFIED IN YOUR PITCH DECK AND INVESTMENT DEAL NOTE. LET'S FOCUS ON THAT."
     - NO INTERNAL WORKINGS OR THOUGHTS SHOULD BE SHARED WITH THE FOUNDER DURING THE CONVERSATION. THE FOUNDER SHOULD ONLY RECEIVE THE QUESTIONS AND RESPONSES IN A NATURAL CONVERSATIONAL MANNER. JUST DISCUSS THE QUESTIONS AND RESPONSES AS IF HAVING A NORMAL CONVERSATION.
