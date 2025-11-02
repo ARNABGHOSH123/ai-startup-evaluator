@@ -1,29 +1,32 @@
 from pydantic import BaseModel
 from typing import Optional
 
+from typing import Optional
+from pydantic import BaseModel
+
 class FounderDoc(BaseModel):
-    founder_name: str
+    founder_name: Optional[str] = None
     founder_email: str
     founder_account_pwd: str
-    founder_phone_no: str
-    founder_address: str
-    founder_linkedin: str
-    founder_twitter: str
-    founder_bio: str
+    founder_phone_no: Optional[str] = None
+    founder_address: Optional[str] = None
+    founder_linkedin: Optional[str] = None
+    founder_twitter: Optional[str] = None
+    founder_bio: Optional[str] = None
     founder_profile_pic_url: Optional[str] = None
-    company_id: str
+    company_id: Optional[str] = None
     comments: Optional[str] = None
     company_doc_id: Optional[str] = None
 
 class InvestorDoc(BaseModel):
-    investor_name: str
+    investor_name: Optional[str] = None
     investor_email: str
     investor_account_pwd: str
-    investor_phone_no: str
-    investor_address: str
-    investor_linkedin: str
-    investor_twitter: str
-    investor_bio: str
+    investor_phone_no: Optional[str] = None
+    investor_address: Optional[str] = None
+    investor_linkedin: Optional[str] = None
+    investor_twitter: Optional[str] = None
+    investor_bio: Optional[str] = None
     investor_profile_pic_url: Optional[str] = None
     comments: Optional[str] = None
 
