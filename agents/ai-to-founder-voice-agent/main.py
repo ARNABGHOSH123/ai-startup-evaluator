@@ -31,6 +31,7 @@ from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from fastapi import FastAPI, WebSocket
 from fastapi.websockets import WebSocketDisconnect
 from agent import risk_clarification_audio_agent
+from app import app
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -188,13 +189,6 @@ async def client_to_agent_messaging(websocket, live_request_queue):
         print("Client disconnected from client_to_agent_messaging")
     except Exception as e:
         print(f"Error in client_to_agent_messaging: {e}")
-
-
-#
-# FastAPI web app
-#
-
-app = FastAPI()
 
 
 @app.websocket("/ws/{user_id}")
