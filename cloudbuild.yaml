@@ -84,10 +84,35 @@ steps:
       - "--platform=managed"
       - "--allow-unauthenticated"
 
+  # Build and push ai-to-founder-voice-agent service image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-to-founder-voice-agent-service:latest"
+      - "./agents/ai-to-founder-voice-agent"
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-to-founder-voice-agent-service:latest"
+
+  # Deploy ai-to-founder-voice-agent as Cloud Run service (WebSocket-enabled)
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "ai-to-founder-voice-agent-service"
+      - "--image=us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-to-founder-voice-agent-service:latest"
+      - "--region=us-central1"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+
 images:
   - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-backend-service:latest"
   - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest"
   - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-analyst-frontend-service:latest"
+  - "us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/ai-to-founder-voice-agent-service:latest"
 
 options:
   logging: CLOUD_LOGGING_ONLY
