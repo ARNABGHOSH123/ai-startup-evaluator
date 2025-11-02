@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -7,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { jwtDecode } from "jwt-decode";
 
 type LoginModalProps = {
   isOpen: boolean;
@@ -30,6 +31,85 @@ export default function LoginModal({
   setRoleDialogOpen,
   setUser,
 }: LoginModalProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleSignin = async (formData: any) => {
+    const { email, password, selectedRole } = formData;
+
+    try {
+      setLoading(true);
+      let endpoint = "";
+      console.log("role:", selectedRole);
+      if (selectedRole === "Pitch as Founder") {
+        endpoint = `${
+          import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
+        }/sign_in_founder_account`;
+      } else if (selectedRole === "Fund as Investor") {
+        endpoint = `${
+          import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
+        }/sign_in_investor_account`;
+      } else {
+        alert("Please select a valid role");
+        return;
+      }
+
+      // Send POST request using fetch
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body:
+          selectedRole === "Pitch as Founder"
+            ? JSON.stringify({
+                founder_email: email,
+                founder_account_pwd: password,
+              })
+            : JSON.stringify({
+                investor_email: email,
+                investor_account_pwd: password,
+              }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        // Gracefully handle different FastAPI error formats
+        let errorMessage = "Failed to Login";
+
+        if (typeof errorData.detail === "string") {
+          errorMessage = errorData.detail;
+        } else if (Array.isArray(errorData.detail)) {
+          errorMessage = errorData.detail
+            .map((d: any) => d.msg || JSON.stringify(d))
+            .join(", ");
+        } else if (typeof errorData === "object") {
+          errorMessage = JSON.stringify(errorData);
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log("Login success:", data);
+
+      // Update state
+      setUser({
+        email,
+        selectedRole,
+        id: data?.founder_id || data?.investor_id || "unknown_id",
+      });
+
+      alert("Logged in successfully!");
+      setSignUpDialogOpen(false);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      alert(`Login failed: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
       <DialogContent className="sm:max-w-md rounded-xl">
@@ -49,6 +129,9 @@ export default function LoginModal({
               className="flex flex-col gap-3 mt-4"
               onSubmit={(e) => {
                 e.preventDefault();
+                //     const firstName = (
+                //   e.currentTarget.elements.namedItem("firstName") as HTMLInputElement
+                // ).value;
                 const email = (
                   e.currentTarget.elements.namedItem(
                     "email"
@@ -59,6 +142,9 @@ export default function LoginModal({
                     "password"
                   ) as HTMLInputElement
                 ).value;
+                //     const role = (
+                //   e.currentTarget.elements.namedItem("role") as HTMLSelectElement
+                // ).value;
                 console.log("Logging in with:", {
                   role: selectedRole,
                   email,
@@ -66,23 +152,24 @@ export default function LoginModal({
                 });
 
                 // Fake API logic:
-                const accountExists = false; // TODO: Replace with actual API call to check
+                // const accountExists = false; // TODO: Replace with actual API call to check
+                handleSignin({ email, password, selectedRole });
 
-                if (!accountExists) {
-                  alert("Account not found. Please create one.");
-                  setRoleDialogOpen(false);
-                  setSignUpDialogOpen(true);
-                  return;
-                }
+                // if (!accountExists) {
+                //   alert("Account not found. Please create one.");
+                //   setRoleDialogOpen(false);
+                //   setSignUpDialogOpen(true);
+                //   return;
+                // }
 
-                // ✅ Successful login:
-                setUser({
-                  email,
-                  role: selectedRole,
-                  password,
-                });
+                // // ✅ Successful login:
+                // setUser({
+                //   email,
+                //   role: selectedRole,
+                //   password,
+                // });
 
-                setRoleDialogOpen(false);
+                // setRoleDialogOpen(false);
               }}
             >
               <input
@@ -125,6 +212,7 @@ export default function LoginModal({
               <Button
                 type="submit"
                 size="sm"
+                disabled={loading}
                 className="w-full bg-blue-600 text-white hover:bg-blue-700 mt-2"
               >
                 Sign In
