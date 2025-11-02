@@ -15,13 +15,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import LoginModal from "./LoginModal";
 import SignupModal from "./SignupModal";
 
-export default function Header({
-  user,
-  setUser,
-}: {
-  user: any;
-  setUser: React.Dispatch<React.SetStateAction<any>>;
-}) {
+export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false); // for main modal
@@ -30,28 +24,28 @@ export default function Header({
   const [signUpDialogOpen, setSignUpDialogOpen] = useState(false);
   const navigate = useNavigate();
 
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user") || "{}")
+    : null;
+
   const getInitials = (user: any) => {
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName[0]}${user.lastName[0]}`;
-    }
-    if (user?.firstName) {
-      return user.firstName.slice(0, 2).toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.slice(0, 2).toUpperCase();
+    if (user?.founderName) return user?.founderName[0]?.toUpperCase();
+    if (user?.investorName) return user?.investorName;
+    if (user?.founderEmail || user?.investorEmail) {
+      return (user.founderEmail || user.investorEmail)
+        .slice(0, 2)
+        .toUpperCase();
     }
     return "U";
   };
 
   const getDisplayName = (user: any) => {
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName} ${user.lastName}`;
-    }
-    if (user?.firstName) {
-      return user.firstName;
-    }
-    if (user?.email) {
-      return user.email.split("@")[0];
+    if (user?.founderName)
+      return user?.founderName?.replace(/\b\w/g, (c: string) =>
+        c.toUpperCase()
+      );
+    if (user?.founderEmail || user?.investorEmail) {
+      return (user.founderEmail || user.investorEmail).split("@")[0];
     }
     return "User";
   };
@@ -172,8 +166,8 @@ export default function Header({
                     size="sm"
                     className="bg-white text-blue-500 border-blue-500 border-2"
                     onClick={() => {
-                      setUser(null);
                       navigate("/");
+                      localStorage.removeItem("user");
                     }}
                   >
                     Logout
@@ -220,7 +214,6 @@ export default function Header({
                       setShowForgotPassword={setShowForgotPassword}
                       setSignUpDialogOpen={setSignUpDialogOpen}
                       setRoleDialogOpen={setRoleDialogOpen}
-                      setUser={setUser}
                     />
 
                     <Button
@@ -237,7 +230,6 @@ export default function Header({
                     <SignupModal
                       isOpen={signUpDialogOpen}
                       onChange={setSignUpDialogOpen}
-                      setUser={setUser}
                       setRoleDialogOpen={setRoleDialogOpen}
                       setSelectedRole={setSelectedRole}
                       setSignUpDialogOpen={setSignUpDialogOpen}

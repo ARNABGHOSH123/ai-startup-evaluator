@@ -3,19 +3,15 @@ import { Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-export default function FounderLanding({
-  user,
-  investorCount = 42, // example count — make dynamic later
-}: {
-  user: any;
-  investorCount?: number;
-}) {
+export default function FounderLanding() {
   const navigate = useNavigate();
   const founderName =
-    user?.firstName?.toLowerCase().replace(/\s+/g, "") || "founder";
+    JSON.parse(localStorage.getItem("user") || "{}")
+      ?.founderName?.toLowerCase()
+      ?.replace(/\s+/g, "") || "founder";
 
   const handlePitchClick = () => {
-    navigate(`/pitch/${founderName}`);
+    navigate("pitch");
   };
   const hours = new Date().getHours();
   const greeting =
@@ -39,7 +35,7 @@ export default function FounderLanding({
       >
         {/* Welcome header */}
         <h1 className="text-4xl md:text-5xl font-semibold text-blue-700">
-          {greeting}, {user?.firstName || "Founder"}!
+          {greeting}, {founderName || "Founder"}!
         </h1>
 
         <p className="mt-3 text-gray-600 text-lg">
@@ -57,9 +53,7 @@ export default function FounderLanding({
           <div className="flex items-center gap-3 bg-white/70 backdrop-blur-md px-10 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <Users className="w-8 h-8 text-indigo-600" />
             <div className="text-left">
-              <p className="text-5xl font-bold text-indigo-700">
-                {investorCount}
-              </p>
+              <p className="text-5xl font-bold text-indigo-700">{42}</p>
               <p className="text-gray-600 text-lg font-medium">
                 Investors available to invest
               </p>

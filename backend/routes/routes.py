@@ -344,7 +344,7 @@ async def sign_in_founder_account(founder: FounderDoc):
         doc = docs[0]
         data = doc.to_dict() or {}
 
-        return {"status": "ok", "founder_id": doc.id, "founder_name": data.get("founder_name", "")}
+        return {"status": "ok", "founder_id": doc.id, "founder_name": data.get("founder_name", ""), "company_doc_id": data.get("company_doc_id", "")}
     except HTTPException:
         raise
 
