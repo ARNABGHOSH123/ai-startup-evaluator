@@ -3,28 +3,28 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 
 export function Sidebar() {
-  const location = useLocation();
+  // const location = useLocation();
 
-  const navigation = [
-    {
-      name: "Home",
-      href: "/",
-      icon: HomeIcon,
-      current: location.pathname === "/",
-    },
-    {
-      name: "Dashboard",
-      href: "/dashboard",
-      icon: BarChart3,
-      current: location.pathname === "/dashboard",
-    },
-    {
-      name: "Settings",
-      href: "/settings",
-      icon: Settings,
-      current: location.pathname === "/settings",
-    },
-  ];
+  // const navigation = [
+  //   {
+  //     name: "Home",
+  //     href: "/",
+  //     icon: HomeIcon,
+  //     current: location.pathname === "/",
+  //   },
+  //   {
+  //     name: "Dashboard",
+  //     href: "/dashboard",
+  //     icon: BarChart3,
+  //     current: location.pathname === "/dashboard",
+  //   },
+  //   {
+  //     name: "Settings",
+  //     href: "/settings",
+  //     icon: Settings,
+  //     current: location.pathname === "/settings",
+  //   },
+  // ];
 
   return (
     <aside
@@ -33,7 +33,7 @@ export function Sidebar() {
     >
       <div className="flex flex-col h-full pt-6">
         <nav className="flex-1 px-4 space-y-2">
-          {navigation.map((item) => (
+          {/* {navigation.map((item) => (
             <Link key={item.name} to={item.href}>
               <Button
                 variant={item.current ? "default" : "ghost"}
@@ -44,7 +44,7 @@ export function Sidebar() {
                 {item.name}
               </Button>
             </Link>
-          ))}
+          ))} */}
 
           <div className="px-4 py-2 mt-8">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">

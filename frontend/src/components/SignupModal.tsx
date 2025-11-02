@@ -11,7 +11,6 @@ import { useState } from "react";
 type SignupModalProps = {
   isOpen: boolean;
   onChange: (open: boolean) => void;
-  setUser: (user: any) => void;
   setRoleDialogOpen: (value: boolean) => void;
   setSelectedRole: (role: string | null) => void;
   setSignUpDialogOpen: (value: boolean) => void;
@@ -20,7 +19,6 @@ type SignupModalProps = {
 export default function SignupModal({
   isOpen,
   onChange,
-  setUser,
   setRoleDialogOpen,
   setSelectedRole,
   setSignUpDialogOpen,
@@ -85,22 +83,9 @@ export default function SignupModal({
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
-      console.log("Signup success:", data);
-
-      // Update state
-      setUser({
-        firstName,
-        lastName,
-        email,
-        role,
-        id: data?.founder_id || data?.investor_id || "unknown_id",
-      });
-
       alert("Account created successfully!");
       setSignUpDialogOpen(false);
     } catch (error: any) {
-      console.error("Signup error:", error);
       alert(`Signup failed: ${error.message}`);
     } finally {
       setLoading(false);

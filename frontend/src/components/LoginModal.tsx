@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { GoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+// import { GoogleLogin } from "@react-oauth/google";
+// import { jwtDecode } from "jwt-decode";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -18,7 +19,6 @@ type LoginModalProps = {
   selectedRole: string | null;
   setSignUpDialogOpen: (value: boolean) => void;
   setRoleDialogOpen: (value: boolean) => void;
-  setUser: (user: any) => void;
 };
 
 export default function LoginModal({
@@ -29,9 +29,9 @@ export default function LoginModal({
   selectedRole,
   setSignUpDialogOpen,
   setRoleDialogOpen,
-  setUser,
 }: LoginModalProps) {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignin = async (formData: any) => {
     const { email, password, selectedRole } = formData;
@@ -39,7 +39,6 @@ export default function LoginModal({
     try {
       setLoading(true);
       let endpoint = "";
-      console.log("role:", selectedRole);
       if (selectedRole === "Pitch as Founder") {
         endpoint = `${
           import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
@@ -91,19 +90,31 @@ export default function LoginModal({
       }
 
       const data = await response.json();
-      console.log("Login success:", data);
-
-      // Update state
-      setUser({
-        email,
-        selectedRole,
-        id: data?.founder_id || data?.investor_id || "unknown_id",
-      });
 
       alert("Logged in successfully!");
       setSignUpDialogOpen(false);
+
+      if (selectedRole === "Pitch as Founder") {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            founderId: data?.founder_id,
+            founderName: data?.founder_name,
+            companyDocId: data?.company_doc_id,
+          })
+        );
+        navigate(`/founder/${data?.founder_id}`);
+      } else {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            investorId: data?.investor_id,
+            investorName: data?.investor_name,
+          })
+        );
+        navigate(`/investor/${data?.investor_id}`);
+      }
     } catch (error: any) {
-      console.error("Login error:", error);
       alert(`Login failed: ${error.message}`);
     } finally {
       setLoading(false);
@@ -145,11 +156,6 @@ export default function LoginModal({
                 //     const role = (
                 //   e.currentTarget.elements.namedItem("role") as HTMLSelectElement
                 // ).value;
-                console.log("Logging in with:", {
-                  role: selectedRole,
-                  email,
-                  password,
-                });
 
                 // Fake API logic:
                 // const accountExists = false; // TODO: Replace with actual API call to check
@@ -220,23 +226,21 @@ export default function LoginModal({
             </form>
 
             {/* Divider */}
-            <div className="flex items-center my-3">
+            {/* <div className="flex items-center my-3">
               <div className="flex-grow h-px bg-gray-200" />
               <span className="px-2 text-xs text-gray-400 uppercase">or</span>
               <div className="flex-grow h-px bg-gray-200" />
-            </div>
+            </div> */}
 
-            {/* Google Login */}
+            {/* Google Login
             <div className="flex justify-center">
               <GoogleLogin
                 onSuccess={(credentialResponse) => {
                   const decoded = jwtDecode(credentialResponse.credential!);
-                  console.log("Google Login Success:", decoded);
                   setRoleDialogOpen(false);
                 }}
-                onError={() => console.log("Google Login Failed")}
               />
-            </div>
+            </div> */}
           </>
         ) : (
           /* Forgot Password View */
@@ -249,7 +253,6 @@ export default function LoginModal({
                   "resetEmail"
                 ) as HTMLInputElement
               ).value;
-              console.log("Sending reset link to:", email);
               // TODO: call password reset API
               alert(`Password reset link sent to ${email}`);
               setShowForgotPassword(false);

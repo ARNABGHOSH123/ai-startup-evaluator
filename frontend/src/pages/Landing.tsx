@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+// import { ArrowRight } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -203,6 +204,19 @@ export default function StepsCarousel() {
       ),
     },
   ];
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    if (user?.founderId) {
+      // Redirect to founder landing page
+      navigate(`/founder/${user.founderId}`);
+    } else if (user?.investorId) {
+      // Redirect to investor landing page
+      navigate(`/investor/${user.investorId}`);
+    }
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-white to-gray-50 text-center">
