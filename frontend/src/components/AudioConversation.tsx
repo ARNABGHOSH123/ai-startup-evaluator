@@ -23,9 +23,14 @@ interface AudioConversationProps {
 
 // Generate session id and WebSocket URL
 const sessionId = Math.random().toString().substring(10);
-const wsBaseUrl = `ws://${
-  import.meta.env.VITE_CLOUD_RUN_AUDIO_AGENT_URL
-}/ws/${sessionId}`;
+// Use secure WebSocket (wss) when page is served over https to avoid mixed content
+const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+// Allow the env var to be either a bare host or a full URL; normalize to host
+const wsHost = (import.meta.env.VITE_CLOUD_RUN_AUDIO_AGENT_URL || "")
+  .replace(/^https?:\/\//i, "")
+  .replace(/^wss?:\/\//i, "")
+  .replace(/\/$/, "");
+const wsBaseUrl = `${wsProtocol}://${wsHost}/ws/${sessionId}`;
 
 // Helper functions
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
