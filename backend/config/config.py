@@ -36,3 +36,8 @@ class Config:
     FIRESTORE_COMPANY_COLLECTION = os.getenv(
         "FIRESTORE_COMPANY_COLLECTION", "companies_applied")
     DEPLOYED_FRONTEND_URL = os.getenv("DEPLOYED_FRONTEND_URL")
+    FIRESTORE_FOUNDER_COLLECTION = os.getenv(
+        "FIRESTORE_FOUNDER_COLLECTION", "founders")
+    FIRESTORE_INVESTOR_COLLECTION = os.getenv(
+        "FIRESTORE_INVESTOR_COLLECTION", "investors")
+

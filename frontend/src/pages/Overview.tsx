@@ -1,0 +1,402 @@
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { TabsContent } from "@/components/ui/tabs";
+import {
+  AlertTriangle,
+  Bot,
+  Zap,
+  Database,
+  Shield,
+  Cpu,
+  BarChart3,
+} from "lucide-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  CartesianGrid,
+  Legend,
+  RadialBarChart,
+  RadialBar,
+} from "recharts";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+
+const tamData = [{ name: "Data Analytics", value: 300, fill: "#22c55e" }];
+const somData = [
+  { year: 2024, value: 5 },
+  { year: 2030, value: 60 },
+  { year: 2034, value: 200 },
+];
+
+const overviewData = [
+  {
+    id: "problem",
+    borderColor: "border-red-500",
+    bgColor: "bg-red-50/40",
+    icon: <AlertTriangle className="text-red-600" />,
+    titleColor: "text-red-700",
+    title: "Problem: The AI Crisis",
+    description:
+      "90% of AI projects fail due to centralized, fragile data teams causing operational bottlenecks.",
+    points: [
+      "High cost of analytics",
+      "Manual data dependency",
+      "Fragmented pipelines",
+      "Talent shortages",
+      "Security risks",
+    ],
+    impact: "",
+    footer:
+      "➤ 68% of data remains unused in silos, and 76% of decisions still rely on spreadsheets.",
+    features: [],
+  },
+  {
+    id: "solution",
+    borderColor: "border-green-500",
+    bgColor: "bg-green-50/40",
+    icon: <Bot className="text-green-600" />,
+    titleColor: "text-green-700",
+    title: "Solution: Sia - Agentic AI for Data Analytics",
+    description:
+      "Sia democratizes analytics with a chat-based interface that acts like a full data team for every employee.",
+    points: [
+      "Connects fragmented systems",
+      "Contextualizes insights",
+      "Removes technical bottlenecks",
+    ],
+    impact:
+      "Enables self-serve analytics, faster insights, and reduced dependency on data experts.",
+    footer: "",
+    features: [],
+  },
+  {
+    id: "features",
+    borderColor: "border-blue-500",
+    bgColor: "bg-blue-50/40",
+    icon: <Zap className="text-blue-600" />,
+    titleColor: "text-blue-700",
+    title: "Key Capabilities",
+    description: "",
+    points: [],
+    impact: "",
+    footer: "",
+    features: [
+      { icon: <Cpu />, title: "Recommender Engine" },
+      { icon: <BarChart3 />, title: "Auto Visualizations" },
+      { icon: <Database />, title: "Data Quality Reports" },
+      { icon: <Shield />, title: "Security & Governance" },
+      { icon: <Zap />, title: "No-code Model Builder" },
+      { icon: <Bot />, title: "Instant Insights" },
+    ],
+  },
+];
+
+export const accordionData = [
+  {
+    id: "market",
+    title: "Market Size & Position",
+    color: "text-purple-700",
+    sections: [
+      {
+        type: "insights",
+        cards: [
+          {
+            title: "109 Active Startups",
+            desc: "Indicative of early but competitive landscape.",
+            borderColor: "border-indigo-500",
+            textColor: "text-indigo-700",
+          },
+          {
+            title: "Rapid Innovation Cycles",
+            desc: "High opportunity for differentiation and category leadership.",
+            borderColor: "border-green-500",
+            textColor: "text-green-700",
+          },
+        ],
+      },
+      {
+        type: "chart",
+        title: "Total Addressable Market (TAM)",
+        chartType: "radialBar",
+        value: "$300B",
+        subValue: "13% CAGR",
+        fill: "#22c55e",
+        data: [{ name: "TAM", value: 300 }],
+      },
+      {
+        type: "chart",
+        title: "Serviceable Obtainable Market (SOM)",
+        chartType: "bar",
+        projection: "Projected from $5B → $200B by 2034 (43% CAGR)",
+        fill: "#6366f1",
+        data: [
+          { year: "2024", value: 5 },
+          { year: "2026", value: 20 },
+          { year: "2028", value: 80 },
+          { year: "2030", value: 150 },
+          { year: "2034", value: 200 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "technology",
+    title: "Technology & Innovation",
+    color: "text-yellow-700",
+    sections: [
+      {
+        type: "info",
+        borderColor: "border-blue-500",
+        title: "Technology Stack",
+        items: [
+          "Agentic AI with multi-agent architecture.",
+          "Automates ML lifecycle and feature engineering.",
+          "Integrates with multiple data sources.",
+          "Built for scalability and real-time analytics.",
+        ],
+      },
+      {
+        type: "text",
+        borderColor: "border-purple-500",
+        title: "Innovation & R&D",
+        content:
+          "Co-founders Divya Krishna R and Sumalata Kamat jointly hold 10 patents from prior work at Bosch, highlighting deep R&D expertise.",
+      },
+      {
+        type: "info",
+        borderColor: "border-green-500",
+        title: "Vision & USP",
+        items: [
+          "Vision: Make AI/ML accessible to every business.",
+          "USP: Chat-based interface for non-technical users.",
+          "Rapid deployment (2–3 weeks) & insights in <5 min.",
+          "4× reduction in analytics costs.",
+        ],
+      },
+    ],
+  },
+];
+
+
+export default function Overview() {
+  return (
+    <TabsContent value="overview" className="space-y-4 p-4">
+      {/* Problem Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {overviewData?.length > 0 && overviewData?.map((card) => (
+          <Card
+            key={card?.id}
+            className={`border-l-4 ${card?.borderColor} ${card?.bgColor}`}
+          >
+            <CardHeader className="pb-2">
+              <div className={`flex items-center gap-2 ${card?.titleColor}`}>
+                {card?.icon}
+                <CardTitle
+                  className={`text-lg font-semibold ${card?.titleColor}`}
+                >
+                  {card?.title}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-gray-700 text-sm space-y-2">
+              {card?.description && <p>{card?.description}</p>}
+              {card?.points && (
+                <ul className="list-disc ml-5 space-y-1">
+                  {card?.points.map((p, i) => (
+                    <li key={i}>{p}</li>
+                  ))}
+                </ul>
+              )}
+              {card?.footer && (
+                <p className="text-gray-600 mt-2 italic">{card?.footer}</p>
+              )}
+
+              {card?.impact && (
+                <div className="mt-3 text-sm bg-green-100 text-green-800 p-2 rounded-md">
+                  <strong>Impact:</strong> {card?.impact}
+                </div>
+              )}
+
+              {card?.features && (
+                <div className="grid grid-cols-2 gap-2">
+                  {card?.features?.map((feature) => (
+                    <Feature
+                      key={feature?.title}
+                      icon={feature?.icon}
+                      title={feature?.title}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Market & Technology Accordions */}
+      <Accordion type="single" collapsible className="space-y-3">
+        {accordionData?.length > 0 && accordionData?.map((accordion) => (<AccordionItem value="market">
+          <AccordionTrigger className={`text-lg font-semibold ${accordion?.color}`}>
+{accordion?.title}
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Insight Cards */}
+              <div className="flex flex-col gap-3">
+                <Card className="border-l-4 border-indigo-500 shadow-sm">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="text-indigo-700 text-base">
+                      109 Active Startups
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-gray-600 text-xs">
+                    Indicative of early but competitive landscape.
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-green-500 shadow-sm">
+                  <CardHeader className="pb-1">
+                    <CardTitle className="text-green-700 text-base">
+                      Rapid Innovation Cycles
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-gray-600 text-xs">
+                    High opportunity for differentiation and category
+                    leadership.
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* TAM */}
+              <Card className="p-6 bg-gray-50 border border-gray-200 flex flex-col justify-center items-center">
+                {" "}
+                <div className="font-semibold text-center mb-4">
+                  {" "}
+                  Total Addressable Market (TAM){" "}
+                </div>{" "}
+                <div className="flex items-center justify-center w-full h-52 relative">
+                  <ResponsiveContainer width="80%" height="100%">
+                    <RadialBarChart
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="70%"
+                      outerRadius="90%"
+                      barSize={18}
+                      data={tamData}
+                      startAngle={180}
+                      endAngle={-180}
+                    >
+                      <RadialBar
+                        dataKey="value"
+                        background
+                        cornerRadius={10}
+                        fill="#22c55e"
+                      />
+                      <RechartsTooltip formatter={(v) => `$${v}B`} />
+                    </RadialBarChart>
+                  </ResponsiveContainer>
+                  <div className="absolute text-center">
+                    {" "}
+                    <h3 className="text-2xl font-semibold">$300B</h3>{" "}
+                    <p className="text-sm text-gray-500">13% CAGR</p>{" "}
+                  </div>{" "}
+                </div>{" "}
+              </Card>
+
+              {/* SOM */}
+              <div className="bg-gray-50 border rounded-lg p-4">
+                <div className="font-medium mb-2">
+                  Serviceable Obtainable Market (SOM)
+                </div>
+                <div className="w-full h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={somData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                      <XAxis dataKey="year" />
+                      <YAxis />
+                      <RechartsTooltip formatter={(v) => `$${v}B`} />
+                      <Legend />
+                      <Bar dataKey="value" fill="#6366f1" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="text-xs text-gray-600 mt-2 text-center">
+                  Projected from $5B → $200B by 2034{" "}
+                  <span className="text-green-600 font-semibold">
+                    (43% CAGR)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>))}
+
+        {/* Technology Accordion */}
+        <AccordionItem value="technology">
+          <AccordionTrigger className="text-lg font-semibold text-yellow-700">
+            Technology & Innovation
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Stack */}
+              <div className="bg-white shadow rounded-lg p-4 border-l-4 border-blue-500">
+                <h3 className="text-base font-semibold text-gray-800 mb-2">
+                  Technology Stack
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
+                  <li>Agentic AI with multi-agent architecture.</li>
+                  <li>Automates ML lifecycle and feature engineering.</li>
+                  <li>Integrates with multiple data sources.</li>
+                  <li>Built for scalability and real-time analytics.</li>
+                </ul>
+              </div>
+
+              {/* R&D */}
+              <div className="bg-white shadow rounded-lg p-4 border-l-4 border-purple-500">
+                <h3 className="text-base font-semibold text-gray-800 mb-2">
+                  Innovation & R&D
+                </h3>
+                <p className="text-gray-700 text-sm">
+                  Co-founders <strong>Divya Krishna R</strong> and{" "}
+                  <strong>Sumalata Kamat</strong> jointly hold
+                  <strong> 10 patents</strong> from prior work at Bosch,
+                  highlighting deep R&D expertise.
+                </p>
+              </div>
+
+              {/* Vision */}
+              <div className="bg-white shadow rounded-lg p-4 border-l-4 border-green-500">
+                <h3 className="text-base font-semibold text-gray-800 mb-2">
+                  Vision & USP
+                </h3>
+                <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
+                  <li>Vision: Make AI/ML accessible to every business.</li>
+                  <li>USP: Chat-based interface for non-technical users.</li>
+                  <li>Rapid deployment (2–3 weeks) & insights in &lt;5 min.</li>
+                  <li>4× reduction in analytics costs.</li>
+                </ul>
+              </div>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </TabsContent>
+  );
+}
+
+// Feature Subcomponent
+function Feature({ icon, title }: { icon: JSX.Element; title: string }) {
+  return (
+    <div className="flex items-center gap-2 bg-white p-2 rounded-md shadow-sm hover:shadow transition">
+      <div className="text-blue-600">{icon}</div>
+      <p className="text-xs font-medium text-gray-700">{title}</p>
+    </div>
+  );
+}

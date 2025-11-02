@@ -12,87 +12,91 @@ type FormData = {
   usp: string;
   revenue: string;
   comments: string;
-  pitchDeck: File | null;
+  // pitchDeck: File | null;
 };
 
 type PitchFormProps = {
   onSubmit?: (formData: FormData) => void;
   onSuccess?: (formData: FormData) => void;
+  founderName?: string;
 };
 
-async function getUploadSessionUrl(filename: string) {
-  const resp = await fetch(
-    `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/generate_v4_signed_url`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        object_name: filename,
-      }),
-    }
-  );
-  return resp.json();
-}
+// async function getUploadSessionUrl(filename: string) {
+//   const resp = await fetch(
+//     `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/generate_v4_signed_url`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         object_name: filename,
+//       }),
+//     }
+//   );
+//   return resp.json();
+// }
 
-// new function to initiate resumable session (POST)
-async function initiateResumableSession(signedUrl: string) {
-  const res = await fetch(signedUrl, {
-    method: "POST",
-    // Must include this header because server included it when signing
-    headers: {
-      "x-goog-resumable": "start",
-      // don't include Content-Type/Length here
-    },
-    // body can be empty
-  });
+// // new function to initiate resumable session (POST)
+// async function initiateResumableSession(signedUrl: string) {
+//   const res = await fetch(signedUrl, {
+//     method: "POST",
+//     // Must include this header because server included it when signing
+//     headers: {
+//       "x-goog-resumable": "start",
+//       // don't include Content-Type/Length here
+//     },
+//     // body can be empty
+//   });
 
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Failed to start resumable session: ${res.status} ${txt}`);
-  }
+//   if (!res.ok) {
+//     const txt = await res.text().catch(() => "");
+//     throw new Error(`Failed to start resumable session: ${res.status} ${txt}`);
+//   }
 
-  // The resumable session URL is returned in Location header
-  const sessionUrl = res.headers.get("Location");
-  if (!sessionUrl)
-    throw new Error("No Location header returned for resumable session");
-  return sessionUrl;
-}
+//   // The resumable session URL is returned in Location header
+//   const sessionUrl = res.headers.get("Location");
+//   if (!sessionUrl)
+//     throw new Error("No Location header returned for resumable session");
+//   return sessionUrl;
+// }
 
-async function uploadFileViaSession(sessionUrl: string, file: File) {
-  // Put entire file in a single request (works for many 70-100MB uploads but chunking recommended)
-  const res = await fetch(sessionUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type,
-      "Content-Length": file.size.toString(),
-    },
-    body: file,
-  });
+// async function uploadFileViaSession(sessionUrl: string, file: File) {
+//   // Put entire file in a single request (works for many 70-100MB uploads but chunking recommended)
+//   const res = await fetch(sessionUrl, {
+//     method: "PUT",
+//     headers: {
+//       "Content-Type": file.type,
+//       "Content-Length": file.size.toString(),
+//     },
+//     body: file,
+//   });
 
-  if (!res.ok) {
-    // check res.status, implement resume logic (query upload status)
-    throw new Error("Upload failed");
-  }
-  return res;
-}
+//   if (!res.ok) {
+//     // check res.status, implement resume logic (query upload status)
+//     throw new Error("Upload failed");
+//   }
+//   return res;
+// }
 
-export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
+export default function PitchForm({
+  founderName,
+  onSubmit,
+  onSuccess,
+}: PitchFormProps) {
   const [isSubmitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     companyName: "",
     domain: "",
     phone: "",
     email: "",
-    founderName: "",
+    founderName: founderName ?? "",
     address: "",
     stage: "",
     about: "",
     usp: "",
     revenue: "",
     comments: "",
-    pitchDeck: null as File | null,
   });
 
   const handleChange = (
@@ -104,21 +108,21 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, pitchDeck: e.target.files[0] });
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     setFormData({ ...formData, pitchDeck: e.target.files[0] });
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Upload the file to GCS
-    if (!formData.pitchDeck) throw new Error("Pitch deck is not provided");
+    // if (!formData.pitchDeck) throw new Error("Pitch deck is not provided");
     setSubmitting(true);
-    const { signedUrl } = await getUploadSessionUrl(formData?.pitchDeck.name);
-    const sessionUrl = await initiateResumableSession(signedUrl);
-    await uploadFileViaSession(sessionUrl, formData.pitchDeck);
+    // const { signedUrl } = await getUploadSessionUrl(formData?.pitchDeck.name);
+    // const sessionUrl = await initiateResumableSession(signedUrl);
+    // await uploadFileViaSession(sessionUrl, formData.pitchDeck);
 
     await fetch(
       `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/add_to_companies_list`,
@@ -139,7 +143,6 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
           usp: formData.usp,
           revenue_model: formData.revenue,
           comments: formData.comments,
-          pitch_deck_filename: formData.pitchDeck.name,
         }),
       }
     );
@@ -221,6 +224,7 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
           <input
             type="text"
             name="founderName"
+            disabled={founderName ? true : false}
             value={formData.founderName}
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-primary"
@@ -314,7 +318,7 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
         </div>
 
         {/* Pitch Deck */}
-        <div>
+        {/* <div>
           <label className="block text-sm font-medium mb-1">Pitch Deck *</label>
           <input
             type="file"
@@ -323,7 +327,7 @@ export default function PitchForm({ onSubmit, onSuccess }: PitchFormProps) {
             className="w-full border rounded-lg px-3 py-2"
             required
           />
-        </div>
+        </div> */}
 
         {/* Submit Button */}
         <button

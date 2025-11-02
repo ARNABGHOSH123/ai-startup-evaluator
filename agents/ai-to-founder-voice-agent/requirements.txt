@@ -1,0 +1,14 @@
+google-adk
+google-cloud-firestore
+google-cloud-storage
+google-cloud-secret-manager
+google-genai
+python-dotenv
+google-auth
+PyMuPDF
+requests
+beautifulsoup4
+tavily-python
+aiohttp
+fastapi
+uvicorn[standard]

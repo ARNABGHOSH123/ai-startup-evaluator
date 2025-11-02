@@ -1,14 +1,20 @@
 from google.cloud import storage, firestore
 from google import auth
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path as PathlibPath
+import json
+import os
 import requests
 from google.auth.transport.requests import Request
-from fastapi import HTTPException, Path
+from fastapi import HTTPException, Path as FastAPIPath
 from datetime import timedelta
 from pydantic import BaseModel
 from config import Config
 from app import app
 from utils import read_text_from_gcs, get_charts_for_a_company, get_charts_for_a_company_async
-from firestore_models import CompanyDoc
+from firestore_models import CompanyDoc, FounderDoc, InvestorDoc
+from google.cloud import firestore
 from routes.trigger_extract_benchmark_job import trigger_job_with_filename
 
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
@@ -17,6 +23,10 @@ GOOGLE_CLOUD_PROJECT = Config.GOOGLE_CLOUD_PROJECT
 GCP_PITCH_DECK_INPUT_FOLDER = Config.GCP_PITCH_DECK_INPUT_FOLDER
 FIRESTORE_DATABASE = Config.FIRESTORE_DATABASE
 FIRESTORE_COMPANY_COLLECTION = Config.FIRESTORE_COMPANY_COLLECTION
+FIRESTORE_FOUNDER_COLLECTION = Config.FIRESTORE_FOUNDER_COLLECTION
+FIRESTORE_INVESTOR_COLLECTION = Config.FIRESTORE_INVESTOR_COLLECTION
+
+
 
 
 class SignedUrlRequest(BaseModel):
@@ -70,8 +80,8 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
             status_code=500, detail=f"Could not generate signed URL: {str(e)}")
 
 
-@app.post("/add_to_companies_list")
-async def add_to_companies_list(req: CompanyDoc):
+@app.post("/add_to_companies_list/{founder_id}")
+async def add_to_companies_list(founder_id: str, req: CompanyDoc):
     company_name = req.company_name.strip()
     founder_name = req.founder_name.strip()
     domain = req.domain.strip()
@@ -83,6 +93,7 @@ async def add_to_companies_list(req: CompanyDoc):
     usp = req.usp.strip()
     revenue_model = req.revenue_model.strip()
     comments = req.comments.strip() if req.comments else None
+
     pitch_deck_filename = req.pitch_deck_filename.strip(
     ) if req.pitch_deck_filename else None
 
@@ -139,7 +150,17 @@ async def add_to_companies_list(req: CompanyDoc):
         created_at = result.get("created_at")
         if created_at is not None and hasattr(created_at, "isoformat"):
             result["created_at"] = created_at.isoformat()
+        
+        founder_collection_ref = firestore_client.collection(
+            FIRESTORE_FOUNDER_COLLECTION)
+        founder_doc_ref = founder_collection_ref.document(founder_id)
+        founder_snapshot = founder_doc_ref.get()
+        if not founder_snapshot.exists:
+            raise HTTPException(
+                status_code=404, detail=f"No founder found with id='{founder_id}'")
 
+        founder_doc_ref.set({"company_doc_id": doc_ref.id}, merge=True)
+        
         # Trigger the Cloud Run Job to process this pitch deck
         try:
             trigger_job_with_filename(
@@ -205,7 +226,7 @@ async def get_companies_list():
 
 
 @app.post("/get_company_details/{company_id}")
-async def get_company_details(company_id: str = Path(..., description="Company id")):
+async def get_company_details(company_id: str = FastAPIPath(..., description="Company id")):
     if not company_id or not company_id.strip():
         raise HTTPException(
             status_code=400, detail="company_id cannot be empty")
@@ -264,36 +285,141 @@ async def get_company_details(company_id: str = Path(..., description="Company i
             status_code=500, detail=f"Failed to fetch company details: {exc}")
 
 
-# @app.post("/pubsub/pitchdeck-event")
-# async def pubsub_push(request: Request, background_tasks: BackgroundTasks):
-#     envelope = await request.json()
-#     message = envelope.get("message", {})
-#     # Pub/Sub encodes message.data as base64
-#     data_b64 = message.get("data") or ""
-#     try:
-#         data_json = json.loads(base64.b64decode(data_b64).decode("utf-8"))
-#     except Exception:
-#         return {"status": "bad_data", "error": "invalid base64 payload"}
+@app.post("/create_founder_account")
+async def create_founder_account(founder: FounderDoc):
+    try:
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
+        founder_ref = firestore_client.collection(FIRESTORE_FOUNDER_COLLECTION).document()
+        founder_data = founder.model_dump()
+        founder_data["id"] = founder_ref.id
+        founder_ref.set(founder_data)
 
-#     name = data_json.get("name")
-#     if not name:
-#         return {"status": "ignored", "reason": "no name"}
+        return {"status": "ok", "founder_id": founder_ref.id}
 
-#     # only handle uploads/ folder
-#     if not name.startswith("uploads/"):
-#         return {"status": "ignored", "reason": "not in uploads/"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create founder account: {e}")
 
-#     # sanitize / convert to safe id; avoid spaces and extremely long ids
-#     safe_basename = name.replace("/", "_")  # simple
-#     # Better: use a UUID session id for uniqueness
-#     job_session_id = f"job_{safe_basename}_{uuid.uuid4().hex}"
+@app.post("/create_investor_account")
+async def create_investor_account(investor: InvestorDoc):
+    try:
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
+        investor_ref = firestore_client.collection(FIRESTORE_INVESTOR_COLLECTION).document()
+        investor_data = investor.model_dump()
+        investor_data["id"] = investor_ref.id
+        investor_ref.set(investor_data)
 
-#     # choose a user id (can be system or owner id). Keep consistent if you want to track
-#     user_id = "system_job_runner"
+        return {"status": "ok", "investor_id": investor_ref.id}
 
-#     # schedule the long-running agent run in background (non-blocking HTTP response)
-#     background_tasks.add_task(
-#         run_extract_benchmark_agent, name[8:], user_id, job_session_id, firestore_client)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to create investor account: {e}")
 
-#     # Immediately ack the Pub/Sub push with success
-#     return {"status": "ok", "session_id": job_session_id}
+@app.post("/sign_in_founder_account")
+async def sign_in_founder_account(founder: FounderDoc):
+    try:
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
+        collection_ref = firestore_client.collection(
+            FIRESTORE_FOUNDER_COLLECTION)
+
+        query = collection_ref.where(
+            "founder_email", "==", founder.founder_email).where(
+            "founder_account_pwd", "==", founder.founder_account_pwd)
+
+        docs = list(query.stream())
+
+        if len(docs) == 0:
+            raise HTTPException(
+                status_code=404, detail="No founder account found with the provided email and password.")
+
+        doc = docs[0]
+        data = doc.to_dict() or {}
+
+        return {"status": "ok", "founder_id": doc.id, "founder_name": data.get("founder_name", "")}
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to sign in founder account: {e}")
+    
+@app.post("/sign_in_investor_account")
+async def sign_in_investor_account(investor: InvestorDoc):
+    try:
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
+        collection_ref = firestore_client.collection(
+            FIRESTORE_INVESTOR_COLLECTION)
+
+        query = collection_ref.where(
+            "investor_email", "==", investor.investor_email).where(
+            "investor_account_pwd", "==", investor.investor_account_pwd)
+
+        docs = list(query.stream())
+
+        if len(docs) == 0:
+            raise HTTPException(
+                status_code=404, detail="No investor account found with the provided email and password.")
+
+        doc = docs[0]
+        data = doc.to_dict() or {}
+
+        return {"status": "ok", "investor_id": doc.id, "investor_name": data.get("investor_name", "")}
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to sign in investor account: {e}")
+
+@app.post("/fetch_audio_agent_clarifications/{company_doc_id}")
+def fetch_audio_agent_clarifications(company_doc_id: str):
+    try:
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        storage_client = storage.Client(
+            project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
+        
+        clarifications = list(storage_client.bucket(GCS_BUCKET_NAME).list_blobs(
+            f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/{company_doc_id}/clarifications/"
+        ))
+
+        blob = clarifications[0] if len(clarifications) > 0 else None
+        if blob is None:
+            return {
+                "status": "ok",
+                "company_doc_id": company_doc_id,
+                "clarifications": []
+            }
+        json_content = json.loads(blob.download_as_text())
+        if not json_content:
+            return {
+                "status": "ok",
+                "company_doc_id": company_doc_id,
+                "clarifications": []
+            }
+
+        return {
+            "status": "ok",
+            "company_doc_id": company_doc_id,
+            "clarifications": json_content.get("clarifications", [])
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch audio agent clarifications: {e}")
+
+

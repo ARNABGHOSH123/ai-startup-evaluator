@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, User, Download, Building2 } from "lucide-react";
 // import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, User, Download, Building2 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 type Company = {
   company_name: string;
@@ -189,6 +189,7 @@ function CompanyCardSkeleton() {
 export default function InvestorPortal() {
   // const { user, isLoading: authLoading } = useAuth();
   // const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoadingCompanies, setLoadingCompanies] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   // const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
@@ -241,7 +242,7 @@ export default function InvestorPortal() {
 
   const handleCompanyClick = (companyId: string) => {
     // setSelectedCompanyId(companyName);
-    window.location.href = `/company/${companyId}`;
+    navigate(`/company/${companyId}`);
   };
 
   if (isLoadingCompanies) {
