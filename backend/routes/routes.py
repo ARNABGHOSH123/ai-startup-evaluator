@@ -392,7 +392,7 @@ def fetch_audio_agent_clarifications(company_doc_id: str):
             project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
         
         clarifications = list(storage_client.bucket(GCS_BUCKET_NAME).list_blobs(
-            f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/{company_doc_id}/clarifications/"
+            prefix=f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/abcde/clarifications/"
         ))
 
         blob = clarifications[0] if len(clarifications) > 0 else None

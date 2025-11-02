@@ -492,7 +492,7 @@ export default function AudioConversation({
   return (
     <Dialog open={isOpen} onOpenChange={onChange}>
       <DialogContent className="sm:max-w-4xl h-[600px] p-0" dismissible={false}>
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl overflow-hidden h-full flex flex-col">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl h-full flex flex-col">
           {endingCall && (
             <div className="absolute inset-0 z-50 bg-black/50 flex items-center justify-center">
               <div className="bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-lg flex items-center gap-3 animate-[fade-in_150ms_ease-out]">
@@ -642,7 +642,7 @@ export default function AudioConversation({
                 </p>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent max-h-[480px]">
                 {conversationLog.map((message) => (
                   <div
                     key={message.id}
