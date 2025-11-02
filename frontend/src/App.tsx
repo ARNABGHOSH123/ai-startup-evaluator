@@ -43,8 +43,8 @@ function Router() {
         <Route path="pitch" element={<FounderPitch />} />
       </Route>
       {/* <Route path="/home" element={<Home />} /> */}
-      <Route path="/investor/:investor_id" element={<InvestorPortal />} />
-      <Route path="/company/:company_id" element={<CompanyDetail />} />
+      <Route path="/investor/:investorId" element={<InvestorPortal />} />
+      <Route path="/company/:companyId" element={<CompanyDetail />} />
       <Route element={<NotFound />} />
     </Routes>
   );

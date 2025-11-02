@@ -30,7 +30,7 @@ export default function Header() {
 
   const getInitials = (user: any) => {
     if (user?.founderName) return user?.founderName[0]?.toUpperCase();
-    if (user?.investorName) return user?.investorName;
+    if (user?.investorName) return user?.investorName[0]?.toUpperCase();
     if (user?.founderEmail || user?.investorEmail) {
       return (user.founderEmail || user.investorEmail)
         .slice(0, 2)
@@ -42,6 +42,10 @@ export default function Header() {
   const getDisplayName = (user: any) => {
     if (user?.founderName)
       return user?.founderName?.replace(/\b\w/g, (c: string) =>
+        c.toUpperCase()
+      );
+    if (user?.investorName)
+      return user?.investorName?.replace(/\b\w/g, (c: string) =>
         c.toUpperCase()
       );
     if (user?.founderEmail || user?.investorEmail) {
