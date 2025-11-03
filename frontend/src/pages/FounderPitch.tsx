@@ -22,10 +22,6 @@ export default function FounderPitchDeck() {
       id: 0,
       stepperName: "Startup Info & Upload Documents",
     },
-    // {
-    //   id: 1,
-    //   stepperName: "Upload Documents",
-    // },
     { id: 1, stepperName: "Pitch Call" },
   ];
 
@@ -50,7 +46,7 @@ export default function FounderPitchDeck() {
         const data = await response.json();
         setCompanyDocId(data.company_doc_id);
         setIsBenchmarkAvailable(!!data.benchmark_gcs_uri);
-        if (!!data.benchmark_gcs_uri) {
+        if (!!data.company_doc_id) {
           setActiveStep(1);
         }
       } catch (error) {
