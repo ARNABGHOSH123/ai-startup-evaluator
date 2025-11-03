@@ -53,7 +53,9 @@ for i in range(no_of_agents):
             tavily_search(query="What is the weather in New York?") 
             extract_webpage_text(url="https://www.example.com")
         
-        You must use the exact tool names as provided above while making tool calls. Dont make up any tool name of your own.
+        CRITICAL TOOL USAGE NOTE:
+            YOU MUST USE THE EXACT TOOL NAMES AS PROVIDED ABOVE WHILE MAKING TOOL CALLS. DO NOT INVENT ANY TOOL NAME OF YOUR OWN. YOU MUST DOUBLE CHECK THE TOOL NAME WITH THE ONES PROVIDED ABOVE BEFORE CALLING A TOOL. For example while requesting for search use 'tavily_search' and not any other names like 'ta-vily_search' or 'tavilyWebSearch' etc.
+        
         
         WORKFLOW:
 
@@ -196,7 +198,8 @@ save_response_to_gcs_agent = LlmAgent(
         You have access to ONLY the following TOOL:
             - 'save_file_content_to_gcs': Use this tool to save the markdown content to a file in the GCS (Google Cloud Storage) bucket.
         
-        You must use the exact tool names as provided section above while making tool calls. Dont make up any tool name of your own.
+        CRITICAL TOOL USAGE NOTE:
+            YOU MUST USE THE EXACT TOOL NAMES AS PROVIDED ABOVE WHILE MAKING TOOL CALLS. DO NOT INVENT ANY TOOL NAME OF YOUR OWN. YOU MUST DOUBLE CHECK THE TOOL NAME WITH THE ONES PROVIDED ABOVE BEFORE CALLING A TOOL. For example while requesting for search use 'save_file_content_to_gcs' and not any other names like 's_ave_file_content_to_gcs' or 's-ave_file_content_to_gcs' etc.
         
         TASK:
             You must save the final markdown response to a file in the GCS (Google Cloud Storage) bucket using the tool 'save_file_content_to_gcs' with the following parameters:
@@ -229,7 +232,8 @@ clear_cache_agent = LlmAgent(
     You have access to ONLY the following TOOL:
         - clear_site_extract_cache : Use this tool to clear the in-memory site extract cache.
     
-    You must use the exact tool name as provided above while making the tool call. Dont make up any tool name of your own.
+    CRITICAL TOOL USAGE NOTE:
+        YOU MUST USE THE EXACT TOOL NAMES AS PROVIDED ABOVE WHILE MAKING TOOL CALLS. DO NOT INVENT ANY TOOL NAME OF YOUR OWN. YOU MUST DOUBLE CHECK THE TOOL NAME WITH THE ONES PROVIDED ABOVE BEFORE CALLING A TOOL. For example while requesting for search use 'clear_site_extract_cache' and not any other names like 'c_lear_site_extract_cache' or 'cl-ear_site_extract_cache' etc.
 
     """,
     tools=[clear_site_extract_cache],

@@ -28,12 +28,56 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-const tamData = [{ name: "Data Analytics", value: 300, fill: "#22c55e" }];
-const somData = [
-  { year: 2024, value: 5 },
-  { year: 2030, value: 60 },
-  { year: 2034, value: 200 },
-];
+type InsightSection = {
+  type: "insights";
+  cards: {
+    title: string;
+    desc: string;
+    borderColor: string;
+    textColor: string;
+  }[];
+};
+
+type ChartSection = {
+  type: "chart";
+  title: string;
+  chartType: "radialBar" | "bar";
+  value?: string;
+  subValue?: string;
+  projection?: string;
+  fill: string;
+  data: any[];
+};
+
+type InfoSection = {
+  type: "info";
+  borderColor: string;
+  title: string;
+  items: string[];
+};
+
+type TextSection = {
+  type: "text";
+  borderColor: string;
+  title: string;
+  content: string;
+};
+
+type Section = InsightSection | ChartSection | InfoSection | TextSection;
+
+export type AccordionData = {
+  id: string;
+  title: string;
+  color: string;
+  sections: Section[];
+};
+
+// const tamData = [{ name: "Data Analytics", value: 300, fill: "#22c55e" }];
+// const somData = [
+//   { year: 2024, value: 5 },
+//   { year: 2030, value: 60 },
+//   { year: 2034, value: 200 },
+// ];
 
 const overviewData = [
   {
@@ -98,7 +142,7 @@ const overviewData = [
   },
 ];
 
-export const accordionData = [
+export const accordionData: AccordionData[] = [
   {
     id: "market",
     title: "Market Size & Position",
@@ -184,208 +228,220 @@ export const accordionData = [
   },
 ];
 
-
 export default function Overview() {
   return (
     <TabsContent value="overview" className="space-y-4 p-4">
       {/* Problem Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {overviewData?.length > 0 && overviewData?.map((card) => (
-          <Card
-            key={card?.id}
-            className={`border-l-4 ${card?.borderColor} ${card?.bgColor}`}
-          >
-            <CardHeader className="pb-2">
-              <div className={`flex items-center gap-2 ${card?.titleColor}`}>
-                {card?.icon}
-                <CardTitle
-                  className={`text-lg font-semibold ${card?.titleColor}`}
-                >
-                  {card?.title}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-gray-700 text-sm space-y-2">
-              {card?.description && <p>{card?.description}</p>}
-              {card?.points && (
-                <ul className="list-disc ml-5 space-y-1">
-                  {card?.points.map((p, i) => (
-                    <li key={i}>{p}</li>
-                  ))}
-                </ul>
-              )}
-              {card?.footer && (
-                <p className="text-gray-600 mt-2 italic">{card?.footer}</p>
-              )}
-
-              {card?.impact && (
-                <div className="mt-3 text-sm bg-green-100 text-green-800 p-2 rounded-md">
-                  <strong>Impact:</strong> {card?.impact}
+        {overviewData?.length > 0 &&
+          overviewData?.map((card) => (
+            <Card
+              key={card?.id}
+              className={`border-l-4 ${card?.borderColor} ${card?.bgColor}`}
+            >
+              <CardHeader className="pb-2">
+                <div className={`flex items-center gap-2 ${card?.titleColor}`}>
+                  {card?.icon}
+                  <CardTitle
+                    className={`text-lg font-semibold ${card?.titleColor}`}
+                  >
+                    {card?.title}
+                  </CardTitle>
                 </div>
-              )}
+              </CardHeader>
+              <CardContent className="text-gray-700 text-sm space-y-2">
+                {card?.description && <p>{card?.description}</p>}
+                {card?.points && (
+                  <ul className="list-disc ml-5 space-y-1">
+                    {card?.points.map((p, i) => (
+                      <li key={i}>{p}</li>
+                    ))}
+                  </ul>
+                )}
+                {card?.footer && (
+                  <p className="text-gray-600 mt-2 italic">{card?.footer}</p>
+                )}
 
-              {card?.features && (
-                <div className="grid grid-cols-2 gap-2">
-                  {card?.features?.map((feature) => (
-                    <Feature
-                      key={feature?.title}
-                      icon={feature?.icon}
-                      title={feature?.title}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                {card?.impact && (
+                  <div className="mt-3 text-sm bg-green-100 text-green-800 p-2 rounded-md">
+                    <strong>Impact:</strong> {card?.impact}
+                  </div>
+                )}
+
+                {card?.features && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {card?.features?.map((feature) => (
+                      <Feature
+                        key={feature?.title}
+                        icon={feature?.icon}
+                        title={feature?.title}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
       </div>
 
       {/* Market & Technology Accordions */}
       <Accordion type="single" collapsible className="space-y-3">
-        {accordionData?.length > 0 && accordionData?.map((accordion) => (<AccordionItem value="market">
-          <AccordionTrigger className={`text-lg font-semibold ${accordion?.color}`}>
-{accordion?.title}
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Insight Cards */}
-              <div className="flex flex-col gap-3">
-                <Card className="border-l-4 border-indigo-500 shadow-sm">
-                  <CardHeader className="pb-1">
-                    <CardTitle className="text-indigo-700 text-base">
-                      109 Active Startups
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-gray-600 text-xs">
-                    Indicative of early but competitive landscape.
-                  </CardContent>
-                </Card>
+        {accordionData?.map((accordion) => (
+          <AccordionItem key={accordion.id} value={accordion.id}>
+            <AccordionTrigger
+              className={`text-lg font-semibold ${accordion.color}`}
+            >
+              {accordion.title}
+            </AccordionTrigger>
 
-                <Card className="border-l-4 border-green-500 shadow-sm">
-                  <CardHeader className="pb-1">
-                    <CardTitle className="text-green-700 text-base">
-                      Rapid Innovation Cycles
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-gray-600 text-xs">
-                    High opportunity for differentiation and category
-                    leadership.
-                  </CardContent>
-                </Card>
+            <AccordionContent>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {accordion.sections.map((section, index) => {
+                  if (section.type === "insights") {
+                    return (
+                      <div key={index} className="flex flex-col gap-3">
+                        {section.cards.map((card, i) => (
+                          <Card
+                            key={i}
+                            className={`border-l-4 ${card.borderColor} shadow-sm`}
+                          >
+                            <CardHeader className="pb-1">
+                              <CardTitle
+                                className={`${card.textColor} text-base`}
+                              >
+                                {card.title}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="text-gray-600 text-xs">
+                              {card.desc}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    );
+                  }
+
+                  if (
+                    section.type === "chart" &&
+                    section.chartType === "radialBar"
+                  ) {
+                    return (
+                      <Card
+                        key={index}
+                        className="p-6 bg-gray-50 border border-gray-200 flex flex-col justify-center items-center"
+                      >
+                        <div className="font-semibold text-center mb-4">
+                          {section.title}
+                        </div>
+                        <div className="flex items-center justify-center w-full h-52 relative">
+                          <ResponsiveContainer width="80%" height="100%">
+                            <RadialBarChart
+                              cx="50%"
+                              cy="50%"
+                              innerRadius="70%"
+                              outerRadius="90%"
+                              barSize={18}
+                              data={section.data}
+                              startAngle={180}
+                              endAngle={-180}
+                            >
+                              <RadialBar
+                                dataKey="value"
+                                background
+                                cornerRadius={10}
+                                fill={section.fill}
+                              />
+                              <RechartsTooltip formatter={(v) => `$${v}B`} />
+                            </RadialBarChart>
+                          </ResponsiveContainer>
+                          <div className="absolute text-center">
+                            <h3 className="text-2xl font-semibold">
+                              {section.value}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {section.subValue}
+                            </p>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  }
+
+                  if (section.type === "chart" && section.chartType === "bar") {
+                    return (
+                      <div
+                        key={index}
+                        className="bg-gray-50 border rounded-lg p-4"
+                      >
+                        <div className="font-medium mb-2">{section.title}</div>
+                        <div className="w-full h-56">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={section.data}>
+                              <CartesianGrid
+                                strokeDasharray="3 3"
+                                stroke="#f3f4f6"
+                              />
+                              <XAxis dataKey="year" />
+                              <YAxis />
+                              <RechartsTooltip formatter={(v) => `$${v}B`} />
+                              <Legend />
+                              <Bar dataKey="value" fill={section.fill} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-2 text-center">
+                          {section.projection}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (section.type === "info") {
+                    return (
+                      <Card
+                        key={index}
+                        className={`border-l-4 ${section.borderColor} shadow-sm`}
+                      >
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            {section.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-gray-700 text-sm">
+                          <ul className="list-disc ml-5 space-y-1">
+                            {section.items.map((item, i) => (
+                              <li key={i}>{item}</li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+
+                  if (section.type === "text") {
+                    return (
+                      <Card
+                        key={index}
+                        className={`border-l-4 ${section.borderColor} shadow-sm`}
+                      >
+                        <CardHeader>
+                          <CardTitle className="text-base">
+                            {section.title}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-gray-700 text-sm">
+                          {section.content}
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+
+                  return null;
+                })}
               </div>
-
-              {/* TAM */}
-              <Card className="p-6 bg-gray-50 border border-gray-200 flex flex-col justify-center items-center">
-                {" "}
-                <div className="font-semibold text-center mb-4">
-                  {" "}
-                  Total Addressable Market (TAM){" "}
-                </div>{" "}
-                <div className="flex items-center justify-center w-full h-52 relative">
-                  <ResponsiveContainer width="80%" height="100%">
-                    <RadialBarChart
-                      cx="50%"
-                      cy="50%"
-                      innerRadius="70%"
-                      outerRadius="90%"
-                      barSize={18}
-                      data={tamData}
-                      startAngle={180}
-                      endAngle={-180}
-                    >
-                      <RadialBar
-                        dataKey="value"
-                        background
-                        cornerRadius={10}
-                        fill="#22c55e"
-                      />
-                      <RechartsTooltip formatter={(v) => `$${v}B`} />
-                    </RadialBarChart>
-                  </ResponsiveContainer>
-                  <div className="absolute text-center">
-                    {" "}
-                    <h3 className="text-2xl font-semibold">$300B</h3>{" "}
-                    <p className="text-sm text-gray-500">13% CAGR</p>{" "}
-                  </div>{" "}
-                </div>{" "}
-              </Card>
-
-              {/* SOM */}
-              <div className="bg-gray-50 border rounded-lg p-4">
-                <div className="font-medium mb-2">
-                  Serviceable Obtainable Market (SOM)
-                </div>
-                <div className="w-full h-56">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={somData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                      <XAxis dataKey="year" />
-                      <YAxis />
-                      <RechartsTooltip formatter={(v) => `$${v}B`} />
-                      <Legend />
-                      <Bar dataKey="value" fill="#6366f1" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="text-xs text-gray-600 mt-2 text-center">
-                  Projected from $5B → $200B by 2034{" "}
-                  <span className="text-green-600 font-semibold">
-                    (43% CAGR)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>))}
-
-        {/* Technology Accordion */}
-        <AccordionItem value="technology">
-          <AccordionTrigger className="text-lg font-semibold text-yellow-700">
-            Technology & Innovation
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Stack */}
-              <div className="bg-white shadow rounded-lg p-4 border-l-4 border-blue-500">
-                <h3 className="text-base font-semibold text-gray-800 mb-2">
-                  Technology Stack
-                </h3>
-                <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
-                  <li>Agentic AI with multi-agent architecture.</li>
-                  <li>Automates ML lifecycle and feature engineering.</li>
-                  <li>Integrates with multiple data sources.</li>
-                  <li>Built for scalability and real-time analytics.</li>
-                </ul>
-              </div>
-
-              {/* R&D */}
-              <div className="bg-white shadow rounded-lg p-4 border-l-4 border-purple-500">
-                <h3 className="text-base font-semibold text-gray-800 mb-2">
-                  Innovation & R&D
-                </h3>
-                <p className="text-gray-700 text-sm">
-                  Co-founders <strong>Divya Krishna R</strong> and{" "}
-                  <strong>Sumalata Kamat</strong> jointly hold
-                  <strong> 10 patents</strong> from prior work at Bosch,
-                  highlighting deep R&D expertise.
-                </p>
-              </div>
-
-              {/* Vision */}
-              <div className="bg-white shadow rounded-lg p-4 border-l-4 border-green-500">
-                <h3 className="text-base font-semibold text-gray-800 mb-2">
-                  Vision & USP
-                </h3>
-                <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
-                  <li>Vision: Make AI/ML accessible to every business.</li>
-                  <li>USP: Chat-based interface for non-technical users.</li>
-                  <li>Rapid deployment (2–3 weeks) & insights in &lt;5 min.</li>
-                  <li>4× reduction in analytics costs.</li>
-                </ul>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
       </Accordion>
     </TabsContent>
   );
