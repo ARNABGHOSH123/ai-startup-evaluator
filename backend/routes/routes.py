@@ -169,13 +169,13 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
         founder_doc_ref.set({"company_doc_id": doc_ref.id}, merge=True)
         
         # Trigger the Cloud Run Job to process this pitch deck
-        # try:
-        #     trigger_job_with_filename(
-        #         filename=pitch_deck_filename, firestore_doc_id=doc_ref.id)
-        # except Exception as e:
-        #     # keep errors explicit for debugging
-        #     raise HTTPException(
-        #         status_code=500, detail=f"Failed to trigger Cloud Run Job: {e}")
+        try:
+            trigger_job_with_filename(
+                filename=pitch_deck_filename, firestore_doc_id=doc_ref.id)
+        except Exception as e:
+            # keep errors explicit for debugging
+            raise HTTPException(
+                status_code=500, detail=f"Failed to trigger Cloud Run Job: {e}")
 
         return {"status": status, "doc_id": doc_ref.id, "doc": result}
 
