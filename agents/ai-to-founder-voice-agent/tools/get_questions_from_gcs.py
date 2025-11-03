@@ -19,15 +19,18 @@ def get_questions_from_gcs(company_doc_id: str, folder_name: str = Config.GCP_PI
     bucket = storage_client.bucket(bucket_name=Config.GCS_BUCKET_NAME)
     blobs = list(bucket.list_blobs(
         prefix=f"{folder_name}/{company_doc_id}/questions/"))
-    questions = blobs[0] if len(blobs) > 0 else None
-    if not questions:
+    
+    question_blob = next((b for b in blobs if b.name.endswith(".json")), None)
+    if not question_blob:
         return None
 
     try:
-        content_str = questions.download_as_string()
+        content_str = question_blob.download_as_string()
+        print(content_str)
         questions = json.loads(content_str).get("questions", [])
         if not questions:
             raise Exception("No questions found in the questions file.")
         return questions
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print(e)
         raise Exception("Failed to decode JSON from questions file.")
