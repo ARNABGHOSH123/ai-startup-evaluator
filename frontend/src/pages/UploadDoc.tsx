@@ -1,14 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
 import { Upload, FileText, Mic, Mail, Edit3, XCircle } from "lucide-react";
 
-export default function UploadDoc() {
-  const [files, setFiles] = useState({
-    pitchDeck: null as File | null,
-    transcript: null as File | null,
-    email: null as File | null,
-    founderUpdate: null as File | null,
-  });
+interface UploadDocProps {
+  files: {
+    pitchDeck: File | null;
+    transcript: File | null;
+    email: File | null;
+    founderUpdate: File | null;
+  };
+  setFiles: React.Dispatch<
+    React.SetStateAction<{
+      pitchDeck: File | null;
+      transcript: File | null;
+      email: File | null;
+      founderUpdate: File | null;
+    }>
+  >;
+}
 
+export default function UploadDoc({ files, setFiles }: UploadDocProps) {
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     key: keyof typeof files
@@ -30,7 +40,8 @@ export default function UploadDoc() {
         break;
       case "transcript":
         isValid = file.type === "audio/mpeg" || file.type === "audio/wav";
-        errorMessage = "Please upload only audio files (MP3 or WAV) for Transcript.";
+        errorMessage =
+          "Please upload only audio files (MP3 or WAV) for Transcript.";
         break;
       case "email":
         isValid =
@@ -39,7 +50,8 @@ export default function UploadDoc() {
           file.name.endsWith(".eml") ||
           file.name.endsWith(".txt") ||
           file.type === "application/pdf";
-        errorMessage = "Please upload only TXT, EML, or PDF files for Email Communication.";
+        errorMessage =
+          "Please upload only TXT, EML, or PDF files for Email Communication.";
         break;
       case "founderUpdate":
         isValid =
@@ -47,7 +59,8 @@ export default function UploadDoc() {
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
           file.type === "application/pdf" ||
           file.type === "text/plain";
-        errorMessage = "Please upload only DOCX, TXT, or PDF files for Founder Updates.";
+        errorMessage =
+          "Please upload only DOCX, TXT, or PDF files for Founder Updates.";
         break;
       default:
         break;
@@ -66,10 +79,10 @@ export default function UploadDoc() {
     setFiles((prev) => ({ ...prev, [key]: null }));
   };
 
-  const handleSubmit = () => {
-    console.log("Uploaded files:", files);
-    alert("Documents uploaded successfully!");
-  };
+  // const handleSubmit = () => {
+  //   console.log("Uploaded files:", files);
+  //   alert("Documents uploaded successfully!");
+  // };
 
   const uploadFields = [
     {
@@ -153,14 +166,14 @@ export default function UploadDoc() {
           })}
         </div>
 
-        <div className="flex justify-end mt-10">
+        {/* <div className="flex justify-end mt-10">
           <button
             onClick={handleSubmit}
             className="px-6 py-3 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
           >
             Submit Documents
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

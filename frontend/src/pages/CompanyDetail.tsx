@@ -29,7 +29,7 @@ export default function DashboardTabs() {
     foundation:
       "Datastride Analytics was founded in 2022 and is based in Bengaluru, India",
     size: "According to its LinkedIn page, Datastride Analytics has a company size of 2-10 employees, with 17 associated members on the platform",
-    score: "7"
+    score: "7",
   };
 
   // ----------------------- Competitor Data -----------------------
@@ -137,7 +137,6 @@ export default function DashboardTabs() {
 
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
-
       {/* <InvestmentWeightage/>commented for now if need we can uncomment or we can delete */}
       {/* ---------------- Summary Card ---------------- */}
       <SummaryCard companyInfo={companyInfo} />
@@ -146,15 +145,16 @@ export default function DashboardTabs() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="investmentMemo">Investment Memo</TabsTrigger>
           <TabsTrigger value="foundingTeam">Founding Team</TabsTrigger>
           <TabsTrigger value="businessModel">Business Model</TabsTrigger>
           <TabsTrigger value="funding">Funding & Financials</TabsTrigger>
           <TabsTrigger value="competitors">Competitors</TabsTrigger>
           <TabsTrigger value="traction">Traction</TabsTrigger>
           <TabsTrigger value="industry">Industry & Trends</TabsTrigger>
-          <TabsTrigger value="partnership">Partnerships & Strategic Analysis</TabsTrigger>
-          <TabsTrigger value="investmentMemo">Investment Memo</TabsTrigger>
-          
+          <TabsTrigger value="partnership">
+            Partnerships & Strategic Analysis
+          </TabsTrigger>
         </TabsList>
 
         {/* ------------ Competitors Tab ------------ */}
@@ -169,21 +169,21 @@ export default function DashboardTabs() {
         {/* Industry & Trends*/}
         <IndustryTab />
 
-    {/* Problem Statement And Solution */}
+        {/* Problem Statement And Solution */}
         <Overview />
 
-      {/* Founding team */}
-      <FoundingTeam />
+        {/* Founding team */}
+        <FoundingTeam />
 
-      {/* Traction & User Base */}
-      <Traction />
+        {/* Traction & User Base */}
+        <Traction />
 
-      {/* Business Model & Go to Market */}
-      <BusinessModel />
-      {/* Other */}
-      <PartnershipsAndAnalysis/>
+        {/* Business Model & Go to Market */}
+        <BusinessModel />
+        {/* Other */}
+        <PartnershipsAndAnalysis />
 
-      <InvestmentRecommendation />
+        <InvestmentRecommendation />
       </Tabs>
     </div>
   );

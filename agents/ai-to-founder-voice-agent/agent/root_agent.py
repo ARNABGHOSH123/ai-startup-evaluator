@@ -18,7 +18,7 @@ def fetch_questions(callback_context: CallbackContext) -> Optional[types.Content
     If False or not present, returns None to allow execution.
     """
     current_state = callback_context.state.to_dict()
-    callback_context.state.update({**current_state, "fetched_questions": get_questions_from_gcs(company_doc_id=current_state.get("company_doc_id"))})
+    callback_context.state.update({**current_state, "fetched_questions": get_questions_from_gcs(company_doc_id=current_state.get("company_doc_id"))[:1]})
 
     return None
 

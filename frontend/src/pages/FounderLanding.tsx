@@ -1,18 +1,13 @@
-import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function FounderLanding() {
-  const navigate = useNavigate();
   const founderName =
     JSON.parse(localStorage.getItem("user") || "{}")
       ?.founderName?.toLowerCase()
       ?.replace(/\s+/g, "") || "founder";
 
-  const handlePitchClick = () => {
-    navigate("pitch");
-  };
   const hours = new Date().getHours();
   const greeting =
     hours < 12
@@ -68,12 +63,12 @@ export default function FounderLanding() {
           transition={{ delay: 0.7 }}
           className="mt-14 flex flex-wrap justify-center gap-4"
         >
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
-            onClick={handlePitchClick}
+          <Link
+            to="pitch"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-3 py-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
           >
             Pitch Your Deck
-          </Button>
+          </Link>
         </motion.div>
       </motion.div>
     </div>

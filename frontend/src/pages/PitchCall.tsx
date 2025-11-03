@@ -1,13 +1,21 @@
 import { useState } from "react";
 import { PhoneCall, Loader2, CheckCircle } from "lucide-react";
 import AudioConversation from "../components/AudioConversation";
-import { Button } from "@/components/ui/button";
 
-export default function PitchCall(): JSX.Element {
+export default function PitchCall({
+  companyDocId,
+  isBenchmarkAvailable,
+}: {
+  companyDocId: string | null;
+  isBenchmarkAvailable: boolean;
+}): JSX.Element {
   const [isCalling, setIsCalling] = useState(false);
   const [callStarted, setCallStarted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
+
+  // Read founderId from route params (string, not a callable)
+
   const handleCall = () => {
     setShowModal(true);
     setIsCalling(true);
@@ -23,41 +31,46 @@ export default function PitchCall(): JSX.Element {
         Thank You for Submitting Your Deck!
       </h2>
       <p className="text-gray-600 mb-8">
-        We’ve received your pitch. Our AI Assistant will review it and get back
-        to you shortly.
+        {isBenchmarkAvailable
+          ? "Please click the button below to initiate the risk assessment call to know more about your startup and further risk clarifications."
+          : "We’ve received your pitch. Our AI Assistant will review it and get back to you shortly."}
       </p>
 
       <div className="border-t border-gray-200 pt-6 w-full max-w-lg">
-        <button
-          onClick={handleCall}
-          disabled={isCalling}
-          className={`flex items-center justify-center gap-1 w-full p-3 rounded-lg text-white font-medium transition-all ${
-            isCalling
-              ? "bg-indigo-400 cursor-wait"
-              : "bg-indigo-600 hover:bg-indigo-700"
-          }`}
-        >
-          {isCalling ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" /> Calling...
-            </>
-          ) : (
-            <>
-              <PhoneCall className="w-6 h-5 justify-center items-center" />{" "}
-              Trigger AI Assistant Call
-            </>
-          )}
-        </button>
+        {/* Loading state for company doc id */}
+        {isBenchmarkAvailable && (
+          <button
+            onClick={handleCall}
+            disabled={isCalling}
+            className={`flex items-center justify-center gap-1 w-full p-3 rounded-lg text-white font-medium transition-all ${
+              isCalling
+                ? "bg-indigo-400 cursor-wait"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
+          >
+            {isCalling ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Calling...
+              </>
+            ) : (
+              <>
+                <PhoneCall className="w-6 h-5 justify-center items-center" />{" "}
+                Trigger AI Assistant Call
+              </>
+            )}
+          </button>
+        )}
 
         {callStarted && (
           <p className="text-green-600 font-medium mt-4">
-            ✅ AI Assistant call initiated successfully!
+            AI Assistant call initiated successfully!
           </p>
         )}
       </div>
 
-      {showModal && (
+      {showModal && companyDocId && (
         <AudioConversation
+          companyDocId={companyDocId}
           isOpen={showModal}
           onChange={setShowModal}
           setCallEnded={setCallEnded}
@@ -78,9 +91,9 @@ export default function PitchCall(): JSX.Element {
           Our team will review the conversation and reach out once an investor
           expresses interest or for next steps. Have a great day ahead!
         </p>
-        <Button className="mt-4 bg-green-600 text-white hover:bg-green-700">
+        {/* <Link className="mt-4 bg-green-600 text-white hover:bg-green-700">
           Return to Dashboard
-        </Button>
+        </Link> */}
       </div>
       {/* </Card> */}
     </div>
