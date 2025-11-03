@@ -23,14 +23,17 @@ def get_deck_inv_deal_note(firestore_doc_id: str, folder_name: str = Config.GCP_
 
     pitch_deck_path = f"{folder_name.rstrip('/')}/{firestore_doc_id}/analysis/"
     pitch_deck_blob_list = list(bucket.list_blobs(prefix=pitch_deck_path))
-    pitch_deck_blob = pitch_deck_blob_list[0] if len(
-        pitch_deck_blob_list) > 0 else None
+    pitch_deck_blob = next((b for b in pitch_deck_blob_list if b.name.endswith(".json")), None)
+    if not pitch_deck_blob:
+        return None
 
     investment_deal_note_path = f"{folder_name.rstrip('/')}/{firestore_doc_id}/investment_memos/"
     investment_deal_note_blob_list = list(
         bucket.list_blobs(prefix=investment_deal_note_path))
-    investment_deal_note_blob = investment_deal_note_blob_list[0] if len(
-        investment_deal_note_blob_list) > 0 else None
+    investment_deal_note_blob = next((b for b in investment_deal_note_blob_list if b.name.endswith(".md")), None)
+
+    if not investment_deal_note_blob:
+        return None
 
     pitch_deck_content = None
     if pitch_deck_blob:
