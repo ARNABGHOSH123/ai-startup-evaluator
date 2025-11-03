@@ -433,7 +433,7 @@ def fetch_audio_agent_clarifications(company_doc_id: str):
             f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/{company_doc_id}/clarifications/"
         ))
 
-        blob = clarifications[0] if len(clarifications) > 0 else None
+        blob = next((b for b in clarifications if b.name.endswith(".json")), None)
         if blob is None:
             return {
                 "status": "ok",
