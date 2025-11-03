@@ -53,11 +53,7 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
         raise HTTPException(status_code=400, detail="Invalid object_name")
 
     try:
-        if Config.PRODUCTION:
-            credentials, project_id = auth.default()
-        else:
-            credentials, project_id = auth.default(
-                scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        credentials, project_id = auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
         # credentials.refresh(Request())
         storage_client = storage.Client(
             project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
@@ -71,10 +67,8 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
             version="v4",
             method="POST",  # for initiating the resumable session
             expiration=timedelta(seconds=expiration_seconds),
-            service_account_email=credentials.service_account_email,
-            access_token=credentials.token,
-            # force the client to include this header when sending the POST
             headers={"x-goog-resumable": "start"},
+            credentials=credentials,
         )
 
         return {"signedUrl": url}
@@ -166,13 +160,13 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
         founder_doc_ref.set({"company_doc_id": doc_ref.id}, merge=True)
         
         # Trigger the Cloud Run Job to process this pitch deck
-        try:
-            trigger_job_with_filename(
-                filename=pitch_deck_filename, firestore_doc_id=doc_ref.id)
-        except Exception as e:
-            # keep errors explicit for debugging
-            raise HTTPException(
-                status_code=500, detail=f"Failed to trigger Cloud Run Job: {e}")
+        # try:
+        #     trigger_job_with_filename(
+        #         filename=pitch_deck_filename, firestore_doc_id=doc_ref.id)
+        # except Exception as e:
+        #     # keep errors explicit for debugging
+        #     raise HTTPException(
+        #         status_code=500, detail=f"Failed to trigger Cloud Run Job: {e}")
 
         return {"status": status, "doc_id": doc_ref.id, "doc": result}
 
