@@ -53,7 +53,14 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
         raise HTTPException(status_code=400, detail="Invalid object_name")
 
     try:
-        credentials, project_id = auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+
+        print("PRODUCTION:", Config.PRODUCTION)
+        if Config.PRODUCTION:
+            credentials, project_id = auth.default()
+            credentials.refresh(Request())
+        else:
+            credentials, project_id = auth.default(
+                scopes=["https://www.googleapis.com/auth/cloud-platform"])
         # credentials.refresh(Request())
         storage_client = storage.Client(
             project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
@@ -67,8 +74,10 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
             version="v4",
             method="POST",  # for initiating the resumable session
             expiration=timedelta(seconds=expiration_seconds),
+            service_account_email=credentials.service_account_email,
+            access_token=credentials.token,
+            # force the client to include this header when sending the POST
             headers={"x-goog-resumable": "start"},
-            credentials=credentials,
         )
 
         return {"signedUrl": url}
