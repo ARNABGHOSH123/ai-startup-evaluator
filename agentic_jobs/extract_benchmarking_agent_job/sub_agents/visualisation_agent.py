@@ -45,6 +45,8 @@ for i in range(no_of_agents):
         3. 'save_file_content_to_gcs' : Use this tool to save the JSON content to a file in the GCS (Google Cloud Storage) bucket.
         4. 'get_chart_data' : Use this tool to get chart configuration/data for the given chart_type.
     
+    CRITICAL TOOL USAGE NOTE:
+        YOU MUST USE THE EXACT TOOL NAMES AS PROVIDED ABOVE WHILE MAKING TOOL CALLS. DO NOT INVENT ANY TOOL NAME OF YOUR OWN. YOU MUST DOUBLE CHECK THE TOOL NAME WITH THE ONES PROVIDED ABOVE BEFORE CALLING A TOOL. For example while requesting for search use 'tavily_search' and not any other names like 'ta-vily_search' or 'tavilyWebSearch' etc.
 
     Example of how to call the tools:-
         tavily_search(query="What is the weather in New York?") 
@@ -83,7 +85,7 @@ for i in range(no_of_agents):
     4. **Retrieve Chart Schema**: Use `get_chart_data` tool and read the schema/formatInstructions/example carefully. Ensure you understand exactly what keys, data types, array structures are required.
     5. **Understand the chart data format:** For each focus point, understand the chart data format returned by the 'get_chart_data' tool to ensure that the gathered information can be structured accordingly. Adhere to the format instructions present in the response of the 'get_chart_data' tool. Use the 'example' section in the response to guide you on how to structure the data. Use the exact field names being used in the example. DO NOT create / change any field names on your own.
     6. **Structure the Data:** For each focus point, structure the gathered information according to the chart data format obtained in the previous step. Fill the data fields accurately to ensure that the information is ready for visualisation. Do not put up anything randomly. Ensure that the data is relevant and correctly represents the focus point.
-    7. **Save JSON:** For each focus point, generate a unique suitable filename (e.g., `focus_point_1.json`, `focus_point_2.json`, etc.) and save the structured data as a JSON file. Use the 'save_file_content_to_gcs' tool with bucket '{GCS_BUCKET_NAME}', folder '{GCP_PITCH_DECK_OUTPUT_FOLDER}/{{firestore_doc_id}}/visualisations/<chart_type>', the JSON content, the generated filename, and extension 'json'. <chart_type> should be replaced with the actual chart type chosen for that focus point (e.g., 'BarChart', 'PieChart', etc.).
+    7. **Save JSON:** For each focus point, generate a unique suitable filename (e.g., `focus_point_1.json`, `focus_point_2.json`, etc.) and save the structured data as a JSON file. Use the 'save_file_content_to_gcs' tool with bucket '{GCS_BUCKET_NAME}', folder '{GCP_PITCH_DECK_OUTPUT_FOLDER}/{{firestore_doc_id}}/visualisations/<chart_type>', the JSON content, the generated filename (WITHOUT EXTENSION), and extension 'json'. <chart_type> should be replaced with the actual chart type chosen for that focus point (e.g., 'BarChart', 'PieChart', etc.).
     8. **Repeat for all focus points:** Continue this process for all focus points in the list, ensuring that each one is thoroughly researched, visualised, and saved as a JSON file.
 
     CRITICAL NOTE:
@@ -113,7 +115,6 @@ for i in range(no_of_agents):
     - Always check the `applicability` before selecting a chart type so that you minimise the chance of
     misrepresentation of data.
 
-    YOU MUST use the exact tool names as provided above while making tool calls. Dont make up any tool name of your own.
     """,
         tools=[tavily_search, extract_webpage_text,
                save_file_content_to_gcs, get_chart_data],
