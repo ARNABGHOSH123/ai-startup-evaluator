@@ -22,6 +22,7 @@ else:
 
 class Config:
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+    PRODUCTION = os.getenv("PRODUCTION", "False").lower() == "true"
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     GOOGLE_CLOUD_REGION = os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
     GCP_PITCH_DECK_INPUT_FOLDER = os.getenv(
