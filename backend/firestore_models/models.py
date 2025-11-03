@@ -41,7 +41,7 @@ class CompanyDoc(BaseModel):
     business_details: str
     usp: str
     revenue_model: str
-    founder_name: str
+    founder_id: str
     comments: Optional[str] = None
     company_pitch_deck_gcs_uri: Optional[str] = None
     benchmark_agent_job_id: Optional[str] = None

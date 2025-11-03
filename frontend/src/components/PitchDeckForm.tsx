@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
+import UploadDoc from "@/pages/UploadDoc";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type FormData = {
   companyName: string;
@@ -12,79 +15,82 @@ type FormData = {
   usp: string;
   revenue: string;
   comments: string;
-  // pitchDeck: File | null;
 };
 
 type PitchFormProps = {
   onSubmit?: (formData: FormData) => void;
   onSuccess?: (formData: FormData) => void;
   founderName?: string;
+  goNext?: () => void;
 };
 
-// async function getUploadSessionUrl(filename: string) {
-//   const resp = await fetch(
-//     `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/generate_v4_signed_url`,
-//     {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         object_name: filename,
-//       }),
-//     }
-//   );
-//   return resp.json();
-// }
+async function getUploadSessionUrl(filename: string) {
+  const resp = await fetch(
+    `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/generate_v4_signed_url`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        object_name: filename,
+      }),
+    }
+  );
+  return resp.json();
+}
 
 // // new function to initiate resumable session (POST)
-// async function initiateResumableSession(signedUrl: string) {
-//   const res = await fetch(signedUrl, {
-//     method: "POST",
-//     // Must include this header because server included it when signing
-//     headers: {
-//       "x-goog-resumable": "start",
-//       // don't include Content-Type/Length here
-//     },
-//     // body can be empty
-//   });
+async function initiateResumableSession(signedUrl: string) {
+  const res = await fetch(signedUrl, {
+    method: "POST",
+    // Must include this header because server included it when signing
+    headers: {
+      "x-goog-resumable": "start",
+      // don't include Content-Type/Length here
+    },
+    // body can be empty
+  });
 
-//   if (!res.ok) {
-//     const txt = await res.text().catch(() => "");
-//     throw new Error(`Failed to start resumable session: ${res.status} ${txt}`);
-//   }
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`Failed to start resumable session: ${res.status} ${txt}`);
+  }
 
-//   // The resumable session URL is returned in Location header
-//   const sessionUrl = res.headers.get("Location");
-//   if (!sessionUrl)
-//     throw new Error("No Location header returned for resumable session");
-//   return sessionUrl;
-// }
+  // The resumable session URL is returned in Location header
+  const sessionUrl = res.headers.get("Location");
+  if (!sessionUrl)
+    throw new Error("No Location header returned for resumable session");
+  return sessionUrl;
+}
 
-// async function uploadFileViaSession(sessionUrl: string, file: File) {
-//   // Put entire file in a single request (works for many 70-100MB uploads but chunking recommended)
-//   const res = await fetch(sessionUrl, {
-//     method: "PUT",
-//     headers: {
-//       "Content-Type": file.type,
-//       "Content-Length": file.size.toString(),
-//     },
-//     body: file,
-//   });
+async function uploadFileViaSession(sessionUrl: string, file: File) {
+  // Put entire file in a single request (works for many 70-100MB uploads but chunking recommended)
+  const res = await fetch(sessionUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": file.type,
+      "Content-Length": file.size.toString(),
+    },
+    body: file,
+  });
 
-//   if (!res.ok) {
-//     // check res.status, implement resume logic (query upload status)
-//     throw new Error("Upload failed");
-//   }
-//   return res;
-// }
+  if (!res.ok) {
+    // check res.status, implement resume logic (query upload status)
+    throw new Error("Upload failed");
+  }
+  return res;
+}
 
 export default function PitchForm({
   founderName,
   onSubmit,
   onSuccess,
+  goNext,
 }: PitchFormProps) {
+  const params = useParams();
   const [isSubmitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     companyName: "",
     domain: "",
@@ -97,6 +103,12 @@ export default function PitchForm({
     usp: "",
     revenue: "",
     comments: "",
+  });
+  const [files, setFiles] = useState({
+    pitchDeck: null as File | null,
+    transcript: null as File | null,
+    email: null as File | null,
+    founderUpdate: null as File | null,
   });
 
   const handleChange = (
@@ -117,15 +129,31 @@ export default function PitchForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate that a pitch deck has been provided
+    if (!files.pitchDeck) {
+      setFormError("Please upload your Pitch Deck (PDF) before submitting.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setFormError(null);
+
     // Upload the file to GCS
-    // if (!formData.pitchDeck) throw new Error("Pitch deck is not provided");
+    if (!Object.values(files).some((file) => file !== null)) {
+      alert("Please upload the required documents before submitting.");
+      return;
+    }
     setSubmitting(true);
-    // const { signedUrl } = await getUploadSessionUrl(formData?.pitchDeck.name);
-    // const sessionUrl = await initiateResumableSession(signedUrl);
-    // await uploadFileViaSession(sessionUrl, formData.pitchDeck);
+    const { signedUrl } = await getUploadSessionUrl(
+      files?.pitchDeck?.name || "pitch_deck"
+    );
+    const sessionUrl = await initiateResumableSession(signedUrl);
+    if (files?.pitchDeck)
+      await uploadFileViaSession(sessionUrl, files?.pitchDeck);
 
     await fetch(
-      `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/add_to_companies_list`,
+      `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/add_to_companies_list/${
+        params?.founderId
+      }`,
       {
         method: "POST",
         headers: {
@@ -133,7 +161,7 @@ export default function PitchForm({
         },
         body: JSON.stringify({
           company_name: formData.companyName.trim(),
-          founder_name: formData.founderName,
+          founder_id: params?.founderId,
           domain: formData.domain,
           company_phone_no: formData.phone,
           company_email: formData.email,
@@ -143,17 +171,25 @@ export default function PitchForm({
           usp: formData.usp,
           revenue_model: formData.revenue,
           comments: formData.comments,
+          pitch_deck_filename: files?.pitchDeck?.name || "",
         }),
       }
     );
     setSubmitting(false);
     onSubmit?.(formData);
     onSuccess?.(formData);
+    goNext?.();
   };
 
   return (
     <div className="w-full h-full flex justify-center items-center bg-gray-50 p-6">
       <form onSubmit={handleSubmit} className="w-full rounded-2xl space-y-4">
+        {formError && (
+          <Alert variant="destructive" className="mb-2">
+            <AlertTitle>Missing required file</AlertTitle>
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
+        )}
         <p className="text-sm text-gray-500 mb-6">
           Fundraise Application for Startups
         </p>
@@ -214,22 +250,6 @@ export default function PitchForm({
               required
             />
           </div>
-        </div>
-
-        {/* Founder Name */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Founder Name *
-          </label>
-          <input
-            type="text"
-            name="founderName"
-            disabled={founderName ? true : false}
-            value={formData.founderName}
-            onChange={handleChange}
-            className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-primary"
-            required
-          />
         </div>
 
         {/* Company Address */}
@@ -315,6 +335,12 @@ export default function PitchForm({
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-primary"
           />
+        </div>
+        <div className="space-y-2">
+          <UploadDoc files={files} setFiles={setFiles} />
+          <p className="text-xs text-gray-500">
+            Pitch Deck (PDF) is required to proceed.
+          </p>
         </div>
 
         {/* Pitch Deck */}

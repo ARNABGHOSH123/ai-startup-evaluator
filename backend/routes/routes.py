@@ -53,8 +53,9 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
         raise HTTPException(status_code=400, detail="Invalid object_name")
 
     try:
-        credentials, project_id = auth.default()
-        credentials.refresh(Request())
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        # credentials.refresh(Request())
         storage_client = storage.Client(
             project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
 
@@ -83,7 +84,7 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
 @app.post("/add_to_companies_list/{founder_id}")
 async def add_to_companies_list(founder_id: str, req: CompanyDoc):
     company_name = req.company_name.strip()
-    founder_name = req.founder_name.strip()
+    founder_id = req.founder_id.strip()
     domain = req.domain.strip()
     company_phone_no = req.company_phone_no.strip()
     company_email = req.company_email.strip()
@@ -100,9 +101,9 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
     if not company_name:
         raise HTTPException(
             status_code=400, detail="company_name cannot be empty")
-    if not founder_name:
+    if not founder_id:
         raise HTTPException(
-            status_code=400, detail="founder_name cannot be empty")
+            status_code=400, detail="founder_id cannot be empty")
     if not pitch_deck_filename:
         raise HTTPException(
             status_code=400, detail="pitch_deck_filename cannot be empty")
@@ -118,7 +119,7 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
         "usp": usp,
         "revenue_model": revenue_model,
         "comments": comments,
-        "founder_name": founder_name,
+        "founder_id": founder_id,
         "company_pitch_deck_gcs_uri": f"gs://{GCS_BUCKET_NAME}/{GCP_PITCH_DECK_INPUT_FOLDER}/{pitch_deck_filename}",
         "benchmark_agent_job_id": "",
         "extract_output_gcs_uri": "",
@@ -178,6 +179,43 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
         raise HTTPException(
             status_code=500, detail=f"Failed to prepare company data: {exc}")
 
+@app.post("/get_company_doc_id/{founder_id}")
+async def get_company_doc_id(founder_id: str):
+    if not founder_id or not founder_id.strip():
+        raise HTTPException(
+            status_code=400, detail="founder_id cannot be empty")
+    try:
+        credentials, project_id = auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"])
+        firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
+            project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
+
+        collection_ref = firestore_client.collection(
+            FIRESTORE_FOUNDER_COLLECTION)
+
+        doc = collection_ref.document(document_id=founder_id).get()
+        founder_data = doc.to_dict() or {}
+
+        company_doc_id = founder_data.get("company_doc_id", "")
+
+        if not company_doc_id:
+            return {"status": "ok", "company_doc_id": "", "benchmark_gcs_uri": ""}
+
+        company_collection_ref = firestore_client.collection(
+            FIRESTORE_COMPANY_COLLECTION)
+    
+        company_data = company_collection_ref.document(document_id=company_doc_id).get()
+        if not company_data.exists:
+            raise HTTPException(
+                status_code=404, detail=f"No company found with id='{company_doc_id}'")
+        benchmark_gcs_uri = company_data.to_dict().get("benchmark_gcs_uri", "")
+
+        return {"status": "ok", "company_doc_id": company_doc_id, "benchmark_gcs_uri": benchmark_gcs_uri}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch company_doc_id: {e}")
 
 @app.post("/get_companies_list")
 async def get_companies_list():

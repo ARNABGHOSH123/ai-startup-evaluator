@@ -19,6 +19,7 @@ interface AudioConversationProps {
   isOpen: boolean;
   onChange: (open: boolean) => void;
   setCallEnded: (open: boolean) => void;
+  companyDocId: string;
 }
 
 // Generate session id and WebSocket URL
@@ -62,6 +63,7 @@ export default function AudioConversation({
   isOpen,
   onChange,
   setCallEnded,
+  companyDocId,
 }: AudioConversationProps) {
   // State management
   const [status, setStatus] = useState("Ready to connect");
@@ -137,6 +139,8 @@ export default function AudioConversation({
   // WebSocket connection management
   const connectWebSocket = useCallback(
     (is_audio = false): Promise<void> => {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user?.founderId) return Promise.reject("User not logged in");
       // Avoid redundant reconnects
       if (isAudioModeRef.current === is_audio && websocketRef.current) {
         // If already open, resolve immediately
@@ -155,7 +159,7 @@ export default function AudioConversation({
       const thisConnectionId = connectionCounterRef.current;
       isAudioModeRef.current = is_audio;
 
-      const url = `${wsBaseUrl}?is_audio=${is_audio}&company_doc_id=abcde&founder_name=Sumalata`;
+      const url = `${wsBaseUrl}?is_audio=${is_audio}&company_doc_id=${companyDocId}&founder_name=${user?.founderName}`;
       const ws = new WebSocket(url);
       websocketRef.current = ws;
       setConnecting(true);

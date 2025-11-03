@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import { PhoneCallIcon, Star, TrendingUp } from "lucide-react";
 import { TabsContent } from "@/components/ui/tabs";
 
@@ -14,6 +15,9 @@ export default function InvestmentRecommendation() {
     null
   );
 
+  const params = useParams();
+  const companyId = params.companyId;
+
   useEffect(() => {
     const fetchClarifications = async () => {
       setLoadingClarifications(true);
@@ -21,7 +25,7 @@ export default function InvestmentRecommendation() {
         const response = await fetch(
           `${
             import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
-          }/fetch_audio_agent_clarifications/abcde`,
+          }/fetch_audio_agent_clarifications/${companyId}`,
           {
             method: "POST",
             headers: {
@@ -78,27 +82,29 @@ export default function InvestmentRecommendation() {
           "Despite high risks typical of the seed stage, Sia’s strong team, IP ownership, and early enterprise traction make it an attractive investment candidate. With the right execution and focus on enterprise sales scaling, it holds potential for substantial returns.",
         ],
       },
-      {
-        type: "summary",
-        title: "Smart Call Insights",
-        color: "purple",
-        icon: <PhoneCallIcon className="w-5 h-5 text-purple-600" />,
-        paragraphs: loadingClarifications
-          ? ["Loading voice agent clarifications..."]
-          : errorClarifications
-          ? [errorClarifications]
-          : clarifications.length > 0
-          ? clarifications.map((item, idx) => (
-              <div key={idx} className="mb-2">
-                <p className="font-semibold text-purple-700">
-                  Q{idx + 1}. {item.question}
-                </p>
-                <p className="text-gray-700">A: {item.response}</p>
-              </div>
-            ))
-          : ["No clarifications available for this company."],
-      },
-    ],
+      !errorClarifications && clarifications.length > 0
+        ? {
+            type: "summary",
+            title: "Smart Call Insights",
+            color: "purple",
+            icon: <PhoneCallIcon className="w-5 h-5 text-purple-600" />,
+            paragraphs: loadingClarifications
+              ? ["Loading voice agent clarifications..."]
+              : errorClarifications
+              ? [errorClarifications]
+              : clarifications.length > 0
+              ? clarifications.map((item, idx) => (
+                  <div key={idx} className="mb-2">
+                    <p className="font-semibold text-purple-700">
+                      Q{idx + 1}. {item.question}
+                    </p>
+                    <p className="text-gray-700">A: {item.response}</p>
+                  </div>
+                ))
+              : ["No clarifications available for this company."],
+          }
+        : null,
+    ].filter(Boolean) as TextBlock[],
   };
 
   /* --------------------------- Rating Data --------------------------- */
