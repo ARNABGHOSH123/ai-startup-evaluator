@@ -1,4 +1,3 @@
-// @ts-ignore
 import { useEffect, useRef, useState } from "react";
 import { PhoneCall, Loader2, CheckCircle } from "lucide-react";
 import AudioConversation from "../components/AudioConversation";
