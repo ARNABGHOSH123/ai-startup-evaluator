@@ -2,7 +2,7 @@ import { Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
-export default function FounderLanding() {
+export default function FounderLanding({user}:any) {
   const founderName =
     JSON.parse(localStorage.getItem("user") || "{}")
       ?.founderName?.toLowerCase()
