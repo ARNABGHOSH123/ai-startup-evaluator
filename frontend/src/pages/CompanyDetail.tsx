@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useEffect, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "./SummaryCard";
 import CompetitorsTab from "./CompetitorsTab";
 import FundingTab from "./FundingTab";
@@ -10,11 +10,116 @@ import BusinessModel from "./BussinessModel";
 import PartnershipsAndAnalysis from "./PartnershipsAndAnalysis";
 import InvestmentRecommendation from "./InvestmentMemo";
 import Overview from "./Overview";
-import InvestmentWeightage from "./InvestmentWeightage";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link, useParams } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
-export default function DashboardTabs() {
-  const [activeTab, setActiveTab] = useState<string>("competitors");
+type Company = {
+  company_name: string;
+  founder_name: string;
+  company_pitch_deck_gcs_uri: string;
+  is_deck_extracted_and_benchmarked: string;
+  extract_benchmark_gcs_uri: string;
+  extract_benchmark_agent_response: string;
+  doc_id: string;
+};
 
+export default function CompanyDetail() {
+  const { companyId } = useParams<{ companyId: string }>();
+  console.log("params:", companyId);
+  const [activeTab, setActiveTab] = useState<string>("markedupData");
+  const [isLoadingCompDetails, setLoadingCompDetails] = useState(false);
+  const [company, setCompDetails] = useState<Company | null>(null);
+  console.log(company);
+  function DetailSkeleton() {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <Skeleton className="h-6 w-32 mb-4" />
+          <div className="flex items-start justify-between mb-8">
+            <div>
+              <Skeleton className="h-8 w-64 mb-2" />
+              <Skeleton className="h-5 w-96" />
+            </div>
+            <div className="flex items-center space-x-3">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-36" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-48" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+              </Card>
+            </div>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center mb-4"
+                    >
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    const fetchCompDetails = async () => {
+      setLoadingCompDetails(true);
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
+          }/get_company_details/${companyId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+        console.log("data", data);
+        setCompDetails(data);
+      } catch (error) {
+        console.error("Error fetching company details:", error);
+      } finally {
+        setLoadingCompDetails(false);
+      }
+    };
+
+    fetchCompDetails();
+  }, [companyId]);
+
+  if (isLoadingCompDetails) {
+    return <DetailSkeleton />;
+  }
   // ----------------------- Company Info -----------------------
   const companyInfo = {
     name: "Sia",
@@ -139,11 +244,37 @@ export default function DashboardTabs() {
     <div className="p-4 bg-gray-50 min-h-screen">
       {/* <InvestmentWeightage/>commented for now if need we can uncomment or we can delete */}
       {/* ---------------- Summary Card ---------------- */}
-      <SummaryCard companyInfo={companyInfo} />
+
+      <div className="mb-8">
+        <Link to="/investor">
+          <Button
+            variant="ghost"
+            className="flex items-center space-x-2 text-muted-foreground hover:text-foreground mb-4"
+            data-testid="button-back-to-companies"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Companies</span>
+          </Button>
+        </Link>
+
+        {/* <div className="flex items-start justify-between">
+          <div>
+            <h1
+              className="text-3xl font-bold text-foreground mb-2"
+              data-testid={`text-company-name-${company?.doc_id}`}
+            >
+              {company?.company_name} (Staging investment memo)
+            </h1>
+          </div>
+        </div> */}
+      </div>
+
+      <SummaryCard company={company} />
 
       {/* ---------------- Tabs ---------------- */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
+          <TabsTrigger value="markedupData">Mark Up Data</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="investmentMemo">Investment Memo</TabsTrigger>
           <TabsTrigger value="foundingTeam">Founding Team</TabsTrigger>
@@ -156,6 +287,18 @@ export default function DashboardTabs() {
             Partnerships & Strategic Analysis
           </TabsTrigger>
         </TabsList>
+
+        {/* ------------------Marked up Data--------------------*/}
+        <TabsContent value="markedupData">
+          {" "}
+          {company?.extract_benchmark_agent_response?.trim()?.length ? (
+            <article className="prose max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                {company?.extract_benchmark_agent_response}
+              </ReactMarkdown>
+            </article>
+          ) : null}
+        </TabsContent>
 
         {/* ------------ Competitors Tab ------------ */}
         <CompetitorsTab
@@ -170,7 +313,7 @@ export default function DashboardTabs() {
         <IndustryTab />
 
         {/* Problem Statement And Solution */}
-        <Overview />
+        <Overview company={company}/>
 
         {/* Founding team */}
         <FoundingTeam />
@@ -183,7 +326,7 @@ export default function DashboardTabs() {
         {/* Other */}
         <PartnershipsAndAnalysis />
 
-        <InvestmentRecommendation />
+        <InvestmentRecommendation company={company}/>
       </Tabs>
     </div>
   );

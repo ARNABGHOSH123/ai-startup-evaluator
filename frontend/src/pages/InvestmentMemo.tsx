@@ -8,12 +8,41 @@ interface Clarification {
   response: string;
 }
 
-export default function InvestmentRecommendation() {
+
+export default function InvestmentRecommendation({company}:any) {
+  const bigString = company?.extract_benchmark_agent_response || "";
+
+// Normalize escape sequences like \n → actual newlines
+const normalizedText = bigString.replace(/\\n/g, "\n");
+
+function extractBetweenMarkers(text: string, start: string, end: string): string {
+  const startIndex = text.indexOf(start);
+  if (startIndex === -1) return "";
+
+  const endIndex = text.indexOf(end, startIndex + start.length);
+  const rawSection =
+    endIndex === -1
+      ? text.slice(startIndex + start.length)
+      : text.slice(startIndex + start.length, endIndex);
+
+  // Clean markdown characters like **, *, _, etc.
+  const cleaned = rawSection
+    .replace(/\*/g, "") // remove all asterisks
+    .replace(/_/g, "") // remove underscores if any
+    .replace(/\s+/g, " ") // normalize multiple spaces
+    .replace(/\#/g, "") // remove all asterisks
+    .trim();
+
+  return cleaned;
+}
+
   const [clarifications, setClarifications] = useState<Clarification[]>([]);
   const [loadingClarifications, setLoadingClarifications] = useState(false);
   const [errorClarifications, setErrorClarifications] = useState<string | null>(
     null
   );
+
+  const investmentMemoData = extractBetweenMarkers(normalizedText, "*Executive Summar", "#");
 
   const params = useParams();
   const companyId = params.companyId;
@@ -69,19 +98,18 @@ export default function InvestmentRecommendation() {
         title: "Summary",
         color: "green",
         paragraphs: [
-          "The founding team’s deep Bosch background and IP portfolio make Sia a standout in the emerging Agentic AI space. Early traction with enterprise clients such as Bosch and Mercedes-Benz strengthens market validation. While risks such as a 9–12 month sales cycle, cash flow challenges, and competition from larger players remain, the growth potential in this high-CAGR market is significant.",
-          "The company’s use of funds—60% for sales and marketing—signals a clear focus on scaling validated traction. The investment thesis is grounded in strong leadership, IP-backed innovation, and large market potential.",
+          `${investmentMemoData}`
         ],
       },
-      {
-        type: "verdict",
-        title: "Investment Verdict",
-        color: "blue",
-        icon: <TrendingUp className="w-5 h-5 text-blue-600" />,
-        paragraphs: [
-          "Despite high risks typical of the seed stage, Sia’s strong team, IP ownership, and early enterprise traction make it an attractive investment candidate. With the right execution and focus on enterprise sales scaling, it holds potential for substantial returns.",
-        ],
-      },
+      // {
+      //   type: "verdict",
+      //   title: "Investment Verdict",
+      //   color: "blue",
+      //   icon: <TrendingUp className="w-5 h-5 text-blue-600" />,
+      //   paragraphs: [
+      //     "Despite high risks typical of the seed stage, Sia’s strong team, IP ownership, and early enterprise traction make it an attractive investment candidate. With the right execution and focus on enterprise sales scaling, it holds potential for substantial returns.",
+      //   ],
+      // },
       !errorClarifications && clarifications.length > 0
         ? {
             type: "summary",
