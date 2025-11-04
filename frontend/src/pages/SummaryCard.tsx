@@ -1,8 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
-export default function SummaryCard({ companyInfo }: { companyInfo: any }) {
-  function ScoreDots({ score }: { score: number }) {
+export default function SummaryCard({ company }: { company: any }) {
+  const bigString = company?.extract_benchmark_agent_response;
+  const scoreRegex = /Recommendation Score:\s*(\d+)\s*\/\s*\d+/i;
+  const match = bigString?.match(scoreRegex);
+  const score = match && match[1] ? match[1] : "";
+
+const parentCompanyRegex = /\*{0,2}Parent Company\*{0,2}:\s*([^(]+?)(?=\s*\()/i;
+const matchParent = bigString?.match(parentCompanyRegex);
+const parent_company = matchParent ? matchParent[1].trim() : "";
+
+function ScoreDots({ score }: { score: number }) {
     const totalDots = 10;
     const color =
       score < 5 ? "bg-red-500" : score < 7 ? "bg-yellow-400" : "bg-green-500";
@@ -18,7 +27,8 @@ export default function SummaryCard({ companyInfo }: { companyInfo: any }) {
                 i < score ? color : "bg-gray-200"
               }`}
             ></div>
-          ))} <span className="-mt-1 px-2">{score}/10</span>
+          ))}{" "}
+          <span className="-mt-1 px-2">{score}/10</span>
         </span>
       </div>
     );
@@ -34,53 +44,53 @@ export default function SummaryCard({ companyInfo }: { companyInfo: any }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 text-sm text-gray-700">
           <div className="flex flex-col">
             <span className="font-semibold">Company Name: </span>
-            <Link
-              to={companyInfo?.website}
+            {/* <Link
+              to={company_websites[0]}
               className="text-blue-600 hover:underline"
               target="_blank"
               rel="noopener noreferrer"
-            >
-              {companyInfo.name}
-            </Link>
+            > */}
+              {company?.company_name}
+            {/* </Link> */}
           </div>
           <div className="flex flex-col">
             <span className="font-semibold">Parent Company: </span>
             <Link
-              to={companyInfo?.parentWebsite}
+              to={company?.parentWebsite}
               className="text-blue-600 hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {companyInfo.parent}
+              {parent_company}
             </Link>
           </div>
           <div className="flex flex-col">
             <span className="font-semibold">Email: </span>
             <Link
-              to={`mailto:${companyInfo.email}`}
+              to={`mailto:${company?.company_email}`}
               className="text-blue-600 hover:underline"
             >
-              {companyInfo.email}
+              {company?.company_email}
             </Link>
           </div>
           <div className="flex flex-col">
             <span className="font-semibold">Phone: </span>
-            {companyInfo.phone.join(", ")}
+            {company?.company_phone_no}
           </div>
           <div className="flex flex-col">
             <span className="font-semibold">Address: </span>
-            {companyInfo.address}
+            {company?.company_address}
           </div>
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <span className="font-semibold">Foundation: </span>
-            {companyInfo.foundation}
-          </div>
+            {company?.foundation}
+          </div> */}
           <div className="flex flex-col">
-            <span className="font-semibold">Company Size: </span>
-            {companyInfo.size}
+            <span className="font-semibold">Stage of Development: </span>
+            {company?.stage_of_development}
           </div>
           <div className="w-full max-w-xs">
-            <ScoreDots score={companyInfo?.score} />
+            <ScoreDots score={score} />
           </div>
         </div>
       </CardContent>
