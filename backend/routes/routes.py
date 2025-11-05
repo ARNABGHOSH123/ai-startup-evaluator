@@ -244,6 +244,9 @@ async def get_companies_list():
         for doc in docs:
             data = doc.to_dict() or {}
             created_at = data.get("created_at")
+            benchmark_gcs_uri = data.get("benchmark_gcs_uri", "")
+            if benchmark_gcs_uri is None: ## Only show the companies which have benchmark completed
+                continue
             # Convert Firestore timestamp to ISO string if possible
             if created_at is not None and hasattr(created_at, "isoformat"):
                 data["created_at"] = created_at.isoformat()

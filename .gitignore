@@ -5,7 +5,6 @@ backend/bucket_cors.json
 agentic_jobs/**/venv/
 agentic_jobs/**/.env.development
 agentic_jobs/**/__pycache__/
-agentic_jobs/extract_benchmarking_agent_job/**/__pycache__/ */
 startupevaluator-472213-fcc6ea5bd425.json
 agents/ai-to-founder-voice-agent/**/venv/
 agents/ai-to-founder-voice-agent/**/__pycache__/
@@ -15,3 +14,9 @@ frontend/node_modules/
 agents/**/venv/
 agents/**/__pycache__/
 agents/**/.env.development
+
+# Global Python ignores
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
