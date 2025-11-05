@@ -73,7 +73,7 @@ function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
           )}
           {company.company_email && (
             <p className="text-xs text-gray-500 mt-0.5 truncate">
-               {company.company_email}
+              📧 {company.company_email}
             </p>
           )}
         </div>

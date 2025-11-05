@@ -49,7 +49,7 @@ export default function PitchCall({
         const response = await fetch(
           `${
             import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
-          }/get_company_details/${companyDocId}`,
+          }/get_company_details/${"xmkcfJcIfRMDIImxjWt3"}`,
           {
             method: "POST",
             headers: {
@@ -68,7 +68,7 @@ export default function PitchCall({
     };
 
     fetchCompDetails();
-  }, [companyDocId]);
+  }, ["xmkcfJcIfRMDIImxjWt3"]);
 
   // Read founderId from route params (string, not a callable)
 
