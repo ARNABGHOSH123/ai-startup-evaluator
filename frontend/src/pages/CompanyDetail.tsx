@@ -31,11 +31,9 @@ type Company = {
 
 export default function CompanyDetail() {
   const { companyId } = useParams<{ companyId: string }>();
-  console.log("params:", companyId);
   const [activeTab, setActiveTab] = useState<string>("markedupData");
   const [isLoadingCompDetails, setLoadingCompDetails] = useState(false);
   const [company, setCompDetails] = useState<Company | null>(null);
-  console.log(company);
   function DetailSkeleton() {
     return (
       <div className="min-h-screen bg-background">
@@ -105,7 +103,6 @@ export default function CompanyDetail() {
           }
         );
         const data = await response.json();
-        console.log("data", data);
         setCompDetails(data);
       } catch (error) {
         console.error("Error fetching company details:", error);
@@ -313,7 +310,7 @@ export default function CompanyDetail() {
         <IndustryTab />
 
         {/* Problem Statement And Solution */}
-        <Overview company={company}/>
+        <Overview company={company} />
 
         {/* Founding team */}
         <FoundingTeam />
@@ -326,7 +323,7 @@ export default function CompanyDetail() {
         {/* Other */}
         <PartnershipsAndAnalysis />
 
-        <InvestmentRecommendation company={company}/>
+        <InvestmentRecommendation company={company} />
       </Tabs>
     </div>
   );

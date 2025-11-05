@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
 from google.genai import types
+from google.adk.planners import BuiltInPlanner
 from config import Config
 from .base_model import base_model
 from tools import get_file_content_from_gcs
@@ -11,6 +12,10 @@ GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
 fetcher_agent = LlmAgent(
     name="PitchDeckFetcher",
     model=base_model,
+    planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
+        include_thoughts=False,
+        thinking_budget=0
+    )),
     description="An agent that fetches the processed pitch-deck JSON from GCS and place its content into state['pitch_deck'] as a JSON object.",
     instruction=f"""
     You will receive the **base filename** (without extension) for a processed pitch deck JSON produced by the previous step as: {{extracted_filename}}

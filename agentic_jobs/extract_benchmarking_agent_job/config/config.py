@@ -42,7 +42,8 @@ class Config:
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     GOOGLE_CLOUD_REGION = os.getenv("GOOGLE_CLOUD_REGION", "asia-south1")
-    AGENT_MODEL = os.getenv("AGENT_MODEL", "gemini-2.5-pro")
+    REPORT_GENERATION_AGENT_MODEL = os.getenv("REPORT_GENERATION_AGENT_MODEL", "gemini-2.5-pro")
+    FAST_AGENT_MODEL = os.getenv("FAST_AGENT_MODEL", "gemini-2.5-flash")
     GCP_PITCH_DECK_INPUT_FOLDER = os.getenv(
         "GCP_PITCH_DECK_INPUT_FOLDER", "uploads")
     GCP_PITCH_DECK_OUTPUT_FOLDER = os.getenv(

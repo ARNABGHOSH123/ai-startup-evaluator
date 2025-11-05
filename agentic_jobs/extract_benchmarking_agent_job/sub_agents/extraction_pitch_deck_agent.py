@@ -15,13 +15,10 @@ from .base_model import base_model
 from tools import get_gcs_uri_for_file, save_file_content_to_gcs, analyze_pdf_from_uri
 from config import Config
 
-AGENT_MODEL = Config.AGENT_MODEL
 GOOGLE_CLOUD_PROJECT = Config.GOOGLE_CLOUD_PROJECT
 GOOGLE_CLOUD_REGION = Config.GOOGLE_CLOUD_REGION
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
 GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
-
-print(f"Using agent model: {AGENT_MODEL}")
 
 extraction_pitch_deck_agent = LlmAgent(
     name="extraction_pitch_deck_agent",
@@ -47,6 +44,9 @@ extraction_pitch_deck_agent = LlmAgent(
     
     You must use the exact tool names as provided above while making tool calls. Dont make up any tool name of your own.
 
+    CRITICAL:
+        DONT INCLUDE CHARACTERS LIKE WHITESPACE, QUOTES, OR PUNCTUATION, NEW LINE CHARACTERS ETC. IN AND AROUND THE FILENAME WHILE CALLING THE 'save_file_content_to_gcs' TOOL
+
     
     WORKFLOW (MUST BE IMPLEMENTED SERIALLY IN ORDER):
     1.  **Get File URI:** You will receive a filename (e.g., 'Pitch deck.pdf'). You must parse this to get the name ('Pitch deck') and extension ('pdf'). Call the `get_gcs_uri_for_file` tool with bucket '{GCS_BUCKET_NAME}', the parsed name, and extension to get the file's GCS URI.
@@ -55,13 +55,10 @@ extraction_pitch_deck_agent = LlmAgent(
     
     3.  **Save JSON:** Take the JSON string from Step 2. Generate a suitable filename (e.g., 'company_name_analysis'). Call the `save_file_content_to_gcs` tool with bucket '{GCS_BUCKET_NAME}', folder '{GCP_PITCH_DECK_OUTPUT_FOLDER}/{{firestore_doc_id}}/analysis', the JSON content, the filename you generated, and extension 'json'.
     
-    4.  **Return only the filename (no extension):** After saving the file, you MUST return only the generated filename without any extension (e.g., 'company_name_analysis').
+    4.  **Return only the filename (no extension):** After saving the file, you MUST return only the generated filename without any extension (e.g., 'company_name_analysis'). 
     """,
     output_key="extracted_filename",
     generate_content_config=types.GenerateContentConfig(temperature=0),
     tools=[get_gcs_uri_for_file, analyze_pdf_from_uri,
            save_file_content_to_gcs],
 )
-
-print(
-    f"Agent '{extraction_pitch_deck_agent.name}' created using model '{AGENT_MODEL}'.")

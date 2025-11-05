@@ -37,7 +37,7 @@ export default function PitchCall({
           <>
             We’ve received your pitch. Our AI Assistant will review it and get
             back to you shortly. Please refresh the page after{" "}
-            <span className="font-semibold">10-15 minutes</span> to trigger the
+            <span className="font-semibold">5-9 minutes</span> to trigger the
             call. Have a great day ahead!
           </>
         )}

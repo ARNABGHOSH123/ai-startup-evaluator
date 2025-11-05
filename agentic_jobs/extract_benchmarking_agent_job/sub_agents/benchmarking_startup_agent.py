@@ -7,22 +7,19 @@
 """
 
 from google.adk.agents import LlmAgent, SequentialAgent, ParallelAgent
-from google.adk.planners import PlanReActPlanner, BuiltInPlanner
+from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from math import ceil
 from datetime import date
 from config import Config
 from .benchmarking_focus_points import focus_points
-from .base_model import base_model
+from .base_model import base_model, report_generation_model
 from tools import save_file_content_to_gcs, extract_webpage_text, tavily_search, clear_site_extract_cache
 from .visualisation_agent import focus_points_visualisation_agent_list
 
-AGENT_MODEL = Config.AGENT_MODEL
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
 GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
 FOCUS_POINTS_PER_AGENT = int(Config.FOCUS_POINTS_PER_AGENT) or 3
-
-print(f"Using agent model: {AGENT_MODEL}")
 
 no_of_focus_agents = len(focus_points)
 no_of_agents = ceil(no_of_focus_agents / FOCUS_POINTS_PER_AGENT)
@@ -36,7 +33,7 @@ for i in range(no_of_agents):
     agent = LlmAgent(
         name=f"data_extraction_agent_{i+1}",
         model=base_model,
-        planner=PlanReActPlanner(),
+        planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(include_thoughts=False)),
         description=f"An agent that extracts relevant information for the company for some focus points starting from point number {i * FOCUS_POINTS_PER_AGENT + 1}",
         instruction=f"""
         You are a data gathering specialist with deep expertise in the Indian startup ecosystem. Your task is to collect raw, verifiable facts about a startup from its pitch deck and trusted external Indian sources.
@@ -127,7 +124,7 @@ data_extraction_visualisation_agent = ParallelAgent(
 # Analyse the extraction and create the human readable investment memo for the startup
 synthesis_agent = LlmAgent(
     name="synthesis_agent",
-    model=base_model,
+    model=report_generation_model,
     planner=BuiltInPlanner(
         thinking_config=types.ThinkingConfig(include_thoughts=False)),
     description="An agent that synthesises company and its related information from a JSON like input and produces a comprehensive investment memo.",
@@ -186,7 +183,8 @@ save_response_to_gcs_agent = LlmAgent(
     model=base_model,
     description="An agent that saves the final markdown response to a file in the GCS (Google Cloud Storage) bucket.",
     planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
-        include_thoughts=False
+        include_thoughts=False,
+        thinking_budget=0
     )),
     # after_agent_callback=sanitize_final_output_callback,
     instruction=f"""
@@ -224,7 +222,7 @@ clear_cache_agent = LlmAgent(
     model=base_model,
     description="Clears the in-memory site_extract cache after pipeline finishes",
     planner=BuiltInPlanner(
-        thinking_config=types.ThinkingConfig(include_thoughts=False)),
+        thinking_config=types.ThinkingConfig(include_thoughts=False, thinking_budget=0)),
     instruction="""
     Your only job is to call the provided tool to clear the in-memory site extract cache.
     Return the string 'cache_cleared' if successful, otherwise return an error message.
@@ -247,6 +245,3 @@ benchmarking_startup_agent = SequentialAgent(
                 save_response_to_gcs_agent, clear_cache_agent],
     description="An agent that benchmarks a startup against its competitors using a processed pitch deck JSON file and web search. Saves the human readable markdown response to Google Cloud Storage.",
 )
-
-print(
-    f"Agent '{benchmarking_startup_agent.name}' created using model '{AGENT_MODEL}'.")

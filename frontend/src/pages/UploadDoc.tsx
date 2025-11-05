@@ -79,11 +79,6 @@ export default function UploadDoc({ files, setFiles }: UploadDocProps) {
     setFiles((prev) => ({ ...prev, [key]: null }));
   };
 
-  // const handleSubmit = () => {
-  //   console.log("Uploaded files:", files);
-  //   alert("Documents uploaded successfully!");
-  // };
-
   const uploadFields = [
     {
       key: "pitchDeck",
