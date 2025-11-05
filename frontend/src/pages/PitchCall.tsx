@@ -31,9 +31,16 @@ export default function PitchCall({
         Thank You for Submitting Your Deck!
       </h2>
       <p className="text-gray-600 mb-8">
-        {isBenchmarkAvailable
-          ? "Please click the button below to initiate the risk assessment call to know more about your startup and further risk clarifications."
-          : "We’ve received your pitch. Our AI Assistant will review it and get back to you shortly."}
+        {isBenchmarkAvailable ? (
+          "Please click the button below to initiate the risk assessment call to know more about your startup and further risk clarifications."
+        ) : (
+          <>
+            We’ve received your pitch. Our AI Assistant will review it and get
+            back to you shortly. Please refresh the page after{" "}
+            <span className="font-semibold">10-15 minutes</span> to trigger the
+            call. Have a great day ahead!
+          </>
+        )}
       </p>
 
       <div className="border-t border-gray-200 pt-6 w-full max-w-lg">

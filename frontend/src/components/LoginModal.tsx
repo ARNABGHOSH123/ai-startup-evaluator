@@ -92,6 +92,7 @@ export default function LoginModal({
       const data = await response.json();
 
       alert("Logged in successfully!");
+      setRoleDialogOpen(false);
       setSignUpDialogOpen(false);
 
       if (selectedRole === "Pitch as Founder") {
