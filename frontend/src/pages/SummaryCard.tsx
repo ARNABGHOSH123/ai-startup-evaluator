@@ -3,53 +3,33 @@ import { Link } from "react-router-dom";
 
 export default function SummaryCard({ company }: { company: any }) {
   const bigString = company?.extract_benchmark_agent_response;
-  const scoreRegex =
-    /recommendation[^0-9]*score[^0-9]*[:\-]?\s*\**\s*(\d+(?:\.\d+)?)(?=\s*(?:\/|$|\*|\n))/i;
+  const scoreRegex = /Recommendation Score:\s*(\d+)\s*\/\s*\d+/i;
   const match = bigString?.match(scoreRegex);
   const score = match && match[1] ? match[1] : "";
-  console.log(score);
-  const parentCompanyRegex =
-    /\*{0,2}Parent Company\*{0,2}:\s*([^(]+?)(?=\s*\()/i;
-  const matchParent = bigString?.match(parentCompanyRegex);
-  const parent_company = matchParent ? matchParent[1].trim() : "";
 
-  function ScoreDots({ score }: { score: number | string | undefined }) {
+const parentCompanyRegex = /\*{0,2}Parent Company\*{0,2}:\s*([^(]+?)(?=\s*\()/i;
+const matchParent = bigString?.match(parentCompanyRegex);
+const parent_company = matchParent ? matchParent[1].trim() : "";
+
+function ScoreDots({ score }: { score: number }) {
     const totalDots = 10;
-    const numericScore = Number(score) || 0; // safely convert
     const color =
-      numericScore < 5
-        ? "bg-red-500"
-        : numericScore < 7
-        ? "bg-yellow-400"
-        : "bg-green-500";
+      score < 5 ? "bg-red-500" : score < 7 ? "bg-yellow-400" : "bg-green-500";
 
     return (
       <div className="flex flex-col gap-2">
         <span className="font-semibold">Score:</span>
-        <div className="flex items-center gap-1">
-          {Array.from({ length: totalDots }).map((_, i) => {
-            const filled = i + 1 <= Math.floor(numericScore);
-            const partial =
-              i === Math.floor(numericScore) && numericScore % 1 !== 0;
-            return (
-              <div
-                key={i}
-                className="relative w-3 h-3 rounded-full overflow-hidden bg-gray-200"
-              >
-                {filled && <div className={`absolute inset-0 ${color}`} />}
-                {partial && (
-                  <div
-                    className={`absolute inset-0 ${color}`}
-                    style={{ width: `${(numericScore % 1) * 100}%` }}
-                  />
-                )}
-              </div>
-            );
-          })}
-          <span className="ml-2 text-sm font-medium text-gray-700">
-            {numericScore.toFixed(1)}/10
-          </span>
-        </div>
+        <span className="flex gap-1">
+          {Array.from({ length: totalDots }).map((_, i) => (
+            <div
+              key={i}
+              className={`w-3 h-3 rounded-full ${
+                i < score ? color : "bg-gray-200"
+              }`}
+            ></div>
+          ))}{" "}
+          <span className="-mt-1 px-2">{score}/10</span>
+        </span>
       </div>
     );
   }
@@ -70,7 +50,7 @@ export default function SummaryCard({ company }: { company: any }) {
               target="_blank"
               rel="noopener noreferrer"
             > */}
-            {company?.company_name}
+              {company?.company_name}
             {/* </Link> */}
           </div>
           <div className="flex flex-col">
