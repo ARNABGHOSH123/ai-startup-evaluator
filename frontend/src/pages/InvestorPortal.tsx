@@ -13,7 +13,6 @@ type Company = {
   is_deck_extracted_and_benchmarked: string;
   extract_benchmark_gcs_uri: string;
   doc_id: string;
-  company_email: string;
 };
 
 interface CompanyCardProps {
@@ -44,60 +43,107 @@ function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
   //   }
   // };
 
+  const handleDownloadDeck = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // In a real implementation, this would download the actual PDF
+    //window.open(company.pitchDeckUrl || "#", "_blank");
+  };
 
   return (
     <Card
-      className="group cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-1 rounded-xl border border-gray-200 bg-white/60 backdrop-blur-sm"
+      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
       onClick={() => onCompanyClick(company.doc_id)}
       data-testid={`card-company-${company.doc_id}`}
     >
-      <CardHeader className="pb-2 flex items-center gap-4">
-        {/* Company Logo / Initials */}
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-          {getInitials(company.company_name)}
+      <CardHeader className="pb-4">
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-lg">
+              {getInitials(company.company_name)}
+            </span>
+          </div>
+          {/* <div className="flex items-center space-x-1">
+            <div
+              className={`w-2 h-2 rounded-full`}
+              // className={`w-2 h-2 ${getStatusColor(
+              //   company.status || ""
+              // )} rounded-full`}
+            ></div>
+            <span className="text-xs text-muted-foreground">
+              {company.status}
+            </span>
+          </div> */}
         </div>
-
-        {/* Company Info */}
-        <div className="flex-1">
-          <h3
-            className="text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors"
-            data-testid={`text-company-name-${company.doc_id}`}
-          >
-            {company.company_name}
-          </h3>
-          {company.founder_name && (
-            <p className="text-sm text-gray-600 flex items-center gap-1 mt-0.5">
-              <User className="w-4 h-4 text-gray-400" />
-              <span>{company.founder_name}</span>
-            </p>
-          )}
-          {company.company_email && (
-            <p className="text-xs text-gray-500 mt-0.5 truncate">
-              📧 {company.company_email}
-            </p>
-          )}
-        </div>
+        <h3
+          className="text-lg font-semibold text-foreground mb-2"
+          data-testid={`text-company-name-${company.doc_id}`}
+        >
+          {company.company_name}
+        </h3>
+        {/* <p
+          className="text-sm text-muted-foreground mb-4 line-clamp-2"
+          data-testid={`text-company-description-${company.doc_id}`}
+        >
+          {company.description}
+        </p> */}
       </CardHeader>
 
-      <CardContent className="pt-3 border-t border-gray-100 text-sm text-gray-600 flex justify-between items-center">
-        <span className="italic text-gray-500">Tap to view benchmark</span>
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <User className="w-4 h-4 text-muted-foreground" />
+            <span
+              className="text-sm text-foreground"
+              data-testid={`text-founder-name-${company.doc_id}`}
+            >
+              {company.founder_name}
+            </span>
+            {/* {company.founderLinkedIn && (
+              <a
+                href={company.founderLinkedIn}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline text-xs flex items-center"
+                onClick={(e) => e.stopPropagation()}
+                data-testid={`link-founder-linkedin-${company.id}`}
+              >
+                <ExternalLink className="w-3 h-3 mr-1" />
+                LinkedIn
+              </a>
+            )} */}
+          </div>
 
-        <div className="flex items-center text-blue-600 font-medium text-xs gap-1">
-          View Details
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-3.5 w-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
+          {/* <div className="flex items-center space-x-2">
+            <MapPin className="w-4 h-4 text-muted-foreground" />
+            <span
+              className="text-sm text-muted-foreground"
+              data-testid={`text-company-location-${company.id}`}
+            >
+              {company.location}
+            </span>
+          </div> */}
+
+          <div className="flex items-center justify-between pt-3 border-t border-border">
+            {/* <div>
+              <span
+                className="text-sm font-medium text-foreground"
+                data-testid={`text-company-revenue-${company.id}`}
+              >
+                {company.revenue}
+              </span>
+              <p className="text-xs text-muted-foreground">Annual Revenue</p>
+            </div> */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDownloadDeck}
+              className="text-primary hover:underline text-sm"
+              data-testid={`button-download-deck-${company.doc_id}`}
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Download Deck
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
