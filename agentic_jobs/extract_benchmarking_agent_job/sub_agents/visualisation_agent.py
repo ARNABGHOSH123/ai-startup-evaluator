@@ -1,5 +1,5 @@
 from google.adk.agents import LlmAgent
-from google.adk.planners import PlanReActPlanner
+from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from config import Config
 from math import ceil
@@ -7,13 +7,10 @@ from .base_model import base_model
 from .visualisation_focus_points import visualisation_focus_points
 from tools import tavily_search, extract_webpage_text, save_file_content_to_gcs, get_all_chart_type_descriptions, get_chart_data
 
-AGENT_MODEL = Config.AGENT_MODEL
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
 GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
 # Here the number of total focus points is less than in benchmarking agent, so dividing by 2
 FOCUS_POINTS_PER_AGENT = ceil(int(Config.FOCUS_POINTS_PER_AGENT) / 2)
-
-print(f"Using agent model: {AGENT_MODEL}")
 
 no_of_focus_agents = len(visualisation_focus_points)
 no_of_agents = ceil(no_of_focus_agents / FOCUS_POINTS_PER_AGENT)
@@ -29,7 +26,8 @@ for i in range(no_of_agents):
     visualisation_sub_agent = LlmAgent(
         name=f"visualisation_sub_agent_{i+1}",
         model=base_model,
-        planner=PlanReActPlanner(),
+        planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
+            include_thoughts=False,)),
         description=f"An agent that extracts relevant information for the company for some focus points and create visualisation data for it starting from point number {i * FOCUS_POINTS_PER_AGENT + 1}",
         instruction=f"""
     You are an expert data collection agent. Your task is to gather relevant information about a startup based on the focus points provided.
@@ -122,7 +120,3 @@ for i in range(no_of_agents):
     )
 
     focus_points_visualisation_agent_list.append(visualisation_sub_agent)
-
-    print(
-        f"Agent '{visualisation_sub_agent.name}' created using model '{AGENT_MODEL}'."
-    )

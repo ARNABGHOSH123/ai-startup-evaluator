@@ -4,5 +4,5 @@ from .company_info_agent import company_info_agent
 from .extraction_pitch_deck_agent import extraction_pitch_deck_agent
 from .visualisation_focus_points import visualisation_focus_points
 from .benchmarking_focus_points import focus_points
-from .base_model import base_model
+from .base_model import base_model, report_generation_model
 from .generate_qna_agent import generate_qna_agent

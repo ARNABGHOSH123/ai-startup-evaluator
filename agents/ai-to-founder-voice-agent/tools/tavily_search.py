@@ -77,7 +77,7 @@ async def tavily_search(query: str, max_results: int = 4) -> dict:
 
     def run_search(q):
         client = TavilyClient(api_key=TAVILY_API_KEY)
-        return client.search(query=q, max_results=max_results, include_raw_content=True, search_depth="advanced")
+        return client.search(query=q, max_results=max_results, include_raw_content=True, search_depth="basic")
 
     subqueries = _split_long_query(query)
     collected = {}

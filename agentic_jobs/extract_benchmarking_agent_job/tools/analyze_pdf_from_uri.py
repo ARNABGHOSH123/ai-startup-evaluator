@@ -17,7 +17,6 @@ import atexit
 from config import Config
 
 # --------- Config / constants ----------
-AGENT_MODEL = Config.AGENT_MODEL
 GOOGLE_CLOUD_PROJECT = Config.GOOGLE_CLOUD_PROJECT
 GOOGLE_CLOUD_REGION = Config.GOOGLE_CLOUD_REGION
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
@@ -117,7 +116,7 @@ async def _call_model_in_executor(gcs_chunk_uri: str, attempts: int = 3, per_try
         part = Part.from_uri(file_uri=gcs_chunk_uri,
                              mime_type="application/pdf")
         resp = genai_client.models.generate_content(
-            model=AGENT_MODEL,
+            model=Config.FAST_AGENT_MODEL,
             contents=[PDF_ANALYZER_INSTRUCTION, part],
             config=types.GenerateContentConfig(temperature=0),
         )
@@ -375,7 +374,7 @@ async def analyze_pdf_from_uri(gcs_uri: str) -> str:
         # Synthesis step (single blocking call in executor). Extract structured parts if possible.
         def _synth_call():
             resp = genai_client.models.generate_content(
-                model=AGENT_MODEL,
+                model=Config.FAST_AGENT_MODEL,
                 contents=[PDF_SYNTHESIS_INSTRUCTION] + partial_results,
                 config=types.GenerateContentConfig(temperature=0),
             )

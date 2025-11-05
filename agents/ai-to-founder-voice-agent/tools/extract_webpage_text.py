@@ -190,7 +190,7 @@ async def _do_tavily_extract(url: str):
         # Tavily extract is likely blocking; wrap in thread
         def extract_sync(u):
             client = TavilyClient(api_key=Config.TAVILY_API_KEY)
-            resp = client.extract(urls=u, extract_depth="advanced")
+            resp = client.extract(urls=u, extract_depth="basic")
             return resp
 
         resp = await asyncio.get_running_loop().run_in_executor(_TAVILY_POOL, extract_sync, url)
