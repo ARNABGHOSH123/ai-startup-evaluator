@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Download, Building2 } from "lucide-react";
+import {
+  ArrowLeft,
+  User,
+  Download,
+  Building2,
+  Loader,
+  AlertTriangle,
+} from "lucide-react";
 // import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 type Company = {
   company_name: string;
@@ -21,132 +29,119 @@ interface CompanyCardProps {
 }
 
 function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
-  const getInitials = (name: string) => {
-    return name
+  const [downloading, setDownloading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getInitials = (name: string) =>
+    name
       .split(" ")
-      .map((word) => word[0])
+      .map((w) => w[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
-  };
 
-  // const getStatusColor = (status: string) => {
-  //   switch (status?.toLowerCase()) {
-  //     case "active":
-  //       return "bg-green-500";
-  //     case "series a":
-  //       return "bg-yellow-500";
-  //     case "series b":
-  //       return "bg-blue-500";
-  //     default:
-  //       return "bg-green-500";
-  //   }
-  // };
-
-  const handleDownloadDeck = (e: React.MouseEvent) => {
+  const handleDownloadDeck = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // In a real implementation, this would download the actual PDF
-    //window.open(company.pitchDeckUrl || "#", "_blank");
+    setError(null);
+    try {
+      setDownloading(true);
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
+        }/get_company_pitch_deck_signed_url/${company.doc_id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gcs_uri: company.company_pitch_deck_gcs_uri }),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch signed URL");
+      const data = await response.json();
+      const signedUrl = data?.signedUrl;
+      if (signedUrl) window.open(signedUrl, "_blank");
+      else throw new Error("Signed URL missing in response");
+    } catch (err: any) {
+      setError(err?.message || "Download failed. Try again later.");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
-    <Card
-      className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-      onClick={() => onCompanyClick(company.doc_id)}
-      data-testid={`card-company-${company.doc_id}`}
+    <div
+      className="space-y-2"
+      data-testid={`wrapper-company-${company.doc_id}`}
     >
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between mb-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">
-              {getInitials(company.company_name)}
-            </span>
-          </div>
-          {/* <div className="flex items-center space-x-1">
-            <div
-              className={`w-2 h-2 rounded-full`}
-              // className={`w-2 h-2 ${getStatusColor(
-              //   company.status || ""
-              // )} rounded-full`}
-            ></div>
-            <span className="text-xs text-muted-foreground">
-              {company.status}
-            </span>
-          </div> */}
-        </div>
-        <h3
-          className="text-lg font-semibold text-foreground mb-2"
-          data-testid={`text-company-name-${company.doc_id}`}
-        >
-          {company.company_name}
-        </h3>
-        {/* <p
-          className="text-sm text-muted-foreground mb-4 line-clamp-2"
-          data-testid={`text-company-description-${company.doc_id}`}
-        >
-          {company.description}
-        </p> */}
-      </CardHeader>
-
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <User className="w-4 h-4 text-muted-foreground" />
-            <span
-              className="text-sm text-foreground"
-              data-testid={`text-founder-name-${company.doc_id}`}
-            >
-              {company.founder_name}
-            </span>
-            {/* {company.founderLinkedIn && (
-              <a
-                href={company.founderLinkedIn}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline text-xs flex items-center"
-                onClick={(e) => e.stopPropagation()}
-                data-testid={`link-founder-linkedin-${company.id}`}
-              >
-                <ExternalLink className="w-3 h-3 mr-1" />
-                LinkedIn
-              </a>
-            )} */}
-          </div>
-
-          {/* <div className="flex items-center space-x-2">
-            <MapPin className="w-4 h-4 text-muted-foreground" />
-            <span
-              className="text-sm text-muted-foreground"
-              data-testid={`text-company-location-${company.id}`}
-            >
-              {company.location}
-            </span>
-          </div> */}
-
-          <div className="flex items-center justify-between pt-3 border-t border-border">
-            {/* <div>
-              <span
-                className="text-sm font-medium text-foreground"
-                data-testid={`text-company-revenue-${company.id}`}
-              >
-                {company.revenue}
+      <Card
+        className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+        onClick={() => onCompanyClick(company.doc_id)}
+        data-testid={`card-company-${company.doc_id}`}
+      >
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">
+                {getInitials(company.company_name)}
               </span>
-              <p className="text-xs text-muted-foreground">Annual Revenue</p>
-            </div> */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDownloadDeck}
-              className="text-primary hover:underline text-sm"
-              data-testid={`button-download-deck-${company.doc_id}`}
-            >
-              <Download className="w-4 h-4 mr-1" />
-              Download Deck
-            </Button>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          <h3
+            className="text-lg font-semibold text-foreground mb-2"
+            data-testid={`text-company-name-${company.doc_id}`}
+          >
+            {company.company_name}
+          </h3>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span
+                className="text-sm text-foreground"
+                data-testid={`text-founder-name-${company.doc_id}`}
+              >
+                {company.founder_name}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-border">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={downloading}
+                onClick={handleDownloadDeck}
+                className="text-primary hover:underline text-sm disabled:cursor-not-allowed"
+                data-testid={`button-download-deck-${company.doc_id}`}
+              >
+                {downloading ? (
+                  <>
+                    <Loader className="w-4 h-4 mr-1 animate-spin" />
+                    Downloading
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-1" />
+                    Download Deck
+                  </>
+                )}
+              </Button>
+            </div>
+            {error && (
+              <Alert
+                variant="destructive"
+                className="mt-1"
+                data-testid={`alert-download-error-${company.doc_id}`}
+              >
+                <AlertTitle className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" /> Download failed
+                </AlertTitle>
+                <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -192,6 +187,7 @@ export default function InvestorPortal() {
   const navigate = useNavigate();
   const [isLoadingCompanies, setLoadingCompanies] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   // const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
   //   null
   // );
@@ -213,6 +209,7 @@ export default function InvestorPortal() {
         setCompanies(data?.companies);
       } catch (error) {
         console.error("Error fetching companies:", error);
+        setFetchError("Failed to load companies. Please try again later.");
       } finally {
         setLoadingCompanies(false);
       }
@@ -220,25 +217,6 @@ export default function InvestorPortal() {
 
     fetchCompanies();
   }, []);
-
-  // useEffect(() => {
-  //   if (!authLoading && !user) {
-  //     toast({
-  //       title: "Unauthorized",
-  //       description: "You are logged out. Logging in again...",
-  //       variant: "destructive",
-  //     });
-  //     setTimeout(() => {
-  //       window.location.href = "/api/login";
-  //     }, 500);
-  //     return;
-  //   }
-  // }, [user, authLoading, toast]);
-
-  // const { data: companies = [], isLoading, error } = useQuery<Company[]>({
-  //   queryKey: ['/api/companies'],
-  //   enabled: !!user,
-  // });
 
   const handleCompanyClick = (companyId: string) => {
     // setSelectedCompanyId(companyName);
@@ -319,7 +297,7 @@ export default function InvestorPortal() {
             </div>
             <Link to="/">
               <Button
-                variant="outline"
+                variant="secondary"
                 className="flex items-center space-x-2"
                 data-testid="button-back-to-home"
               >
@@ -329,6 +307,20 @@ export default function InvestorPortal() {
             </Link>
           </div>
         </div>
+
+        {/* Global fetch error */}
+        {fetchError && (
+          <div className="mb-6" data-testid="alert-fetch-error">
+            <Alert variant="destructive" className="max-w-2xl">
+              <AlertTitle className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" /> Error loading companies
+              </AlertTitle>
+              <AlertDescription className="text-sm">
+                {fetchError}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         {/* Companies Grid */}
         {companies.length > 0 ? (
@@ -344,7 +336,7 @@ export default function InvestorPortal() {
               />
             ))}
           </div>
-        ) : (
+        ) : !fetchError ? (
           /* Empty State */
           <div className="text-center py-16" data-testid="empty-companies">
             <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
@@ -358,7 +350,7 @@ export default function InvestorPortal() {
               check back later or contact our team for more information.
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

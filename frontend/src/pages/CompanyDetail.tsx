@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "./SummaryCard";
 import CompetitorsTab from "./CompetitorsTab";
@@ -271,9 +271,16 @@ export default function CompanyDetail() {
       {/* ---------------- Tabs ---------------- */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="markedupData">Mark Up Data</TabsTrigger>
+          <TabsTrigger value="markedupData">
+            <img
+              src="/assets/gemini_symbol.png"
+              alt="AI generated icon"
+              className="inline-block w-6 h-4 ml-1"
+            />
+            AI generated deal note{" "}
+          </TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="investmentMemo">Investment Memo</TabsTrigger>
+          <TabsTrigger value="investmentMemo">Investment Summary</TabsTrigger>
           <TabsTrigger value="foundingTeam">Founding Team</TabsTrigger>
           <TabsTrigger value="businessModel">Business Model</TabsTrigger>
           <TabsTrigger value="funding">Funding & Financials</TabsTrigger>
