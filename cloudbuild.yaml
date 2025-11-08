@@ -55,7 +55,7 @@ steps:
         "extract-benchmark-pitch-agent-job",
         "--image=us-central1-docker.pkg.dev/startupevaluator-472213/cloud-run-source-deploy/extract-benchmarking-agent-job:latest",
         "--region=us-central1",
-        "--memory=1Gi",
+        "--memory=2Gi",
         "--task-timeout=1800s",
         "--max-retries=3",
       ]
