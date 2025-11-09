@@ -96,9 +96,32 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
     usp = req.usp.strip()
     revenue_model = req.revenue_model.strip()
     comments = req.comments.strip() if req.comments else None
+    # Optional: list of website/profile URLs
+    cleaned_company_websites = []
+    try:
+        incoming_websites = req.company_websites or []
+        if isinstance(incoming_websites, list):
+            for u in incoming_websites:
+                if not isinstance(u, str):
+                    continue
+                url = u.strip()
+                if not url:
+                    continue
+                if not (url.startswith("http://") or url.startswith("https://")):
+                    # Default to https if scheme is missing
+                    url = f"https://{url}"
+                cleaned_company_websites.append(url)
+    except Exception:
+        cleaned_company_websites = []
 
-    pitch_deck_filename = req.pitch_deck_filename.strip(
-    ) if req.pitch_deck_filename else None
+    if len(cleaned_company_websites) == 0:
+        raise HTTPException(status_code=400, detail="At least one valid company website URL is required.")
+
+    input_deck_filename = req.input_deck_filename.strip(
+    ) if req.input_deck_filename else None
+
+    file_extension = req.file_extension.strip(
+    ) if req.file_extension else None
 
     if not company_name:
         raise HTTPException(
@@ -106,9 +129,9 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
     if not founder_id:
         raise HTTPException(
             status_code=400, detail="founder_id cannot be empty")
-    if not pitch_deck_filename:
+    if not input_deck_filename:
         raise HTTPException(
-            status_code=400, detail="pitch_deck_filename cannot be empty")
+            status_code=400, detail="input_deck_filename cannot be empty")
 
     doc_data = {
         "company_name": company_name,
@@ -121,8 +144,9 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
         "usp": usp,
         "revenue_model": revenue_model,
         "comments": comments,
+        "company_websites": cleaned_company_websites,
         "founder_id": founder_id,
-        "company_pitch_deck_gcs_uri": f"gs://{GCS_BUCKET_NAME}/{GCP_PITCH_DECK_INPUT_FOLDER}/{pitch_deck_filename}",
+        "company_pitch_deck_gcs_uri": f"gs://{GCS_BUCKET_NAME}/{GCP_PITCH_DECK_INPUT_FOLDER}/{founder_id}/{input_deck_filename}.{file_extension}",
         "benchmark_agent_job_id": "",
         "extract_output_gcs_uri": "",
         "benchmark_gcs_uri": "",
@@ -166,8 +190,7 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
 
         # Trigger the Cloud Run Job to process this pitch deck
         try:
-            trigger_job_with_filename(
-                filename=pitch_deck_filename, firestore_doc_id=doc_ref.id)
+            trigger_job_with_filename(firestore_doc_id=doc_ref.id, input_deck_filename=input_deck_filename, file_extension=file_extension, founder_id=founder_id, company_websites=cleaned_company_websites)
         except Exception as e:
             # keep errors explicit for debugging
             raise HTTPException(

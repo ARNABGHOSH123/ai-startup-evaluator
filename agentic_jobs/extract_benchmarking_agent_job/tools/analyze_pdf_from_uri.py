@@ -4,7 +4,9 @@ from google.genai.types import Part
 from concurrent.futures import ThreadPoolExecutor
 from google.cloud import storage
 import logging
-from typing import List, Optional, Callable, Any
+import subprocess
+import shutil
+from typing import List, Optional, Callable, Any, Tuple
 from google import genai
 import tempfile
 import asyncio
@@ -21,6 +23,7 @@ GOOGLE_CLOUD_PROJECT = Config.GOOGLE_CLOUD_PROJECT
 GOOGLE_CLOUD_REGION = Config.GOOGLE_CLOUD_REGION
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
 GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
+MODEL = Config.REPORT_GENERATION_AGENT_MODEL
 
 CHUNK_PAGES = 10            # lower this for image-heavy PDFs
 GCS_TEMP_PREFIX = "tmp_chunks"
@@ -28,7 +31,7 @@ GCS_TEMP_PREFIX = "tmp_chunks"
 MAX_CONCURRENT_CHUNKS = 3
 EXECUTOR_WORKERS = MAX_CONCURRENT_CHUNKS + 4
 
-logger = logging.getLogger("analyze_pdf_from_uri")
+logger = logging.getLogger("analyze_doc_from_uri")
 logger.setLevel(logging.INFO)
 
 # thread executor used for blocking I/O (GCS + genai sync calls)
@@ -81,15 +84,41 @@ CRITICAL INSTRUCTIONS:
 Here are the JSON objects from the document chunks:
 """
 
+# Instruction for audio/video analysis (long recordings/presentations)
+AUDIO_VIDEO_ANALYZER_INSTRUCTION = """
+You are a meticulous, expert startup analyst with multimodal understanding.
+Your task is to analyze the entire recording/presentation provided (audio or video), including spoken content and any described visuals.
+
+CRITICAL INSTRUCTIONS:
+- Stick STRICTLY to the information presented in the recording/presentation. Do not infer or add any information that is not explicitly present.
+- If a specific piece of information is not present, you MUST return a `null` value for that field. Do not write "not specified" or "N/A".
+- Your output MUST be a valid JSON object containing the extracted data. Do not add any other text or markdown formatting.
+
+Extract the following information into a structured JSON object:
+    - company_name: The name of the company.
+    - company_websites: List of company websites if mentioned.
+    - parent_company_details: List of parent companies if available along with their website links.
+    - contact_information: Contact information of the founders or of the company (mobile no, phone no, email ids, etc.) if available.
+    - problem: The specific problem the company is solving.
+    - solution: The solution the company is offering.
+    - market_size: The Total Addressable Market (TAM), Serviceable Addressable Market (SAM), and Serviceable Obtainable Market (SOM), if mentioned.
+    - team_members: A list of key team members, their names, and their roles/experience.
+    - traction: Key metrics, customer names, pilots, or revenue figures that demonstrate progress.
+    - public_competitor_symbols: A list of any public companies mentioned as competitors. If stock symbols are not given, state the company names.
+    - funding_details: The amount of funding being sought ("The Ask") and the intended "Use of Funds".
+    - business_model: The company's revenue model, pricing, and target customer profile.
+    - financial_projections: A summary of future revenue or financial projections if mentioned.
+"""
+
 # --------- Helper functions (I/O in executor) ----------
 
 
-async def _upload_blob_in_executor(bucket_name: str, local_path: str, blob_name: str) -> bool:
+async def _upload_blob_in_executor(bucket_name: str, local_path: str, blob_name: str, content_type: str) -> bool:
     loop = asyncio.get_running_loop()
 
     def _upload():
         b = storage_client.bucket(bucket_name).blob(blob_name)
-        b.upload_from_filename(local_path, content_type="application/pdf")
+        b.upload_from_filename(local_path, content_type=content_type)
         return True
 
     return await loop.run_in_executor(_EXECUTOR, _upload)
@@ -105,7 +134,7 @@ async def _delete_blob_in_executor(bucket_name: str, blob_name: str) -> bool:
     return await loop.run_in_executor(_EXECUTOR, _delete)
 
 
-async def _call_model_in_executor(gcs_chunk_uri: str, attempts: int = 3, per_try_timeout: int = 120) -> str:
+async def _call_model_in_executor(gcs_chunk_uri: str, mime_type: str = "application/pdf", attempts: int = 3, per_try_timeout: int = 120) -> str:
     """
     Call the synchronous genai client.generate_content in executor, with retries + timeout.
     Returns the most appropriate textual content (prefers structured response parts if present).
@@ -114,10 +143,10 @@ async def _call_model_in_executor(gcs_chunk_uri: str, attempts: int = 3, per_try
 
     def _call_sync():
         part = Part.from_uri(file_uri=gcs_chunk_uri,
-                             mime_type="application/pdf")
+                             mime_type=mime_type)
         resp = genai_client.models.generate_content(
-            model=Config.FAST_AGENT_MODEL,
-            contents=[PDF_ANALYZER_INSTRUCTION, part],
+            model=MODEL,
+            contents=[PDF_ANALYZER_INSTRUCTION if mime_type == "application/pdf" else AUDIO_VIDEO_ANALYZER_INSTRUCTION, part],
             config=types.GenerateContentConfig(temperature=0),
         )
         return resp
@@ -174,22 +203,24 @@ async def _retry_with_backoff(fn: Callable[..., Any], *args, attempts: int = 3, 
 # --------- Chunk processing worker ----------
 
 
-async def _process_chunk(local_chunk_path: str, bucket_name: str, semaphore: asyncio.Semaphore) -> Optional[str]:
+async def _process_chunk(local_chunk_path: str, bucket_name: str, semaphore: asyncio.Semaphore, mime_type: str) -> Optional[str]:
     """
     Upload the local chunk to GCS, call the model, validate JSON output, then cleanup (local & GCS).
     Returns cleaned JSON string on success or None on failure.
     """
     async with semaphore:
-        chunk_blob_name = f"{GCS_TEMP_PREFIX}/{uuid.uuid4().hex}.pdf"
+        # Preserve appropriate extension for content type
+        ext = os.path.splitext(local_chunk_path)[1].lstrip(".") or "bin"
+        chunk_blob_name = f"{GCS_TEMP_PREFIX}/{uuid.uuid4().hex}.{ext}"
         gcs_chunk_uri = f"gs://{bucket_name}/{chunk_blob_name}"
 
         try:
             # Upload with retries
-            await _retry_with_backoff(_upload_blob_in_executor, bucket_name, local_chunk_path, chunk_blob_name,
+            await _retry_with_backoff(_upload_blob_in_executor, bucket_name, local_chunk_path, chunk_blob_name, mime_type,
                                       attempts=3, base=1.0)
 
             # Model call (function has its own retries/timeouts)
-            raw_text = await _call_model_in_executor(gcs_chunk_uri)
+            raw_text = await _call_model_in_executor(gcs_chunk_uri, mime_type=mime_type)
 
             # Clean wrapper fences and validate JSON
             cleaned = raw_text.strip().removeprefix("```json").removesuffix("```").strip()
@@ -225,177 +256,332 @@ async def _process_chunk(local_chunk_path: str, bucket_name: str, semaphore: asy
             except Exception:
                 pass
 
-# --------- Main async analyze function ----------
+def _soffice_convert_to_pdf(input_path: str, output_dir: str, timeout: int = 120) -> str:
+    """Convert an Office document to PDF using LibreOffice (soffice) headless.
+
+    Returns the path to the generated PDF inside output_dir.
+    Raises RuntimeError on failure.
+    """
+    soffice = shutil.which("soffice") or shutil.which("libreoffice")
+    if not soffice:
+        raise RuntimeError("LibreOffice (soffice) not found in PATH. Please ensure it is installed in the runtime image.")
+
+    cmd = [
+        soffice,
+        "--headless",
+        "--nologo",
+        "--nolockcheck",
+        "--nodefault",
+        "--view",
+        "--convert-to",
+        "pdf",
+        "--outdir",
+        output_dir,
+        input_path,
+    ]
+    try:
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(f"LibreOffice conversion timed out: {e}")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"LibreOffice conversion failed: {e.stderr.decode(errors='ignore') or e.stdout.decode(errors='ignore')}")
+
+    # Determine expected output path: same basename with .pdf in output_dir
+    base = os.path.splitext(os.path.basename(input_path))[0]
+    out_path = os.path.join(output_dir, f"{base}.pdf")
+    if not os.path.exists(out_path):
+        # LibreOffice might change name slightly; try to locate a single PDF in output_dir with matching prefix
+        cand = [p for p in os.listdir(output_dir) if p.lower().endswith(".pdf")]
+        if len(cand) == 1:
+            out_path = os.path.join(output_dir, cand[0])
+    if not os.path.exists(out_path):
+        raise RuntimeError("LibreOffice did not produce an output PDF as expected.")
+    return out_path
 
 
-async def analyze_pdf_from_uri(gcs_uri: str) -> str:
-    """Analyze a pitch-deck PDF stored in Google Cloud Storage and return merged JSON.
+async def _analyze_local_pdf(local_pdf: str, tmpdir: str, bucket_name: str) -> str:
+    """Core pipeline that takes a local PDF path and performs chunking + model calls + synthesis."""
+    # Open and split sequentially (PyMuPDF is NOT thread-safe)
+    doc = fitz.open(local_pdf)
+    total_pages = len(doc)
+    num_chunks = math.ceil(total_pages / CHUNK_PAGES)
 
-    This coroutine performs a multi-step, chunked analysis of a PDF located at the
-    given `gcs_uri`. The function:
+    local_chunk_paths: List[str] = []
+    for i in range(num_chunks):
+        start = i * CHUNK_PAGES
+        end = min((i + 1) * CHUNK_PAGES, total_pages)
+        chunk_doc = fitz.open()
+        chunk_doc.insert_pdf(doc, from_page=start, to_page=end - 1)
+        local_chunk = os.path.join(tmpdir, f"chunk_{uuid.uuid4().hex}.pdf")
+        chunk_doc.save(local_chunk)
+        chunk_doc.close()
+        local_chunk_paths.append(local_chunk)
+        # small hint to GC between chunk saves
+        gc.collect()
 
-      1. Downloads the PDF to a temporary directory (blocking I/O performed in a
-         threadpool executor).
-      2. Splits the PDF sequentially into smaller chunk files using PyMuPDF
-         (fitz). PyMuPDF is *not* thread-safe, so splitting is performed
-         sequentially in-process.
-      3. Uploads each chunk to a temporary GCS path and invokes a synchronous
-         GenAI model call in parallel for each chunk (bounded concurrency).
-      4. Collects the per-chunk JSON outputs, synthesizes them via a final
-         GenAI call, and returns the merged JSON string.
+    # Close master doc and remove original downloaded PDF BEFORE the parallel phase
+    try:
+        doc.close()
+    except Exception:
+        pass
 
-    The returned string is expected to be a valid JSON document (typically the
-    JSON produced by the synthesis step). The function tries to validate each
-    chunk's JSON before synthesis; chunks that fail validation are skipped.
+    try:
+        if os.path.exists(local_pdf):
+            os.remove(local_pdf)
+    except Exception:
+        pass
 
-    Args:
-        gcs_uri (str): Google Cloud Storage URI of the input PDF (format
-            "gs://bucket/path/to/file.pdf").
+    # Attempt to shrink PyMuPDF internal caches (if available)
+    try:
+        try:
+            fitz.TOOLS.store_shrink()
+        except Exception:
+            pass
+    except Exception:
+        pass
 
-    Returns:
-        str: A JSON string that represents the merged extraction/synthesis of the
-        entire document. On error, the function may return a JSON string
-        describing the error (for example: '{"error":"..."}') or raise an exception
-        (see **Raises**).
+    gc.collect()
 
-    Raises:
-        FileNotFoundError: If the input `gcs_uri` is malformed or the GCS blob is
-            not available at download time.
-        RuntimeError: If the GenAI model calls fail repeatedly (after configured
-            retries) or if the synthesis step fails.
-        Exception: Other unexpected exceptions (network, GCS, filesystem, or
-            PyMuPDF errors) may be raised; callers should catch and handle them
-            as appropriate.
+    # Process chunk uploads + model calls in parallel (bounded concurrency)
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_CHUNKS)
+    tasks = [asyncio.create_task(_process_chunk(
+        p, bucket_name, semaphore, "application/pdf")) for p in local_chunk_paths]
 
-    Side effects:
-        * Creates temporary files under a process-local temporary directory
-          (e.g., `/tmp` inside the container). Chunk files are removed as each
-          chunk is processed; the temporary directory is removed when the
-          coroutine returns or when the context exits.
-        * Uploads temporary chunk files to a configured GCS temporary prefix
-          (deleted after each chunk is processed).
+    # Use return_exceptions=True to collect per-task failures
+    results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    Notes:
-        * Splitting uses PyMuPDF (fitz) and must be done sequentially because
-          PyMuPDF is not thread-safe. Network / model calls are performed in
-          parallel (bounded) to improve throughput.
-        * On container platforms such as Cloud Run, the service's `/tmp` is an
-          ephemeral tmpfs (in-memory) filesystem; temporary files consume instance
-          memory while present. Delete and close file handles early to avoid
-          memory pressure or OOMs. See Cloud Run docs for ephemeral storage
-          details. :contentReference[oaicite:1]{index=1}
-        * The function uses a thread executor for blocking calls (GCS upload/download,
-          synchronous model calls) and `asyncio` for coordinating concurrency.
-        * Tune `MAX_CONCURRENT_CHUNKS` (or equivalent) based on available memory.
-          On small instances (e.g., 512 MiB) prefer a conservative concurrency
-          (2–3) to avoid tmpfs memory exhaustion.
+    partial_results: List[str] = []
+    for idx, res in enumerate(results):
+        if isinstance(res, Exception):
+            logger.warning("chunk task %d raised: %s", idx, res)
+        elif res:
+            partial_results.append(res)
 
-    Example:
-        >>> result_json = await analyze_pdf_from_uri_async("gs://my-bucket/pitch.pdf")
-        >>> obj = json.loads(result_json)
-        >>> print(obj.get("company_name"))
+    if not partial_results:
+        return '{"error":"No valid JSON could be extracted from any of the chunks."}'
+
+    # Synthesis step (single blocking call in executor). Extract structured parts if possible.
+    def _synth_call():
+        resp = genai_client.models.generate_content(
+            model=MODEL,
+            contents=[PDF_SYNTHESIS_INSTRUCTION] + partial_results,
+            config=types.GenerateContentConfig(temperature=0),
+        )
+        # prefer structured parts
+        try:
+            candidates = getattr(resp, "candidates", None)
+            if candidates and len(candidates) > 0:
+                content = getattr(candidates[0], "content", None)
+                if content and getattr(content, "parts", None):
+                    texts = [getattr(p, "text", "")
+                             for p in content.parts if getattr(p, "text", None)]
+                    joined = "\n".join([t for t in texts if t])
+                    if joined:
+                        return joined
+        except Exception:
+            logger.debug(
+                "Failed to parse synthesis structured parts; falling back to resp.text", exc_info=True)
+        return resp.text or ""
+
+    loop = asyncio.get_running_loop()
+    synthesis_raw = await loop.run_in_executor(_EXECUTOR, _synth_call)
+    final_clean = synthesis_raw.strip().removeprefix(
+        "```json").removesuffix("```").strip()
+    # optional: validate JSON
+    return final_clean
+
+
+# --------- Main async analyze functions ----------
+
+async def analyze_textual_doc_from_uri(gcs_uri: str) -> str:
+    """Analyze a pitch-deck document (pdf, doc, docx, ppt, pptx) in GCS and return merged JSON.
+
+    Normalizes Office formats to PDF via headless LibreOffice conversion, then
+    reuses the existing PDF chunking pipeline. Visuals and text are preserved
+    through PDF normalization. Methodology otherwise remains identical to the
+    previous PDF-only implementation.
     """
     bucket_name, blob_name = gcs_uri.replace("gs://", "").split("/", 1)
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
 
+    ext = os.path.splitext(blob_name)[1].lower().lstrip(".")
+
     loop = asyncio.get_running_loop()
+    with tempfile.TemporaryDirectory(prefix="doc_worker_") as tmpdir:
+        # Download original file
+        local_input = os.path.join(tmpdir, f"input_{uuid.uuid4().hex}.{ext or 'bin'}")
 
-    # Create ephemeral tempdir (auto-cleaned when context exits)
-    with tempfile.TemporaryDirectory(prefix="pdf_worker_") as tmpdir:
-        local_pdf = os.path.join(tmpdir, f"input_{uuid.uuid4().hex}.pdf")
-
-        # Download (blocking) in executor
         def _download():
-            blob.download_to_filename(local_pdf)
+            blob.download_to_filename(local_input)
             return True
 
         await loop.run_in_executor(_EXECUTOR, _download)
 
-        # Open and split sequentially (PyMuPDF is NOT thread-safe)
-        doc = fitz.open(local_pdf)
-        total_pages = len(doc)
-        num_chunks = math.ceil(total_pages / CHUNK_PAGES)
-
-        local_chunk_paths: List[str] = []
-        for i in range(num_chunks):
-            start = i * CHUNK_PAGES
-            end = min((i + 1) * CHUNK_PAGES, total_pages)
-            chunk_doc = fitz.open()
-            chunk_doc.insert_pdf(doc, from_page=start, to_page=end - 1)
-            local_chunk = os.path.join(tmpdir, f"chunk_{uuid.uuid4().hex}.pdf")
-            chunk_doc.save(local_chunk)
-            chunk_doc.close()
-            local_chunk_paths.append(local_chunk)
-            # small hint to GC between chunk saves
-            gc.collect()
-
-        # Close master doc and remove original downloaded PDF BEFORE the parallel phase
-        try:
-            doc.close()
-        except Exception:
-            pass
-
-        try:
-            if os.path.exists(local_pdf):
-                os.remove(local_pdf)
-        except Exception:
-            pass
-
-        # Attempt to shrink PyMuPDF internal caches (if available)
-        try:
+        # If not PDF, convert to PDF using LibreOffice
+        if ext not in {"pdf"}:
             try:
-                fitz.TOOLS.store_shrink()
-            except Exception:
-                pass
+                local_pdf = _soffice_convert_to_pdf(local_input, tmpdir)
+            except Exception as e:
+                logger.error("Failed to convert %s to PDF: %s", blob_name, e)
+                return '{"error":"Failed to convert document to PDF for analysis."}'
+        else:
+            local_pdf = local_input
+
+        # Run the existing chunking + model pipeline
+        return await _analyze_local_pdf(local_pdf, tmpdir, bucket_name)
+
+
+MEDIA_SEGMENT_SECONDS = 300  # 5 minutes per chunk for long recordings
+
+
+def _ffmpeg_path() -> str:
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise RuntimeError("ffmpeg not found in PATH. Please ensure it is installed in the runtime image.")
+    return ffmpeg
+
+
+def _split_audio_to_chunks(input_path: str, output_dir: str, segment_seconds: int = MEDIA_SEGMENT_SECONDS) -> Tuple[List[str], str]:
+    """Split audio into ~segment_seconds MP3 mono 16kHz chunks using ffmpeg. Returns (paths, mime)."""
+    ffmpeg = _ffmpeg_path()
+    out_pattern = os.path.join(output_dir, "audio_chunk_%03d.mp3")
+    cmd = [
+        ffmpeg,
+        "-hide_banner",
+        "-loglevel", "error",
+        "-i", input_path,
+        "-ac", "1",
+        "-ar", "16000",
+        "-c:a", "libmp3lame",
+        "-b:a", "64k",
+        "-f", "segment",
+        "-segment_time", str(segment_seconds),
+        "-reset_timestamps", "1",
+        out_pattern,
+    ]
+    subprocess.run(cmd, check=True)
+    # Collect resulting files in order
+    files = [os.path.join(output_dir, f) for f in sorted(os.listdir(output_dir)) if f.startswith("audio_chunk_") and f.endswith(".mp3")]
+    if not files:
+        raise RuntimeError("ffmpeg did not produce audio chunks as expected.")
+    return files, "audio/mpeg"
+
+
+def _split_video_to_chunks(input_path: str, output_dir: str, segment_seconds: int = MEDIA_SEGMENT_SECONDS) -> Tuple[List[str], str]:
+    """Split video into ~segment_seconds MP4 chunks using ffmpeg with lightweight re-encode. Returns (paths, mime)."""
+    ffmpeg = _ffmpeg_path()
+    out_pattern = os.path.join(output_dir, "video_chunk_%03d.mp4")
+    cmd = [
+        ffmpeg,
+        "-hide_banner",
+        "-loglevel", "error",
+        "-i", input_path,
+        "-vf", "scale=w=854:h=-2:force_original_aspect_ratio=decrease",
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "28",
+        "-c:a", "aac",
+        "-b:a", "96k",
+        "-f", "segment",
+        "-segment_time", str(segment_seconds),
+        "-reset_timestamps", "1",
+        out_pattern,
+    ]
+    subprocess.run(cmd, check=True)
+    files = [os.path.join(output_dir, f) for f in sorted(os.listdir(output_dir)) if f.startswith("video_chunk_") and f.endswith(".mp4")]
+    if not files:
+        raise RuntimeError("ffmpeg did not produce video chunks as expected.")
+    return files, "video/mp4"
+
+
+async def _analyze_local_media(local_input: str, tmpdir: str, bucket_name: str, media_type: str) -> str:
+    """Analyze audio or video by splitting to chunks, uploading, running model per chunk, then synthesizing."""
+    try:
+        if media_type == "audio":
+            chunk_paths, mime_type = _split_audio_to_chunks(local_input, tmpdir)
+        else:
+            chunk_paths, mime_type = _split_video_to_chunks(local_input, tmpdir)
+    except Exception as e:
+        logger.error("Failed to split %s: %s", media_type, e)
+        print(e)
+        return '{"error":"Failed to split media into chunks for analysis."}'
+
+    semaphore = asyncio.Semaphore(MAX_CONCURRENT_CHUNKS)
+    tasks = [asyncio.create_task(_process_chunk(p, bucket_name, semaphore, mime_type)) for p in chunk_paths]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    partial_results: List[str] = []
+    for idx, res in enumerate(results):
+        if isinstance(res, Exception):
+            logger.warning("media chunk task %d raised: %s", idx, res)
+        elif res:
+            partial_results.append(res)
+
+    if not partial_results:
+        return '{"error":"No valid JSON could be extracted from any of the media chunks."}'
+
+    def _synth_call():
+        resp = genai_client.models.generate_content(
+            model=MODEL,
+            contents=[PDF_SYNTHESIS_INSTRUCTION] + partial_results,
+            config=types.GenerateContentConfig(temperature=0),
+        )
+        try:
+            candidates = getattr(resp, "candidates", None)
+            if candidates and len(candidates) > 0:
+                content = getattr(candidates[0], "content", None)
+                if content and getattr(content, "parts", None):
+                    texts = [getattr(p, "text", "") for p in content.parts if getattr(p, "text", None)]
+                    joined = "\n".join([t for t in texts if t])
+                    if joined:
+                        return joined
         except Exception:
-            pass
+            logger.debug("Failed to parse synthesis structured parts; falling back to resp.text", exc_info=True)
+        return resp.text or ""
 
-        gc.collect()
+    loop = asyncio.get_running_loop()
+    synthesis_raw = await loop.run_in_executor(_EXECUTOR, _synth_call)
+    final_clean = synthesis_raw.strip().removeprefix("```json").removesuffix("```").strip()
+    return final_clean
 
-        # Process chunk uploads + model calls in parallel (bounded concurrency)
-        semaphore = asyncio.Semaphore(MAX_CONCURRENT_CHUNKS)
-        tasks = [asyncio.create_task(_process_chunk(
-            p, bucket_name, semaphore)) for p in local_chunk_paths]
 
-        # Use return_exceptions=True to collect per-task failures
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+async def analyze_doc_from_uri(gcs_uri: str, file_extension: str) -> str:
+    """
+    Analyze a pitch-deck artifact (pdf, doc, docx, ppt, pptx, m4a, mp4, mp3) in GCS and return merged JSON.
+    """
+    file_extension = (file_extension or "").lower()
+    if file_extension in {"pdf", "doc", "docx", "ppt", "pptx"}:
+        return await analyze_textual_doc_from_uri(gcs_uri)
 
-        partial_results: List[str] = []
-        for idx, res in enumerate(results):
-            if isinstance(res, Exception):
-                logger.warning("chunk task %d raised: %s", idx, res)
-            elif res:
-                partial_results.append(res)
+    AUDIO_EXTS = {"mp3", "wav", "m4a", "aac", "flac", "ogg", "oga", "opus"}
+    VIDEO_EXTS = {"mp4", "mov", "mkv", "webm", "avi", "m4v", "wmv"}
 
-        if not partial_results:
-            return '{"error":"No valid JSON could be extracted from any of the PDF chunks."}'
+    bucket_name, blob_name = gcs_uri.replace("gs://", "").split("/", 1)
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
 
-        # Synthesis step (single blocking call in executor). Extract structured parts if possible.
-        def _synth_call():
-            resp = genai_client.models.generate_content(
-                model=Config.FAST_AGENT_MODEL,
-                contents=[PDF_SYNTHESIS_INSTRUCTION] + partial_results,
-                config=types.GenerateContentConfig(temperature=0),
-            )
-            # prefer structured parts
-            try:
-                candidates = getattr(resp, "candidates", None)
-                if candidates and len(candidates) > 0:
-                    content = getattr(candidates[0], "content", None)
-                    if content and getattr(content, "parts", None):
-                        texts = [getattr(p, "text", "")
-                                 for p in content.parts if getattr(p, "text", None)]
-                        joined = "\n".join([t for t in texts if t])
-                        if joined:
-                            return joined
-            except Exception:
-                logger.debug(
-                    "Failed to parse synthesis structured parts; falling back to resp.text", exc_info=True)
-            return resp.text or ""
+    media_type: Optional[str] = None
+    if file_extension in AUDIO_EXTS:
+        media_type = "audio"
+    elif file_extension in VIDEO_EXTS:
+        media_type = "video"
+    else:
+        return '{"error":"Unsupported file type for analysis."}'
 
-        synthesis_raw = await loop.run_in_executor(_EXECUTOR, _synth_call)
-        final_clean = synthesis_raw.strip().removeprefix(
-            "```json").removesuffix("```").strip()
-        # optional: validate JSON
-        return final_clean
+    loop = asyncio.get_running_loop()
+    with tempfile.TemporaryDirectory(prefix="media_worker_") as tmpdir:
+        local_input = os.path.join(tmpdir, f"input_{uuid.uuid4().hex}.{file_extension}")
+
+        def _download():
+            blob.download_to_filename(local_input)
+            return True
+
+        await loop.run_in_executor(_EXECUTOR, _download)
+
+        return await _analyze_local_media(local_input, tmpdir, bucket_name, media_type)
+
+# if __name__ == "__main__":
+
+#     import asyncio
+#     asyncio.run(analyze_doc_from_uri("gs://pitching_decks/uploads/AXVNSoOLtvR2oGfgMeZ0/India_s_Pet_Healthcare_Revolution__Decoding_Dr.m4a", "m4a"))

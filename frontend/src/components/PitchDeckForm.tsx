@@ -15,6 +15,7 @@ type FormData = {
   usp: string;
   revenue: string;
   comments: string;
+  company_websites: string[]; // multiple URLs: main site, LinkedIn, etc.
 };
 
 type PitchFormProps = {
@@ -103,13 +104,9 @@ export default function PitchForm({
     usp: "",
     revenue: "",
     comments: "",
+    company_websites: [""], // start with one empty field
   });
-  const [files, setFiles] = useState({
-    pitchDeck: null as File | null,
-    transcript: null as File | null,
-    email: null as File | null,
-    founderUpdate: null as File | null,
-  });
+  const [file, setFile] = useState<File | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -126,29 +123,48 @@ export default function PitchForm({
   //   }
   // };
 
+  function isValidHttpUrl(url: string) {
+    try {
+      const u = new URL(url);
+      return u.protocol === "http:" || u.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate that a pitch deck has been provided
-    if (!files.pitchDeck) {
-      setFormError("Please upload your Pitch Deck (PDF) before submitting.");
+    // Validate a single required file is provided
+    if (!file) {
+      setFormError("Please upload exactly one file before submitting.");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     setFormError(null);
 
-    // Upload the file to GCS
-    if (!Object.values(files).some((file) => file !== null)) {
-      alert("Please upload the required documents before submitting.");
+    // Validate at least one valid website URL is provided
+    const cleanedWebsites = (formData.company_websites || [])
+      .map((u) => u.trim())
+      .filter((u) => u.length > 0);
+    const hasAtLeastOneValidWebsite = cleanedWebsites.some((u) =>
+      isValidHttpUrl(u)
+    );
+    if (!hasAtLeastOneValidWebsite) {
+      setFormError(
+        "Please provide at least one valid company website or profile URL (starting with http:// or https://)."
+      );
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+
+    // Upload the file to GCS
     setSubmitting(true);
     const { signedUrl } = await getUploadSessionUrl(
-      files?.pitchDeck?.name || "pitch_deck"
+      file?.name || "uploaded_file"
     );
     const sessionUrl = await initiateResumableSession(signedUrl);
-    if (files?.pitchDeck)
-      await uploadFileViaSession(sessionUrl, files?.pitchDeck);
+    if (file) await uploadFileViaSession(sessionUrl, file);
 
     await fetch(
       `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/add_to_companies_list/${
@@ -171,7 +187,11 @@ export default function PitchForm({
           usp: formData.usp,
           revenue_model: formData.revenue,
           comments: formData.comments,
-          pitch_deck_filename: files?.pitchDeck?.name || "",
+          input_deck_filename: file?.name?.split(".")[0] || "",
+          file_extension: file?.name?.split(".").slice(-1)[0] || "",
+          company_websites: formData.company_websites
+            .map((u) => u.trim())
+            .filter((u) => u.length > 0),
         }),
       }
     );
@@ -325,6 +345,73 @@ export default function PitchForm({
           ></textarea>
         </div>
 
+        {/* Company Websites (Required: at least one) */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Company Websites / Profiles *
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            Add at least one valid URL (main website, LinkedIn, Crunchbase,
+            product demo, etc.).
+          </p>
+          <div className="space-y-2">
+            {formData.company_websites.map((url, idx) => (
+              <div key={idx} className="flex gap-2">
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  value={url}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData((prev) => {
+                      const next = [...prev.company_websites];
+                      next[idx] = value;
+                      return { ...prev, company_websites: next };
+                    });
+                  }}
+                  className="flex-1 border rounded-lg px-3 py-2 focus:ring focus:ring-primary"
+                  pattern="https?://.*"
+                />
+                <div className="flex items-center gap-1">
+                  {formData.company_websites.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => {
+                          const next = prev.company_websites.filter(
+                            (_, i) => i !== idx
+                          );
+                          return {
+                            ...prev,
+                            company_websites: next.length ? next : [""],
+                          };
+                        });
+                      }}
+                      className="text-xs px-2 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100"
+                    >
+                      Remove
+                    </button>
+                  )}
+                  {idx === formData.company_websites.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          company_websites: [...prev.company_websites, ""],
+                        }));
+                      }}
+                      className="text-xs px-2 py-2 bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                    >
+                      + Add
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Comments */}
         <div>
           <label className="block text-sm font-medium mb-1">Comments</label>
@@ -337,9 +424,11 @@ export default function PitchForm({
           />
         </div>
         <div className="space-y-2">
-          <UploadDoc files={files} setFiles={setFiles} />
+          <UploadDoc file={file} setFile={setFile} onError={setFormError} />
           <p className="text-xs text-gray-500">
-            Pitch Deck (PDF) is required to proceed.
+            Exactly one file is required. Allowed: pdf, doc, docx, ppt, pptx,
+            audio (mp3, wav, m4a, aac, flac, ogg, oga, opus) or video (mp4, mov,
+            mkv, webm, avi, m4v, wmv).
           </p>
         </div>
 

@@ -4,5 +4,5 @@ from .get_gcs_uri_for_file import get_gcs_uri_for_file
 from .extract_webpage_text import extract_webpage_text, clear_site_extract_cache
 from .tavily_search import tavily_search
 from .merger_tool import merge_extraction_results
-from .analyze_pdf_from_uri import analyze_pdf_from_uri
+from .analyze_pdf_from_uri import analyze_doc_from_uri
 from .get_chart_data import get_chart_data, get_all_chart_type_descriptions

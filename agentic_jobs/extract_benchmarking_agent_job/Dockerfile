@@ -28,6 +28,14 @@ RUN adduser --disabled-password --gecos "" myuser \
  && mkdir -p /home/myuser/.local \
  && chown -R myuser:myuser /home/myuser
 
+# Install LibreOffice and basic fonts for Office->PDF conversion
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libreoffice-writer libreoffice-impress libreoffice-core \
+    fonts-dejavu fonts-liberation ffmpeg \
+ && rm -rf /var/lib/apt/lists/*
+USER myuser
+
 # Copy installed packages from builder
 COPY --from=builder /install /usr/local
 # Copy app code
