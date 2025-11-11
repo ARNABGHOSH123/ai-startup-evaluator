@@ -34,21 +34,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libreoffice-writer libreoffice-impress libreoffice-core \
     fonts-dejavu fonts-liberation ffmpeg \
  && rm -rf /var/lib/apt/lists/*
-USER myuser
 
-# Copy installed packages from builder
+# Copy installed packages from builder (root-owned is fine under /usr/local)
 COPY --from=builder /install /usr/local
-# Copy app code
-COPY --from=builder /app /app
+# Copy app code with correct ownership for non-root user
+COPY --from=builder --chown=myuser:myuser /app /app
 
 ENV PATH="/home/myuser/.local/bin:/usr/local/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     JOB_RUN_TIMEOUT_SECONDS=900
 
-# Make sure files owned by non-root user
-RUN chown -R myuser:myuser /app
-
+# Drop privileges to non-root for runtime
 USER myuser
 WORKDIR /app
 
