@@ -447,7 +447,7 @@ export default function PitchForm({
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-primary text-white font-medium py-2 px-4 rounded-lg hover:opacity-70 transition"
+          className="w-full bg-primary text-white font-medium py-2 px-4 rounded-lg hover:opacity-70 transition disabled:cursor-not-allowed  disabled:opacity-50"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Submitting..." : "Submit"}
