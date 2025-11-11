@@ -25,7 +25,7 @@ type PitchFormProps = {
   goNext?: () => void;
 };
 
-async function getUploadSessionUrl(filename: string) {
+async function getUploadSessionUrl(filename: string, founderId: string) {
   const resp = await fetch(
     `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/generate_v4_signed_url`,
     {
@@ -35,6 +35,7 @@ async function getUploadSessionUrl(filename: string) {
       },
       body: JSON.stringify({
         object_name: filename,
+        founder_id: founderId,
       }),
     }
   );
@@ -161,7 +162,8 @@ export default function PitchForm({
     // Upload the file to GCS
     setSubmitting(true);
     const { signedUrl } = await getUploadSessionUrl(
-      file?.name || "uploaded_file"
+      file?.name || "uploaded_file",
+      params?.founderId || ""
     );
     const sessionUrl = await initiateResumableSession(signedUrl);
     if (file) await uploadFileViaSession(sessionUrl, file);

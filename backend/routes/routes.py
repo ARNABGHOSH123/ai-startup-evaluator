@@ -30,6 +30,7 @@ FIRESTORE_INVESTOR_COLLECTION = Config.FIRESTORE_INVESTOR_COLLECTION
 class SignedUrlRequest(BaseModel):
     object_name: str
     expiration_seconds: int = 3600
+    founder_id: str
 
 
 @app.get("/hello")
@@ -45,6 +46,7 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
     """
     object_name = req.object_name
     expiration_seconds = req.expiration_seconds
+    founder_id = req.founder_id
 
     # optional: validate object_name, e.g. ensure no "../", correct prefix, extension is ".pdf", etc.
     if not object_name or ".." in object_name:
@@ -63,7 +65,7 @@ async def generate_v4_resumable_signed_url(req: SignedUrlRequest):
 
         bucket = storage_client.bucket(GCS_BUCKET_NAME)
 
-        blob = bucket.blob(f"{GCP_PITCH_DECK_INPUT_FOLDER}/{object_name}")
+        blob = bucket.blob(f"{GCP_PITCH_DECK_INPUT_FOLDER}/{founder_id}/{object_name}")
 
         # include x-goog-resumable header in SignedURL options, so client can send that header
         url = blob.generate_signed_url(
