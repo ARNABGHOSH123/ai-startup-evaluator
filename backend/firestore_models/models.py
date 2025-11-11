@@ -1,8 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
-
-from typing import Optional
-from pydantic import BaseModel
+from typing import Optional, List
 
 class FounderDoc(BaseModel):
     founder_name: Optional[str] = None
@@ -42,6 +39,7 @@ class CompanyDoc(BaseModel):
     usp: str
     revenue_model: str
     founder_id: str
+    company_websites: List[str]
     comments: Optional[str] = None
     company_pitch_deck_gcs_uri: Optional[str] = None
     benchmark_agent_job_id: Optional[str] = None

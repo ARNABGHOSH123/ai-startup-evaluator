@@ -25,7 +25,7 @@ company_info_agent = LlmAgent(
         You must use the exact tool names as provided above while making tool calls. Dont make up any tool name of your own.
 
         TASK:
-            Your task is to extract the company website URLs from the **company_websites** field from the input JSON and use the 'tavily_search' tool first and then the 'extract_webpage_text' tool to extract the company information.
+            Your task is to extract the company website URLs from the {{company_websites}} list and use the 'tavily_search' tool first and then the 'extract_webpage_text' tool to extract the company information.
             IMPORTANT:- 'extract_webpage_text' tool takes only 1 URL at a time as a string.
         
         OUTPUT:

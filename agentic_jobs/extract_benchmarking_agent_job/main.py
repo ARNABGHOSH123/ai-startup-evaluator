@@ -35,7 +35,7 @@ firestore_client = firestore.Client(
     project=Config.GOOGLE_CLOUD_PROJECT, database=Config.FIRESTORE_DATABASE)
 
 
-async def _run_agent_once(extracted_filename: str, firestore_doc_id: str | None = None):
+async def _run_agent_once(firestore_doc_id: str, input_deck_filename: str, file_extension: str, founder_id: str, company_websites: list):
     # Capture Cloud Run execution id (e.g., "projects/.../jobs/<job>/executions/<exec-id>")
     execution_name = os.environ.get("CLOUD_RUN_EXECUTION", "")
     job_name = os.environ.get("CLOUD_RUN_JOB", "")
@@ -54,7 +54,7 @@ async def _run_agent_once(extracted_filename: str, firestore_doc_id: str | None 
         logger.warning("Failed to write execution id to Firestore: %s", e)
 
     session_service = InMemorySessionService()
-    await session_service.create_session(app_name=APP_NAME, user_id=SESSION_USER_ID, session_id=SESSION_ID, state={"firestore_doc_id": firestore_doc_id})
+    await session_service.create_session(app_name=APP_NAME, user_id=SESSION_USER_ID, session_id=SESSION_ID, state={"firestore_doc_id": firestore_doc_id, "input_deck_filename": input_deck_filename, "file_extension": file_extension, "founder_id": founder_id, "company_websites": company_websites})
     logger.info("Created session %s for user %s", SESSION_ID, SESSION_USER_ID)
 
     runner = Runner(agent=root_agent, app_name=APP_NAME,
@@ -63,7 +63,7 @@ async def _run_agent_once(extracted_filename: str, firestore_doc_id: str | None 
     content = types.Content(
         role="user",
         parts=[types.Part(
-            text=f"Please analyze the startup using the pitch deck file named '{extracted_filename}'")]
+            text=f"Please analyze the pitch deck.")]
     )
 
     benchmark_gcs_uri = None
@@ -130,21 +130,31 @@ async def _run_agent_once(extracted_filename: str, firestore_doc_id: str | None 
 
 
 async def analyze_startup_pitch_deck():
-    extracted_filename = os.environ.get("INPUT_FILE")
-    firestore_doc_id = os.environ.get("FIRESTORE_DOC_ID")
-    if not extracted_filename:
-        raise RuntimeError("INPUT_FILE environment variable is required")
+    input_deck_filename = os.environ.get("input_deck_filename")
+    firestore_doc_id = os.environ.get("firestore_doc_id")
+    file_extension = os.environ.get("file_extension")
+    founder_id = os.environ.get("founder_id")
+    company_websites = os.environ.get("company_websites")
+    if not input_deck_filename:
+        raise RuntimeError(
+            "input_deck_filename environment variable is required")
 
     if not firestore_doc_id:
-        raise RuntimeError("FIRESTORE_DOC_ID environment variable is required")
+        raise RuntimeError("firestore_doc_id environment variable is required")
 
-    # (Optional) sanitize name
-    if "/" in extracted_filename or "\\" in extracted_filename:
-        logger.warning(
-            "INPUT_FILE contains a path separator; make sure this is expected: %s", extracted_filename)
+    if not file_extension:
+        raise RuntimeError("file_extension environment variable is required")
+
+    if not founder_id:
+        raise RuntimeError("founder_id environment variable is required")
+
+    if not company_websites or company_websites.strip() == "" or company_websites.strip() == "[]":
+        raise RuntimeError("company_websites environment variable is required")
+    
+    company_websites = company_websites.strip().split()
 
     try:
-        result = await _run_agent_once(extracted_filename, firestore_doc_id)
+        result = await _run_agent_once(input_deck_filename=input_deck_filename, firestore_doc_id=firestore_doc_id, file_extension=file_extension, founder_id=founder_id, company_websites=company_websites)
         logger.info("Agent run result: %s", result)
         return result
     except asyncio.TimeoutError:

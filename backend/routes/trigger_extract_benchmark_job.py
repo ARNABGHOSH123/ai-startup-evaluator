@@ -9,7 +9,7 @@ GOOGLE_CLOUD_PROJECT = Config.GOOGLE_CLOUD_PROJECT
 GOOGLE_CLOUD_REGION = Config.GOOGLE_CLOUD_REGION
 EXTRACT_BENCHMARK_CLOUD_RUN_JOB_NAME = Config.EXTRACT_BENCHMARK_CLOUD_RUN_JOB_NAME
 
-def trigger_job_with_filename(filename: str, firestore_doc_id: str, tasks: int = 1, wait_for_completion: bool = False):
+def trigger_job_with_filename(firestore_doc_id: str, input_deck_filename: str, file_extension: str, founder_id: str, company_websites: list, tasks: int = 1, wait_for_completion: bool = False):
     """
     Triggers the Cloud Run Job with the filename passed as an env var override.
     returns: Operation (google.api_core.operation.Operation) if not waiting,
@@ -26,8 +26,11 @@ def trigger_job_with_filename(filename: str, firestore_doc_id: str, tasks: int =
     container_override = {
         "name": EXTRACT_BENCHMARK_CLOUD_RUN_JOB_NAME,  # optional; can be left empty; using job name is fine
         "env": [
-            {"name": "INPUT_FILE", "value": filename},
-            {"name": "FIRESTORE_DOC_ID", "value": firestore_doc_id}
+            {"name": "input_deck_filename", "value": input_deck_filename},
+            {"name": "firestore_doc_id", "value": firestore_doc_id},
+            {"name": "file_extension", "value": file_extension},
+            {"name": "founder_id", "value": founder_id},
+            {"name": "company_websites", "value": ' '.join(company_websites)},
         ],
     }
 
