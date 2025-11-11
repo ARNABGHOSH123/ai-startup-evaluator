@@ -32,7 +32,6 @@ class CompanyDoc(BaseModel):
     domain: str
     company_phone_no: str
     company_email: str
-    pitch_deck_filename: str
     company_address: str
     stage_of_development: str
     business_details: str
