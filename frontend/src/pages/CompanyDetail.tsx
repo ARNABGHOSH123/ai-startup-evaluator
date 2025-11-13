@@ -18,6 +18,7 @@ import { Link, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import ThesisConfig from "./InvestmentWeightage";
 
 type Company = {
   company_name: string;
@@ -266,7 +267,8 @@ export default function CompanyDetail() {
         </div> */}
       </div>
 
-      <SummaryCard company={company} />
+     <SummaryCard company={company} />
+      <ThesisConfig />
 
       {/* ---------------- Tabs ---------------- */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
