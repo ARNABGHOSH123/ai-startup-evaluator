@@ -1,156 +1,59 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
-import { Tooltip } from "@/components/ui/tooltip";
-import {
-  Bar,
-  BarChart,
-  Cell,
-  Legend,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
-type Competitor = {
-  name: string;
-  founded: number;
-  hq: string;
-  raised: number;
-  offerings: string;
-  market: string;
-  description: string;
-  url: string;
-};
+export default function CompetitorsTab({ company }: any) {
+  const bigString = company?.extract_benchmark_agent_response || "";
 
-type CompetitorData = {
-  name: string;
-  raised: number;
-  region: string;
-};
+  // Normalize escape sequences like \n → actual newlines
+  const normalizedText = bigString.replace(/\\n/g, "\n");
 
-type CompetitorsTabProps = {
-  indianCompetitors: Competitor[];
-  globalCompetitors: Competitor[];
-  chartData: CompetitorData[];
-};
+  function extractBetweenMarkers(
+    text: string,
+    start: string,
+    end: string
+  ): string {
+    const startIndex = text.indexOf(start);
+    if (startIndex === -1) return "";
 
-export default function CompetitorsTab({
-  indianCompetitors,
-  globalCompetitors,
-  chartData,
-}: CompetitorsTabProps) {
+    const endIndex = text.indexOf(end, startIndex + start.length);
+    const rawSection =
+      endIndex === -1
+        ? text.slice(startIndex + start.length)
+        : text.slice(startIndex + start.length, endIndex);
+
+    // Clean markdown characters like **, *, _, etc.
+    const cleaned = rawSection.replace(/\*/g, ""); // remove all asterisks
+    return cleaned;
+  }
+
+  // Example usage
+  const competitorData =
+    company?.company_name === "Sia Analytics"
+      ? extractBetweenMarkers(
+          normalizedText,
+          "# **Competitor Analysis",
+          "Final Investment Recommendation"
+        )
+      : company?.company_name === "Naario"
+      ? extractBetweenMarkers(
+          normalizedText,
+          "*Competitor Analysis",
+          "*Final Recommendation"
+        )
+      : extractBetweenMarkers(
+          normalizedText,
+          "*Competitor Analysis",
+          "Conclusion & Recommendation"
+        );
   return (
     <TabsContent value="competitors">
-      {/* Existing Competitor UI */}
-        <Card className="max-h-[600px] overflow-y-auto">
-          <CardHeader>
-            <div className="font-semibold">Indian Competitors</div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-2 border">Company</th>
-                    <th className="p-2 border">Founded</th>
-                    <th className="p-2 border">HQ</th>
-                    <th className="p-2 border">Total Raised ($M)</th>
-                    <th className="p-2 border">Offerings</th>
-                    <th className="p-2 border">Target Market</th>
-                    <th className="p-2 border">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {indianCompetitors.map((c, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2 text-blue-600 underline">
-                        <a href={c.url} target="_blank">
-                          {c.name}
-                        </a>
-                      </td>
-                      <td className="p-2">{c.founded}</td>
-                      <td className="p-2">{c.hq}</td>
-                      <td className="p-2">{c.raised}</td>
-                      <td className="p-2">{c.offerings}</td>
-                      <td className="p-2">{c.market}</td>
-                      <td className="p-2">{c.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-
-          <CardHeader>
-            <div className="font-semibold">Global Competitors</div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="p-2 border">Company</th>
-                    <th className="p-2 border">Founded</th>
-                    <th className="p-2 border">HQ</th>
-                    <th className="p-2 border">Total Raised ($M)</th>
-                    <th className="p-2 border">Offerings</th>
-                    <th className="p-2 border">Target Market</th>
-                    <th className="p-2 border">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {globalCompetitors.map((c, i) => (
-                    <tr key={i} className="border-t">
-                      <td className="p-2 text-blue-600 underline">
-                        <a href={c.url} target="_blank">
-                          {c.name}
-                        </a>
-                      </td>
-                      <td className="p-2">{c.founded}</td>
-                      <td className="p-2">{c.hq}</td>
-                      <td className="p-2">{c.raised}</td>
-                      <td className="p-2">{c.offerings}</td>
-                      <td className="p-2">{c.market}</td>
-                      <td className="p-2">{c.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-
-          {/* <Card> */}
-          <CardHeader className="pb-1">
-            <div className="font-semibold text-sm">Total Raised Comparison</div>
-          </CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                layout="vertical"
-                margin={{ top: 5, right: 10, left: 50, bottom: 5 }}
-                barCategoryGap="20%"
-              >
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={80} />
-                <Tooltip
-                  {...({
-                    formatter: (value: number) => `$${value}M`,
-                  } as any)}
-                />{" "}
-                <Legend />
-                <Bar dataKey="raised">
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.region === "Indian" ? "#6366f1" : "#22c55e"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <article className="prose max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+          {competitorData}
+        </ReactMarkdown>
+      </article>
     </TabsContent>
   );
 }

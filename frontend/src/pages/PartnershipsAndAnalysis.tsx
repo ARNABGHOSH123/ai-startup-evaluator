@@ -29,7 +29,7 @@ interface VectorCardProps {
 interface SwotCardProps {
   color: string;
   title: string;
-  points: string[];
+  points: string;
 }
 
 interface RiskCardProps {
@@ -38,13 +38,69 @@ interface RiskCardProps {
   color: string;
 }
 
-export default function PartnershipsAndAnalysis() {
+export default function PartnershipsAndAnalysis({ company }: { company: any }) {
+  
+   const bigString = company?.extract_benchmark_agent_response || "";
+
+  // Normalize escape sequences like \n → actual newlines
+  const normalizedText = bigString.replace(/\\n/g, "\n");
+
+  function extractBetweenMarkers(
+    text: string,
+    start: string,
+    end: string
+  ): string {
+    const startIndex = text.indexOf(start);
+    if (startIndex === -1) return "";
+
+    const endIndex = text.indexOf(end, startIndex + start.length);
+    const rawSection =
+      endIndex === -1
+        ? text.slice(startIndex + start.length)
+        : text.slice(startIndex + start.length, endIndex);
+
+    // Clean markdown characters like **, *, _, etc.
+    const cleaned = rawSection
+      .replace(/\*/g, "") // remove all asterisks
+      .replace(/_/g, "") // remove underscores if any
+      .replace(/\s+/g, " ") // normalize multiple spaces
+      .replace(/\#/g, "") // remove all asterisks
+      .trim();
+
+    return cleaned;
+  }
+
+  // Example usage
+  const strength = extractBetweenMarkers(
+    normalizedText,
+    "Strengths",
+    "Weaknesses"
+  )
+
+  const weakness = extractBetweenMarkers(
+    normalizedText,
+    "Weaknesses",
+    "Opportunities"
+  )
+
+   const opportunities = extractBetweenMarkers(
+    normalizedText,
+    "*Opportunities",
+    "Threats"
+  );
+
+  const threats = extractBetweenMarkers(
+    normalizedText,
+    "Threats",
+    "##"
+  )
+
   return (
     <TabsContent value="partnership">
     <div className="p-6 bg-gray-50 min-h-screen">
       <Accordion type="multiple" className="space-y-4">
         {/* Partnerships & Alliances */}
-        <AccordionItem value="partnerships" className="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
+        {company?.company_name === "Sia Analytics" && <AccordionItem value="partnerships" className="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
           <AccordionTrigger className="text-lg font-semibold text-blue-700">
             Partnerships & Alliances
           </AccordionTrigger>
@@ -76,10 +132,10 @@ export default function PartnershipsAndAnalysis() {
               />
             </div>
           </AccordionContent>
-        </AccordionItem>
+        </AccordionItem>}
 
         {/* Four-Vector Analysis */}
-        <AccordionItem value="fourvector" className="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
+        {company?.company_name === "Sia Analytics" && <AccordionItem value="fourvector" className="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
           <AccordionTrigger className="text-lg font-semibold text-blue-700">
             Four-Vector Analysis
           </AccordionTrigger>
@@ -107,7 +163,7 @@ export default function PartnershipsAndAnalysis() {
               />
             </div>
           </AccordionContent>
-        </AccordionItem>
+        </AccordionItem>}
 
         {/* SWOT Analysis */}
         <AccordionItem value="swot" className="bg-white rounded-2xl shadow-md p-4 border border-gray-200">
@@ -119,39 +175,24 @@ export default function PartnershipsAndAnalysis() {
               <SwotCard
                 color="green"
                 title="Strengths"
-                points={[
-                  "Strong technical founding team from Bosch.",
-                  "10 jointly owned patents.",
-                  "Enterprise clients and pilots validate traction.",
-                  "High-growth Agentic AI market.",
-                ]}
+                points={strength}
               />
               <SwotCard
                 color="red"
                 title="Weaknesses"
-                points={[
-                  "Limited public presence & testimonials.",
-                  "Long 9–12 month sales cycle.",
-                  "Undefined customer acquisition cost metrics.",
-                ]}
+                points={
+                  weakness
+                }
               />
               <SwotCard
                 color="blue"
                 title="Opportunities"
-                points={[
-                  "Rapid AI adoption in India (80% enterprises).",
-                  "Addresses 90% AI project failure rate.",
-                  "Global expansion and aggressive marketing push.",
-                ]}
+                points={opportunities}
               />
               <SwotCard
                 color="yellow"
                 title="Threats"
-                points={[
-                  "Competition from Palantir, IBM, Domo.",
-                  "Data privacy & security concerns (92% execs).",
-                  "Talent competition in Bengaluru AI market.",
-                ]}
+                points={threats}
               />
             </div>
           </AccordionContent>
@@ -164,26 +205,41 @@ export default function PartnershipsAndAnalysis() {
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4 mt-4">
-              <RiskCard
+              {company?.company_name !== 'Naario' && <RiskCard
                 title="Market Risk"
                 color="red"
-                text="Faces heavy competition from large players like IBM, Palantir, and Domo with established enterprise ties."
-              />
-              <RiskCard
+                text={company?.company_name === 'Sia Analytics' ? "Faces heavy competition from large players like IBM, Palantir, and Domo with established enterprise ties." : "Overestimation of the market's willingness to adopt a higher annual spend per pet (₹14,000), given that 90% of the market currently does not spend this amount."}
+              />}
+              {company?.company_name !== 'Naario' && <RiskCard
                 title="Sales Cycle Risk"
                 color="orange"
-                text="Long 9–12 month cycle can delay revenue and strain cash flow during early stages."
-              />
-              <RiskCard
-                title="Adoption Risk"
+                text={company?.company_name === 'Sia Analytics' ? "Long 9–12 month cycle can delay revenue and strain cash flow during early stages." : `Operational challenges in scaling the "hub and spoke" model, including managing complex logistics for home visits, ensuring timely hospital support, and maintaining equipment and medical inventory across multiple mobile units and hospitals.`}
+              />}
+              {company?.company_name !== 'Naario' && <RiskCard
+                title={company?.company_name === 'Sia Analytics' ? "Adoption Risk" : "Operational Risk"}
                 color="yellow"
-                text="Enterprise AI adoption hindered by unclear ROI and data security issues."
-              />
-              <RiskCard
+                text={company?.company_name === 'Sia Analytics' ? "Enterprise AI adoption hindered by unclear ROI and data security issues." : "Inconsistent service quality during home visits due to reliance on individual doctors and paravets, potentially leading to negative customer experiences and churn, as suggested by the mixed reviews on Justdial."}
+              />}
+              {company?.company_name === 'Sia Analytics' && <RiskCard
                 title="Metric Risk"
                 color="blue"
                 text="Inconsistent definition of CAC vs LTV may hinder accurate performance tracking."
-              />
+              />}
+              {company?.company_name === 'Naario' && <RiskCard
+                title="Execution Risk"
+                color="blue"
+                text="The community-driven distribution model is a key differentiator but also a significant execution risk. Scaling the network of women micro-distributors while maintaining motivation, training, and brand consistency will be a major challenge."
+              />}
+              {company?.company_name === 'Naario' && <RiskCard
+                title="Competitive Risk"
+                color="yellow"
+                text="The market is crowded with well-funded startups and FMCG giants that possess extensive distribution networks, large marketing budgets, and strong brand recognition. Naario could struggle to capture market share against these incumbents."
+              />}
+              {company?.company_name === 'Naario' && <RiskCard
+                title="Financial Risk"
+                color="orange"
+                text="The company's financial projections indicate a negative EBITDA of -3% for FY 2025-26. This highlights a continued reliance on external capital to fund growth. Failure to manage the burn rate or secure future funding rounds could jeopardize operations."
+              />}
             </div>
           </AccordionContent>
         </AccordionItem>
@@ -237,9 +293,7 @@ const SwotCard: React.FC<SwotCardProps> = ({ color, title, points }) => (
   >
     <h4 className="font-semibold mb-2 capitalize">{title}</h4>
     <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
-      {points.map((p, i) => (
-        <li key={i}>{p}</li>
-      ))}
+      {points}
     </ul>
   </div>
 );
