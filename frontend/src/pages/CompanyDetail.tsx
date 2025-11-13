@@ -18,6 +18,7 @@ import { Link, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import ThesisConfig from "./InvestmentWeightage";
 
 type Company = {
   company_name: string;
@@ -253,20 +254,10 @@ export default function CompanyDetail() {
             <span>Back to Companies</span>
           </Button>
         </Link>
-
-        {/* <div className="flex items-start justify-between">
-          <div>
-            <h1
-              className="text-3xl font-bold text-foreground mb-2"
-              data-testid={`text-company-name-${company?.doc_id}`}
-            >
-              {company?.company_name} (Staging investment memo)
-            </h1>
-          </div>
-        </div> */}
       </div>
 
       <SummaryCard company={company} />
+      {/* <ThesisConfig /> */}
 
       {/* ---------------- Tabs ---------------- */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -288,7 +279,9 @@ export default function CompanyDetail() {
           <TabsTrigger value="traction">Traction</TabsTrigger>
           <TabsTrigger value="industry">Industry & Trends</TabsTrigger>
           <TabsTrigger value="partnership">
-            Partnerships & Strategic Analysis
+            {company?.company_name === "Sia Analytics"
+              ? "Partnerships & Strategic Analysis"
+              : "SWOT & Risk Analysis"}
           </TabsTrigger>
         </TabsList>
 
@@ -305,11 +298,7 @@ export default function CompanyDetail() {
         </TabsContent>
 
         {/* ------------ Competitors Tab ------------ */}
-        <CompetitorsTab
-          indianCompetitors={indianCompetitors}
-          globalCompetitors={globalCompetitors}
-          chartData={chartData}
-        />
+        <CompetitorsTab company={company} />
         {/* ------------ Funding Tab ------------ */}
         <FundingTab />
 
@@ -320,7 +309,7 @@ export default function CompanyDetail() {
         <Overview company={company} />
 
         {/* Founding team */}
-        <FoundingTeam />
+        <FoundingTeam company={company} />
 
         {/* Traction & User Base */}
         <Traction />
@@ -328,7 +317,7 @@ export default function CompanyDetail() {
         {/* Business Model & Go to Market */}
         <BusinessModel />
         {/* Other */}
-        <PartnershipsAndAnalysis />
+        <PartnershipsAndAnalysis company={company} />
 
         <InvestmentRecommendation company={company} />
       </Tabs>
