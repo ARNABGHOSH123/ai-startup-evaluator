@@ -4,17 +4,22 @@ import { Link } from "react-router-dom";
 export default function SummaryCard({ company }: { company: any }) {
   const bigString = company?.extract_benchmark_agent_response;
 
-  const scoreRegex = /Recommendation Score:\s*(\d+)\s*\/\s*\d+/i;
+  // Updated regex to support decimals
+  const scoreRegex = /Recommendation Score:\s*([\d.]+)\s*\/\s*\d+/i;
   const match = bigString?.match(scoreRegex);
-  const score = match && match[1] ? parseInt(match[1]) : 0;
+  const score = match && match[1] ? parseFloat(match[1]) : 0;
 
-  const parentCompanyRegex = /\*{0,2}Parent Company\*{0,2}:\s*([^(]+?)(?=\s*\()/i;
+  // Parent company remains same
+  const parentCompanyRegex =
+    /\*{0,2}Parent Company\*{0,2}:\s*([^(]+?)(?=\s*\()/i;
   const matchParent = bigString?.match(parentCompanyRegex);
   const parent_company = matchParent ? matchParent[1].trim() : "";
 
   // ---------- Score Dots UI ----------
   function ScoreDots({ score }: { score: number }) {
     const totalDots = 10;
+
+    // Each dot represents 1 point, but allow partial fill for decimals
     const color =
       score < 5 ? "bg-red-500" : score < 7 ? "bg-yellow-400" : "bg-green-500";
 
@@ -24,15 +29,23 @@ export default function SummaryCard({ company }: { company: any }) {
           Score
         </span>
         <div className="flex items-center gap-2">
-          {Array.from({ length: totalDots }).map((_, i) => (
-            <div
-              key={i}
-              className={`w-3 h-3 rounded-full ${
-                i < score ? color : "bg-gray-200"
-              }`}
-            ></div>
-          ))}
-          <span className="text-sm font-medium text-gray-700">{score}/10</span>
+          {Array.from({ length: totalDots }).map((_, i) => {
+            const fillPercentage = Math.min(Math.max(score - i, 0), 1) * 100; // partial fill logic
+            return (
+              <div
+                key={i}
+                className="relative w-3 h-3 rounded-full bg-gray-200 overflow-hidden"
+              >
+                <div
+                  className={`absolute top-0 left-0 h-full ${color}`}
+                  style={{ width: `${fillPercentage}%` }}
+                ></div>
+              </div>
+            );
+          })}
+          <span className="text-sm font-medium text-gray-700">
+            {score.toFixed(1)}/10
+          </span>
         </div>
       </div>
     );
