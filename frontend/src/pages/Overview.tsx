@@ -114,10 +114,18 @@ export default function Overview({ company }: any) {
   const problemData =
     extractBetweenMarkers(normalizedText, "*Problem", "*Solution") ||
     extractBetweenMarkers(normalizedText, "The Problem", "The Solution");
-  const solutionData = extractBetweenMarkers(
+  const solutionData = company?.company_name === "Dr Doodley" ? extractBetweenMarkers(
     normalizedText,
     "The Solution",
     "4"
+  ) : company?.company_name === "Naario" ? extractBetweenMarkers(
+    normalizedText,
+    "**Solution",
+    "##"
+  ):extractBetweenMarkers(
+    normalizedText,
+    "*Solution",
+    "*Market Size"
   );
   const technologyData = extractBetweenMarkers(
     normalizedText,
