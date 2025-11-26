@@ -19,7 +19,6 @@ type Company = {
   founder_name: string;
   company_pitch_deck_gcs_uri: string;
   is_deck_extracted_and_benchmarked: string;
-  extract_benchmark_gcs_uri: string;
   doc_id: string;
 };
 

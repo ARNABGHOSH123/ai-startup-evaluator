@@ -19,11 +19,11 @@ try:
 except ImportError:
     TAVILY_AVAILABLE = False
 
-logger = logging.getLogger("extract_webpage_text")
+logger = logging.getLogger("extract")
 
 _SESSION_REQS = 0
 _SESSION_RECREATE_EVERY = 1000  # or less
-DEFAULT_MAX_CONTENT_CHARS = 1200
+DEFAULT_MAX_CONTENT_CHARS = 4000
 DEFAULT_TIMEOUT = 8  # seconds
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; EillaAgent/1.0)"}
 CACHE_TTL = getattr(Config, "SITE_EXTRACT_CACHE_TTL", 24 * 3600) 
@@ -194,11 +194,11 @@ async def _do_tavily_extract(url: str):
             return resp
 
         resp = await asyncio.get_running_loop().run_in_executor(_TAVILY_POOL, extract_sync, url)
-        if not resp:
+        if not resp or not resp.get("results"):
             return None
-        title = resp.get("title") or resp.get(
-            "meta", {}).get("title", "") or ""
-        content = resp.get("raw_content") or resp.get("content") or ""
+        results_found = resp.get("results")[0]
+        title = results_found.get("title") or ""
+        content = results_found.get("raw_content") or resp.get("content") or ""
         if not content:
             return None
         # use content
@@ -234,7 +234,7 @@ async def _set_cache(url: str, result_dict: dict):
                        "ts": asyncio.get_event_loop().time()}
 
 
-async def extract_webpage_text(url: str) -> dict:
+async def extract(url: str) -> dict:
     """
     This tool function is for extracting textual content from a given webpage URL for benchmarking analysis.
 
@@ -291,7 +291,7 @@ async def extract_webpage_text(url: str) -> dict:
             return j
 
         except Exception as e:
-            logger.exception("extract_webpage_text failure: %s", e)
+            logger.exception("extract failure: %s", e)
             return {"url": None, "status": "error", "error": "exception", "content": ""}
 
 # clear cache function

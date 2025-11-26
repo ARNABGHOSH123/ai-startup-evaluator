@@ -1,0 +1,1 @@
+from .model_config import base_model, report_generation_model

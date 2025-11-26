@@ -3,7 +3,7 @@ from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from config import Config
 from math import ceil
-from .base_model import base_model
+from llm_model_config import base_model
 from .visualisation_focus_points import visualisation_focus_points
 from tools import tavily_search, extract_webpage_text, save_file_content_to_gcs, get_all_chart_type_descriptions, get_chart_data
 

@@ -54,7 +54,7 @@ async def _run_agent_once(firestore_doc_id: str, input_deck_filename: str, file_
         logger.warning("Failed to write execution id to Firestore: %s", e)
 
     session_service = InMemorySessionService()
-    await session_service.create_session(app_name=APP_NAME, user_id=SESSION_USER_ID, session_id=SESSION_ID, state={"firestore_doc_id": firestore_doc_id, "input_deck_filename": input_deck_filename, "file_extension": file_extension, "founder_id": founder_id, "company_websites": company_websites})
+    await session_service.create_session(app_name=APP_NAME, user_id=SESSION_USER_ID, session_id=SESSION_ID, state={"firestore_doc_id": firestore_doc_id, "input_deck_filename": input_deck_filename, "file_extension": file_extension, "founder_id": founder_id, "company_websites": company_websites, "pitch_deck": ""})
     logger.info("Created session %s for user %s", SESSION_ID, SESSION_USER_ID)
 
     runner = Runner(agent=root_agent, app_name=APP_NAME,
@@ -65,9 +65,6 @@ async def _run_agent_once(firestore_doc_id: str, input_deck_filename: str, file_
         parts=[types.Part(
             text=f"Please analyze the pitch deck.")]
     )
-
-    benchmark_gcs_uri = None
-    extract_output_gcs_uri = None
 
     try:
         async def _iter_events():
@@ -97,23 +94,22 @@ async def _run_agent_once(firestore_doc_id: str, input_deck_filename: str, file_
             logger.warning("Failed to delete session: %s", e_del)
 
         # Pull outputs from state (your agents save these keys)
-        benchmark_filename = state.get("output_gcs_uri") or ""
-        extracted_basename = state.get("extracted_filename") or ""
-        if extracted_basename:
-            extract_output_gcs_uri = f"gs://{Config.GCS_BUCKET_NAME}/{Config.GCP_PITCH_DECK_OUTPUT_FOLDER}/{firestore_doc_id}/analysis/{extracted_basename}.json"
-        if benchmark_filename:
-            benchmark_gcs_uri = f"gs://{Config.GCS_BUCKET_NAME}/{Config.GCP_PITCH_DECK_OUTPUT_FOLDER}/{firestore_doc_id}/investment_memos/{benchmark_filename}"
-
+        # investment_recommendation_gcs_uri = state.get("output_gcs_uri") or ""
+        # extraction_pitch_deck_result_gcs_uri = state.get("extraction_pitch_deck_result_gcs_uri") or ""
+        # if extraction_pitch_deck_result_gcs_uri:
+        #     extract_output_gcs_uri = extraction_pitch_deck_result_gcs_uri
+        # if investment_recommendation_gcs_uri:
+        #     benchmark_gcs_uri = investment_recommendation_gcs_uri
         # Write final URIs & status back to the same Firestore doc
         try:
             update_doc = {
                 # will be corrected below on exception paths
                 "benchmark_agent_job_status": "SUCCEEDED",
             }
-            if benchmark_gcs_uri:
-                update_doc["benchmark_gcs_uri"] = benchmark_gcs_uri
-            if extract_output_gcs_uri:
-                update_doc["extract_output_gcs_uri"] = extract_output_gcs_uri
+            # if extraction_pitch_deck_result_gcs_uri:
+            #     update_doc["benchmark_gcs_uri"] = benchmark_gcs_uri
+            # if extract_output_gcs_uri:
+            #     update_doc["extract_output_gcs_uri"] = extract_output_gcs_uri
 
             firestore_client.collection(FIRESTORE_COMPANY_COLLECTION).document(
                 firestore_doc_id).update(update_doc)
@@ -123,10 +119,10 @@ async def _run_agent_once(firestore_doc_id: str, input_deck_filename: str, file_
             logger.warning("Failed to update Firestore outputs: %s", e_fs)
 
     # return clean dict (no `.state` mistake)
-    return {
-        "benchmark_gcs_uri": benchmark_gcs_uri or None,
-        "extract_output_gcs_uri": extract_output_gcs_uri or None,
-    }
+    # return {
+    #     "benchmark_gcs_uri": benchmark_gcs_uri or None,
+    #     "extract_output_gcs_uri": extract_output_gcs_uri or None,
+    # }
 
 
 async def analyze_startup_pitch_deck():
@@ -150,13 +146,13 @@ async def analyze_startup_pitch_deck():
 
     if not company_websites or company_websites.strip() == "" or company_websites.strip() == "[]":
         raise RuntimeError("company_websites environment variable is required")
-    
+
     company_websites = company_websites.strip().split()
 
     try:
-        result = await _run_agent_once(input_deck_filename=input_deck_filename, firestore_doc_id=firestore_doc_id, file_extension=file_extension, founder_id=founder_id, company_websites=company_websites)
-        logger.info("Agent run result: %s", result)
-        return result
+        await _run_agent_once(input_deck_filename=input_deck_filename, firestore_doc_id=firestore_doc_id, file_extension=file_extension, founder_id=founder_id, company_websites=company_websites)
+        # logger.info("Agent run result: %s", result)
+        # return result
     except asyncio.TimeoutError:
         # mark as failed on timeout
         if firestore_doc_id:
