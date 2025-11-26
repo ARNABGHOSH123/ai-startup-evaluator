@@ -56,7 +56,7 @@ def _normalize_tavily_result(r):
     }
 
 
-async def tavily_search(query: str, max_results: int = 4) -> dict:
+async def search(query: str, max_results: int = 4) -> dict:
     """
     Perform a web search using the Tavily API to gather information relevant to benchmarking startups.
 
@@ -77,7 +77,7 @@ async def tavily_search(query: str, max_results: int = 4) -> dict:
 
     def run_search(q):
         client = TavilyClient(api_key=TAVILY_API_KEY)
-        return client.search(query=q, max_results=max_results, include_raw_content=True, search_depth="basic")
+        return client.search(query=q, max_results=max_results, include_raw_content=True, search_depth="advanced")
 
     subqueries = _split_long_query(query)
     collected = {}

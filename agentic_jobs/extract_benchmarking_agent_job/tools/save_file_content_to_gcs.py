@@ -11,7 +11,7 @@ CONTENT_TYPE_MAP = {
 }
 
 
-async def save_file_content_to_gcs(bucket_name: str, folder_name: str, file_content: str, file_extension: str, file_name: str) -> None:
+async def save_file_content_to_gcs(bucket_name: str, folder_name: str, file_content: str, file_extension: str, file_name: str) -> str:
     """
     Saves content to a file in a Google Cloud Storage bucket. If the file
     already exists, it will be overwritten.
@@ -22,6 +22,8 @@ async def save_file_content_to_gcs(bucket_name: str, folder_name: str, file_cont
         file_content (str): The content of the file to be saved.
         file_extension (str): The extension of the file (e.g., 'json', 'txt', 'md') without leading '.'.
         file_name (str): The name of the file in the GCS bucket.
+    Returns:
+        str: The GCS URI of the saved file.
     """
 
     storage_client = storage.Client(project=GOOGLE_CLOUD_PROJECT)
@@ -35,3 +37,4 @@ async def save_file_content_to_gcs(bucket_name: str, folder_name: str, file_cont
     # The upload_from_string method will overwrite the file if it already exists.
     blob.upload_from_string(data=file_content,
                             content_type=content_type)
+    return f"gs://{bucket_name}/{folder_name}/{file_name}.{file_extension.lower()}"

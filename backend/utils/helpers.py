@@ -6,21 +6,21 @@ import json
 
 MAX_BYTES_TO_READ = 5 * 1024 * 1024  # 5 MB safety cap (adjust as needed)
 
-def read_text_from_gcs(storage_client, gs_uri: str, max_bytes: int = MAX_BYTES_TO_READ) -> Optional[str]:
+def read_text_from_gcs(storage_client, gcs_uri: str, max_bytes: int = MAX_BYTES_TO_READ) -> Optional[str]:
     """
     Download and return the contents of a GCS object referenced by a gs://... URI.
     Returns None on failure (not found / permission / empty / invalid URI).
     """
-    if not gs_uri:
+    if not gcs_uri:
         return None
 
-    if not gs_uri.startswith("gs://"):
+    if not gcs_uri.startswith("gs://"):
         # not a GCS URI
         return None
 
     # Parse gs://bucket/path/to/blob.ext
     try:
-        path = gs_uri[5:]  # strip "gs://"
+        path = gcs_uri[5:]  # strip "gs://"
         bucket_name, blob_path = path.split("/", 1)
     except ValueError:
         # no path part after bucket

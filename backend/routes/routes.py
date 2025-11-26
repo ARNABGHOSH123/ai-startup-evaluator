@@ -140,6 +140,8 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
         "domain": domain,
         "company_phone_no": company_phone_no,
         "company_email": company_email,
+        "input_deck_filename": input_deck_filename,
+        "file_extension": file_extension,
         "company_address": company_address,
         "stage_of_development": stage_of_development,
         "business_details": business_details,
@@ -150,10 +152,21 @@ async def add_to_companies_list(founder_id: str, req: CompanyDoc):
         "founder_id": founder_id,
         "company_pitch_deck_gcs_uri": f"gs://{GCS_BUCKET_NAME}/{GCP_PITCH_DECK_INPUT_FOLDER}/{founder_id}/{input_deck_filename}.{file_extension}",
         "benchmark_agent_job_id": "",
-        "extract_output_gcs_uri": "",
-        "benchmark_gcs_uri": "",
         # write firestore server timestamp sentinel into Firestore
         "created_at": firestore.SERVER_TIMESTAMP,
+        "sub_agents_results": {
+            "business_model_sub_agent_gcs_uri": "",
+            "competitor_analysis_sub_agent_gcs_uri": "",
+            "funding_and_financials_sub_agent_gcs_uri": "",
+            "industry_trends_sub_agent_gcs_uri": "",
+            "extraction_pitch_deck_sub_agent_gcs_uri": "",
+            "investment_deal_note_sub_agent_gcs_uri": "",
+            "investment_recommendation_sub_agent_gcs_uri": "",
+            "overview_sub_agent_gcs_uri": "",
+            "partnerships_and_strategic_analysis_sub_agent_gcs_uri": "",
+            "team_profiling_sub_agent_gcs_uri": "",
+            "traction_sub_agent_gcs_uri": ""
+        }
     }
 
     try:
@@ -227,7 +240,7 @@ async def get_company_doc_id(founder_id: str):
         company_doc_id = founder_data.get("company_doc_id", "")
 
         if not company_doc_id:
-            return {"status": "ok", "company_doc_id": "", "benchmark_gcs_uri": ""}
+            return {"status": "ok", "company_doc_id": "", "investment_recommendation_sub_agent_gcs_uri": ""}
 
         company_collection_ref = firestore_client.collection(
             FIRESTORE_COMPANY_COLLECTION)
@@ -237,9 +250,9 @@ async def get_company_doc_id(founder_id: str):
         if not company_data.exists:
             raise HTTPException(
                 status_code=404, detail=f"No company found with id='{company_doc_id}'")
-        benchmark_gcs_uri = company_data.to_dict().get("benchmark_gcs_uri", "")
+        investment_recommendation_sub_agent_gcs_uri = company_data.to_dict().get("sub_agents_results", {}).get("investment_recommendation_sub_agent_gcs_uri", "")
 
-        return {"status": "ok", "company_doc_id": company_doc_id, "benchmark_gcs_uri": benchmark_gcs_uri}
+        return {"status": "ok", "company_doc_id": company_doc_id, "investment_recommendation_sub_agent_gcs_uri": investment_recommendation_sub_agent_gcs_uri}
     except HTTPException:
         raise
     except Exception as e:
@@ -268,8 +281,8 @@ async def get_companies_list():
         for doc in docs:
             data = doc.to_dict() or {}
             created_at = data.get("created_at")
-            benchmark_gcs_uri = data.get("benchmark_gcs_uri", "")
-            if benchmark_gcs_uri is None:  # Only show the companies which have benchmark completed
+            investment_recommendation_sub_agent_gcs_uri = data.get("sub_agents_results", {}).get("investment_recommendation_sub_agent_gcs_uri", "")
+            if investment_recommendation_sub_agent_gcs_uri is None:  # Only show the companies which have benchmark completed
                 continue
             # Convert Firestore timestamp to ISO string if possible
             if created_at is not None and hasattr(created_at, "isoformat"):
@@ -363,27 +376,17 @@ async def get_company_details(company_id: str = FastAPIPath(..., description="Co
     try:
         credentials, project_id = auth.default(
             scopes=["https://www.googleapis.com/auth/cloud-platform"])
-        storage_client = storage.Client(
-            project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
         firestore_client = firestore.Client(project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
             project=GOOGLE_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
 
         collection_ref = firestore_client.collection(
             FIRESTORE_COMPANY_COLLECTION)
-        query = collection_ref.document(company_id)
-        doc = query.get()
+        doc = collection_ref.document(company_id).get()
         if not doc.exists:
             raise HTTPException(
                 status_code=404, detail=f"No company found with id='{company_id}'")
 
-        data = {"extract_benchmark_agent_response": "", **doc.to_dict()} or {}
-
-        if len(data.get("benchmark_gcs_uri")) > 0:
-            gcs_uri = data.get("benchmark_gcs_uri")
-            content = read_text_from_gcs(
-                storage_client=storage_client, gs_uri=gcs_uri)
-            if content is not None:
-                data["extract_benchmark_agent_response"] = content
+        data = doc.to_dict() or {}
 
         return {
             "status": "ok",
@@ -399,12 +402,12 @@ async def get_company_details(company_id: str = FastAPIPath(..., description="Co
             "revenue_model": data.get("revenue_model", ""),
             "founder_name": data.get("founder_name", ""),
             "comments": data.get("comments", ""),
-            "extract_benchmark_agent_response": data.get("extract_benchmark_agent_response", ""),
-            "charts": await get_charts_for_a_company_async(
-                storage_client=storage_client,
-                bucket_name=GCS_BUCKET_NAME,
-                folder_name=f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/{company_id}/visualisations"
-            ) if len(data.get("benchmark_gcs_uri")) > 0 else {}
+            # "extract_benchmark_agent_response": data.get("extract_benchmark_agent_response", ""),
+            # "charts": await get_charts_for_a_company_async(
+            #     storage_client=storage_client,
+            #     bucket_name=GCS_BUCKET_NAME,
+            #     folder_name=f"{GCP_PITCH_DECK_OUTPUT_FOLDER}/{company_id}/visualisations"
+            # ) if len(data.get("benchmark_gcs_uri")) > 0 else {}
         }
 
     except HTTPException:

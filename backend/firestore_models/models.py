@@ -1,6 +1,19 @@
 from pydantic import BaseModel
 from typing import Optional, List
 
+class SubAgentsResultsDoc(BaseModel):
+    business_model_sub_agent_gcs_uri: Optional[str] = None
+    competitor_analysis_sub_agent_gcs_uri: Optional[str] = None
+    team_profiling_sub_agent_gcs_uri: Optional[str] = None
+    funding_and_financials_sub_agent_gcs_uri: Optional[str] = None
+    industry_trends_sub_agent_gcs_uri: Optional[str] = None
+    overview_sub_agent_gcs_uri: Optional[str] = None
+    traction_sub_agent_gcs_uri: Optional[str] = None
+    partnerships_and_strategic_analysis_sub_agent_gcs_uri: Optional[str] = None
+    investment_recommendation_sub_agent_gcs_uri: Optional[str] = None
+    extraction_pitch_deck_sub_agent_gcs_uri: Optional[str] = None
+    investment_deal_note_sub_agent_gcs_uri: Optional[str] = None
+
 class FounderDoc(BaseModel):
     founder_name: Optional[str] = None
     founder_email: str
@@ -44,9 +57,8 @@ class CompanyDoc(BaseModel):
     comments: Optional[str] = None
     company_pitch_deck_gcs_uri: Optional[str] = None
     benchmark_agent_job_id: Optional[str] = None
-    extract_output_gcs_uri: Optional[str] = None
-    benchmark_gcs_uri: Optional[str] = None
     benchmark_agent_job_status: Optional[str] = None
     benchmark_agent_job_name: Optional[str] = None
+    sub_agents_results: Optional[SubAgentsResultsDoc] = None
 
 

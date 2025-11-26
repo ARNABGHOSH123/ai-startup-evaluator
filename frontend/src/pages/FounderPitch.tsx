@@ -45,7 +45,9 @@ export default function FounderPitchDeck() {
         }
         const data = await response.json();
         setCompanyDocId(data.company_doc_id);
-        setIsBenchmarkAvailable(!!data.benchmark_gcs_uri);
+        setIsBenchmarkAvailable(
+          !!data.investment_recommendation_sub_agent_gcs_uri
+        );
         if (!!data.company_doc_id) {
           setActiveStep(1);
         }
@@ -58,7 +60,7 @@ export default function FounderPitchDeck() {
     fetchCompanyDocId();
   }, [founderId]);
 
-  if (loadingCompanyDocId) {
+  if (loadingCompanyDocId && !errorDocId && !companyDocId) {
     return (
       <div className="mb-3 flex items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
         <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />

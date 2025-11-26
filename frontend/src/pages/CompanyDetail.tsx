@@ -15,18 +15,16 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useParams } from "react-router-dom";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
-import ThesisConfig from "./InvestmentWeightage";
+// import ReactMarkdown from "react-markdown";
+// import remarkGfm from "remark-gfm";
+// import remarkBreaks from "remark-breaks";
 
 type Company = {
   company_name: string;
   founder_name: string;
   company_pitch_deck_gcs_uri: string;
   is_deck_extracted_and_benchmarked: string;
-  extract_benchmark_gcs_uri: string;
-  extract_benchmark_agent_response: string;
+  // extract_benchmark_agent_response: string;
   doc_id: string;
 };
 
@@ -262,17 +260,19 @@ export default function CompanyDetail() {
       {/* ---------------- Tabs ---------------- */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="markedupData">
+          {/* <TabsTrigger value="markedupData">
             <img
               src="/assets/gemini_symbol.png"
               alt="AI generated icon"
               className="inline-block w-6 h-4 ml-1"
             />
             AI generated deal note{" "}
+          </TabsTrigger> */}
+          <TabsTrigger value="investmentMemo">
+            Investment Recommendation
           </TabsTrigger>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="investmentMemo">Investment Summary</TabsTrigger>
-          <TabsTrigger value="foundingTeam">Founding Team</TabsTrigger>
+          <TabsTrigger value="overview">Basic Overview</TabsTrigger>
+          <TabsTrigger value="foundingTeam">Team Profiling</TabsTrigger>
           <TabsTrigger value="businessModel">Business Model</TabsTrigger>
           <TabsTrigger value="funding">Funding & Financials</TabsTrigger>
           <TabsTrigger value="competitors">Competitors</TabsTrigger>
@@ -286,7 +286,7 @@ export default function CompanyDetail() {
         </TabsList>
 
         {/* ------------------Marked up Data--------------------*/}
-        <TabsContent value="markedupData">
+        {/* <TabsContent value="markedupData">
           {" "}
           {company?.extract_benchmark_agent_response?.trim()?.length ? (
             <article className="prose max-w-none">
@@ -295,7 +295,7 @@ export default function CompanyDetail() {
               </ReactMarkdown>
             </article>
           ) : null}
-        </TabsContent>
+        </TabsContent> */}
 
         {/* ------------ Competitors Tab ------------ */}
         <CompetitorsTab company={company} />
