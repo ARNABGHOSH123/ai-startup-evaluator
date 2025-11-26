@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
+import { Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const ThesisConfig = () => {
   const [weights, setWeights] = useState({
@@ -14,9 +16,6 @@ const ThesisConfig = () => {
   });
 
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
-  const normalizedWeights = Object.fromEntries(
-    Object.entries(weights).map(([k, v]) => [k, (v / total) * 100])
-  );
   const totalScore = Math.round((total / 250) * 100);
 
   const getColor = (value: number) => {
@@ -25,12 +24,31 @@ const ThesisConfig = () => {
     return "#22c55e"; // green
   };
 
+  // Donut chart data
+  const data = {
+    datasets: [
+      {
+        data: [totalScore, 100 - totalScore],
+        backgroundColor: [getColor(totalScore), "#e5e7eb"],
+        borderWidth: 0,
+      },
+    ],
+  };
+
+  const options = {
+    cutout: "75%", // 👈 creates the donut hole
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false },
+    },
+  };
+
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-      <div className="flex flex-col lg:flex-row justify-between items-center gap-6 mb-6">
+    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+      <div className="flex flex-col lg:flex-row justify-between items-center">
         <div>
           <h2 className="text-xl font-semibold text-gray-800">
-            💡 Investment Thesis Configuration
+            Investment Thesis Configuration
           </h2>
           <p className="text-gray-600 text-sm">
             Adjust weightages to evaluate growth potential and generate
@@ -38,21 +56,58 @@ const ThesisConfig = () => {
           </p>
         </div>
 
-        <div className="w-28 h-28">
-          <CircularProgressbar
-            value={totalScore}
-            text={`${totalScore}%`}
-            styles={buildStyles({
-              pathColor: getColor(totalScore),
-              textColor: getColor(totalScore),
-              trailColor: "#e5e7eb",
-              textSize: "18px",
-            })}
+        {/* Donut Chart with Center Label */}
+        {/* Donut Chart with Center Label */}
+        <div className="relative w-20 h-20">
+          <Doughnut
+            data={{
+              labels: Object.keys(weights).map(
+                (key) => key.charAt(0).toUpperCase() + key.slice(1)
+              ),
+              datasets: [
+                {
+                  data: Object.values(weights),
+                  backgroundColor: [
+                    "#3b82f6", // market - blue
+                    "#22c55e", // product - green
+                    "#a855f7", // team - purple
+                    "#f59e0b", // financials - amber
+                    "#ef4444", // risk - red
+                  ],
+                  borderWidth: 2,
+                  borderColor: "#ffffff",
+                  hoverOffset: 6,
+                },
+              ],
+            }}
+            options={{
+              cutout: "70%",
+              plugins: {
+                legend: {
+                  display: false, // you can enable if you want labels
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (context: any) {
+                      return `${context.label}: ${context.raw}`;
+                    },
+                  },
+                },
+              },
+            }}
           />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-xl font-bold" style={{ color: "#111827" }}>
+              {Math.round(
+                (Object.values(weights).reduce((a, b) => a + b, 0) / 250) * 100
+              )}
+              %
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4 mt-6">
         {Object.entries(weights).map(([key, value]) => (
           <Card
             key={key}
@@ -74,9 +129,7 @@ const ThesisConfig = () => {
               <span className="font-medium capitalize text-gray-800">
                 {key}
               </span>
-              <span className="text-gray-600 text-sm">
-                {Math.round(normalizedWeights[key])}%
-              </span>
+              <span className="text-gray-600 text-sm">{value}</span>
             </div>
             <Slider
               defaultValue={[value]}

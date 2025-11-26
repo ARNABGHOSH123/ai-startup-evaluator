@@ -111,12 +111,18 @@ export default function Overview({ company }: any) {
   }
 
   // Example usage
-  const problemData = extractBetweenMarkers(
+  const problemData =
+    extractBetweenMarkers(normalizedText, "*Problem", "*Solution") ||
+    extractBetweenMarkers(normalizedText, "The Problem", "The Solution");
+  const solutionData = company?.company_name === "Dr Doodley" ? extractBetweenMarkers(
     normalizedText,
-    "*Problem",
-    "*Solution"
-  );
-  const solutionData = extractBetweenMarkers(
+    "The Solution",
+    "4"
+  ) : company?.company_name === "Naario" ? extractBetweenMarkers(
+    normalizedText,
+    "**Solution",
+    "##"
+  ):extractBetweenMarkers(
     normalizedText,
     "*Solution",
     "*Market Size"
@@ -132,11 +138,7 @@ export default function Overview({ company }: any) {
     "*Marketing Strategy"
   );
   const visionData = extractBetweenMarkers(normalizedText, "*Vision", ".");
-  const investmentMemoData = extractBetweenMarkers(
-    normalizedText,
-    "*Executive Summar",
-    "#"
-  );
+
   const tam = extractBetweenMarkers(normalizedText, "*TAM", "Billion").replace(
     /:\s*(?=[₹$]?\d+)/g,
     ""
@@ -319,162 +321,169 @@ export default function Overview({ company }: any) {
       </div>
 
       {/* Market & Technology Accordions */}
-      <Accordion type="single" collapsible className="space-y-3">
-        {accordionData?.map((accordion) => (
-          <AccordionItem key={accordion.id} value={accordion.id}>
-            <AccordionTrigger
-              className={`text-lg font-semibold ${accordion.color}`}
-            >
-              {accordion.title}
-            </AccordionTrigger>
+      {company?.company_name === "Sia Analytics" && (
+        <Accordion type="single" collapsible className="space-y-3">
+          {accordionData?.map((accordion) => (
+            <AccordionItem key={accordion.id} value={accordion.id}>
+              <AccordionTrigger
+                className={`text-lg font-semibold ${accordion.color}`}
+              >
+                {accordion.title}
+              </AccordionTrigger>
 
-            <AccordionContent>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {accordion.sections.map((section, index) => {
-                  if (section.type === "insights") {
-                    return (
-                      <div key={index} className="flex flex-col gap-3">
-                        {section.cards.map((card, i) => (
-                          <Card
-                            key={i}
-                            className={`border-l-4 ${card.borderColor} shadow-sm`}
-                          >
-                            <CardHeader className="pb-1">
-                              <CardTitle
-                                className={`${card?.textColor} text-base`}
-                              >
-                                {card.title}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-gray-600 text-xs">
-                              {card.desc}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    );
-                  }
-
-                  if (
-                    section.type === "chart" &&
-                    section.chartType === "radialBar"
-                  ) {
-                    return (
-                      <Card
-                        key={index}
-                        className="p-6 bg-gray-50 border border-gray-200 flex flex-col justify-center items-center"
-                      >
-                        <div className="font-semibold text-center mb-4">
-                          {section.title}
-                        </div>
-                        <div className="flex items-center justify-center w-full h-52 relative">
-                          <ResponsiveContainer width="80%" height="100%">
-                            <RadialBarChart
-                              cx="50%"
-                              cy="50%"
-                              innerRadius="70%"
-                              outerRadius="90%"
-                              barSize={18}
-                              data={section.data}
-                              startAngle={180}
-                              endAngle={-180}
+              <AccordionContent>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  {accordion.sections.map((section, index) => {
+                    if (section.type === "insights") {
+                      return (
+                        <div key={index} className="flex flex-col gap-3">
+                          {section.cards.map((card, i) => (
+                            <Card
+                              key={i}
+                              className={`border-l-4 ${card.borderColor} shadow-sm`}
                             >
-                              <RadialBar
-                                dataKey="value"
-                                background
-                                cornerRadius={10}
-                                fill={section.fill}
-                              />
-                              <RechartsTooltip formatter={(v) => `$${v}B`} />
-                            </RadialBarChart>
-                          </ResponsiveContainer>
-                          <div className="absolute text-center">
-                            <h3 className="text-2xl font-semibold">
-                              {section.value}
-                            </h3>
-                            {/* <p className="text-sm text-gray-500">{section.subValue}</p> */}
+                              <CardHeader className="pb-1">
+                                <CardTitle
+                                  className={`${card?.textColor} text-base`}
+                                >
+                                  {card.title}
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="text-gray-600 text-xs">
+                                {card.desc}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    if (
+                      section.type === "chart" &&
+                      section.chartType === "radialBar"
+                    ) {
+                      return (
+                        <Card
+                          key={index}
+                          className="p-6 bg-gray-50 border border-gray-200 flex flex-col justify-center items-center"
+                        >
+                          <div className="font-semibold text-center mb-4">
+                            {section.title}
+                          </div>
+                          <div className="flex items-center justify-center w-full h-52 relative">
+                            <ResponsiveContainer width="80%" height="100%">
+                              <RadialBarChart
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="70%"
+                                outerRadius="90%"
+                                barSize={18}
+                                data={section.data}
+                                startAngle={180}
+                                endAngle={-180}
+                              >
+                                <RadialBar
+                                  dataKey="value"
+                                  background
+                                  cornerRadius={10}
+                                  fill={section.fill}
+                                />
+                                <RechartsTooltip formatter={(v) => `$${v}B`} />
+                              </RadialBarChart>
+                            </ResponsiveContainer>
+                            <div className="absolute text-center">
+                              <h3 className="text-2xl font-semibold">
+                                {section.value}
+                              </h3>
+                              {/* <p className="text-sm text-gray-500">{section.subValue}</p> */}
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    }
+
+                    if (
+                      section.type === "chart" &&
+                      section.chartType === "bar"
+                    ) {
+                      return (
+                        <div
+                          key={index}
+                          className="bg-gray-50 border rounded-lg p-4"
+                        >
+                          <div className="font-medium mb-2">
+                            {section.title}
+                          </div>
+                          <div className="w-full h-56">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={section.data}>
+                                <CartesianGrid
+                                  strokeDasharray="3 3"
+                                  stroke="#f3f4f6"
+                                />
+                                <XAxis dataKey="year" />
+                                <YAxis />
+                                <RechartsTooltip formatter={(v) => `$${v}B`} />
+                                <Legend />
+                                <Bar dataKey="value" fill={section.fill} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+                          <div className="text-xs text-gray-600 mt-2 text-center">
+                            {section.projection}
                           </div>
                         </div>
-                      </Card>
-                    );
-                  }
+                      );
+                    }
 
-                  if (section.type === "chart" && section.chartType === "bar") {
-                    return (
-                      <div
-                        key={index}
-                        className="bg-gray-50 border rounded-lg p-4"
-                      >
-                        <div className="font-medium mb-2">{section.title}</div>
-                        <div className="w-full h-56">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={section.data}>
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#f3f4f6"
-                              />
-                              <XAxis dataKey="year" />
-                              <YAxis />
-                              <RechartsTooltip formatter={(v) => `$${v}B`} />
-                              <Legend />
-                              <Bar dataKey="value" fill={section.fill} />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-2 text-center">
-                          {section.projection}
-                        </div>
-                      </div>
-                    );
-                  }
+                    if (section.type === "info") {
+                      return (
+                        <Card
+                          key={index}
+                          className={`border-l-4 ${section.borderColor} shadow-sm`}
+                        >
+                          <CardHeader>
+                            <CardTitle className="text-base">
+                              {section.title}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="text-gray-700 text-sm">
+                            <ul className="list-disc ml-5 space-y-1">
+                              {section?.items?.map((item, i) => (
+                                <li key={i}>{item}</li>
+                              ))}
+                            </ul>
+                          </CardContent>
+                        </Card>
+                      );
+                    }
 
-                  if (section.type === "info") {
-                    return (
-                      <Card
-                        key={index}
-                        className={`border-l-4 ${section.borderColor} shadow-sm`}
-                      >
-                        <CardHeader>
-                          <CardTitle className="text-base">
-                            {section.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-gray-700 text-sm">
-                          <ul className="list-disc ml-5 space-y-1">
-                            {section?.items?.map((item, i) => (
-                              <li key={i}>{item}</li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    );
-                  }
+                    if (section.type === "text") {
+                      return (
+                        <Card
+                          key={index}
+                          className={`border-l-4 ${section.borderColor} shadow-sm`}
+                        >
+                          <CardHeader>
+                            <CardTitle className="text-base">
+                              {section.title}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="text-gray-700 text-sm">
+                            {section.content}
+                          </CardContent>
+                        </Card>
+                      );
+                    }
 
-                  if (section.type === "text") {
-                    return (
-                      <Card
-                        key={index}
-                        className={`border-l-4 ${section.borderColor} shadow-sm`}
-                      >
-                        <CardHeader>
-                          <CardTitle className="text-base">
-                            {section.title}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-gray-700 text-sm">
-                          {section.content}
-                        </CardContent>
-                      </Card>
-                    );
-                  }
-
-                  return null;
-                })}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+                    return null;
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      )}
     </TabsContent>
   );
 }

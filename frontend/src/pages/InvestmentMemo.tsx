@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import { PhoneCallIcon, Star, TrendingUp } from "lucide-react";
+import { PhoneCallIcon, Star } from "lucide-react";
 import { TabsContent } from "@/components/ui/tabs";
 
 interface Clarification {
@@ -8,33 +8,36 @@ interface Clarification {
   response: string;
 }
 
-
-export default function InvestmentRecommendation({company}:any) {
+export default function InvestmentRecommendation({ company }: any) {
   const bigString = company?.extract_benchmark_agent_response || "";
 
-// Normalize escape sequences like \n → actual newlines
-const normalizedText = bigString.replace(/\\n/g, "\n");
+  // Normalize escape sequences like \n → actual newlines
+  const normalizedText = bigString.replace(/\\n/g, "\n");
 
-function extractBetweenMarkers(text: string, start: string, end: string): string {
-  const startIndex = text.indexOf(start);
-  if (startIndex === -1) return "";
+  function extractBetweenMarkers(
+    text: string,
+    start: string,
+    end: string
+  ): string {
+    const startIndex = text.indexOf(start);
+    if (startIndex === -1) return "";
 
-  const endIndex = text.indexOf(end, startIndex + start.length);
-  const rawSection =
-    endIndex === -1
-      ? text.slice(startIndex + start.length)
-      : text.slice(startIndex + start.length, endIndex);
+    const endIndex = text.indexOf(end, startIndex + start.length);
+    const rawSection =
+      endIndex === -1
+        ? text.slice(startIndex + start.length)
+        : text.slice(startIndex + start.length, endIndex);
 
-  // Clean markdown characters like **, *, _, etc.
-  const cleaned = rawSection
-    .replace(/\*/g, "") // remove all asterisks
-    .replace(/_/g, "") // remove underscores if any
-    .replace(/\s+/g, " ") // normalize multiple spaces
-    .replace(/\#/g, "") // remove all asterisks
-    .trim();
+    // Clean markdown characters like **, *, _, etc.
+    const cleaned = rawSection
+      .replace(/\*/g, "") // remove all asterisks
+      .replace(/_/g, "") // remove underscores if any
+      .replace(/\s+/g, " ") // normalize multiple spaces
+      .replace(/\#/g, "") // remove all asterisks
+      .trim();
 
-  return cleaned;
-}
+    return cleaned;
+  }
 
   const [clarifications, setClarifications] = useState<Clarification[]>([]);
   const [loadingClarifications, setLoadingClarifications] = useState(false);
@@ -42,7 +45,11 @@ function extractBetweenMarkers(text: string, start: string, end: string): string
     null
   );
 
-  const investmentMemoData = extractBetweenMarkers(normalizedText, "*Executive Summar", "#");
+  const investmentMemoData = extractBetweenMarkers(
+    normalizedText,
+    "*Executive Summary",
+    "#"
+  );
 
   const params = useParams();
   const companyId = params.companyId;
@@ -97,9 +104,7 @@ function extractBetweenMarkers(text: string, start: string, end: string): string
         type: "summary",
         title: "Summary",
         color: "green",
-        paragraphs: [
-          `${investmentMemoData}`
-        ],
+        paragraphs: [`${investmentMemoData}`],
       },
       // {
       //   type: "verdict",
