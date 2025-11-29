@@ -1,163 +1,260 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { TabsContent } from "@/components/ui/tabs";
 import {
-  Users,
-  Building2,
-  LineChart,
-  Award,
-  TrendingUp,
-  BarChart3,
-} from "lucide-react";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { TrendingUp, Users, Target, Zap, LineChart } from "lucide-react";
+import { TabsContent } from "@/components/ui/tabs";
 
-export default function Traction() {
+export default function TractionAnalysis({ company }: any) {
+  if (!company) return null;
+
+  const cx = company?.traction?.traction?.customer_acquisition_and_growth_metrics;
+  const rev = company?.traction?.traction?.revenue_and_financial_metrics;
+  const ret = company?.traction?.traction?.product_engagement_and_retention_metrics;
+  const mv = company?.traction?.traction?.market_validation_and_adoption_signals;
+
   return (
     <TabsContent value="traction">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4">
-        {/* Customer Overview */}
-        <Card className="col-span-1 border-l-4 border-indigo-500 bg-indigo-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-indigo-600" />
-              <CardTitle className="text-sm font-semibold text-indigo-700">
-                Customer Base
-              </CardTitle>
-            </div>
+    <div className="space-y-12 pb-20">
+
+      {/* -------------------------------------------------------- */}
+      {/* 🟦 HERO SECTION */}
+      {/* -------------------------------------------------------- */}
+      <section className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-10 text-white shadow-lg">
+        <h1 className="text-3xl font-semibold mb-3">Traction Intelligence</h1>
+        <p className="text-blue-100 text-sm max-w-2xl">
+          A modern, structured breakdown of customer growth, revenue momentum,
+          retention, and market validation.
+        </p>
+
+        {/* Key metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+          <KeyMetric icon={Users} label="Userbase" value="30K+ Families" />
+          <KeyMetric icon={TrendingUp} label="Growth Velocity" value="Strong YoY ↑" />
+          <KeyMetric icon={Zap} label="Distribution Partners" value="200+ Women" />
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------- */}
+      {/* 🟩 CUSTOMER ACQUISITION */}
+      {/* -------------------------------------------------------- */}
+      <InsightSection
+        title="Customer Acquisition & Growth"
+        subtitle="Acquisition channels, CAC, virality and early traction signals"
+        items={[
+          { label: "Customer Acquisition Cost (CAC)", value: cx.customer_acquisition_cost },
+          { label: "Lifetime Value (LTV)", value: cx.customer_lifetime_value },
+          { label: "Sign-ups / New Users", value: cx.sign_ups_new_users },
+          { label: "Conversion Rate", value: cx.conversion_rate },
+          { label: "Growth Velocity", value: cx.growth_velocity },
+          { label: "Referral Engine & Virality", value: cx.referral_and_virality_indicators },
+        ]}
+      />
+
+      {/* -------------------------------------------------------- */}
+      {/* 🟨 REVENUE & FINANCIAL MOMENTUM */}
+      {/* -------------------------------------------------------- */}
+      <InsightSection
+        title="Revenue & Financial Momentum"
+        subtitle="MRR, revenue projections, retention-linked churn, EBITDA improvements"
+        items={[
+          { label: "Annual Revenue Run Rate", value: rev.monthly_recurring_revenue_annual_recurring_revenue },
+          { label: "Growth Rate", value: rev.revenue_growth_rate },
+          { label: "Churn Rate", value: rev.churn_rate },
+          { label: "Cash Flow & Runway", value: rev.cash_flow_and_runway },
+        ]}
+      />
+
+      {/* -------------------------------------------------------- */}
+      {/* 🟧 ENGAGEMENT & RETENTION */}
+      {/* -------------------------------------------------------- */}
+      <InsightSection
+        title="Engagement & Retention"
+        subtitle="Cohorts, repeat usage, partner-led retention strength"
+        items={[
+          { label: "Active Users", value: ret.active_users },
+          { label: "User Retention", value: ret.user_retention_rates },
+          { label: "Engagement Metrics", value: ret.engagement_metrics },
+        ]}
+      />
+
+      {/* -------------------------------------------------------- */}
+      {/* 🟦 MARKET VALIDATION */}
+      {/* -------------------------------------------------------- */}
+      <InsightSection
+        title="Market Validation & Adoption"
+        subtitle="Partnerships, early customers, testimonials & LOIs"
+        items={[
+          { label: "Partnerships", value: mv.partnerships_and_collaborations },
+          { label: "Pilot Customers", value: mv.pilot_customers_and_letters_of_intent },
+          { label: "Waitlists / Pre-orders", value: mv.waitlists_and_pre_orders },
+          { label: "Customer Testimonials", value: mv.customer_testimonials_and_case_studies },
+        ]}
+      />
+
+      {/* -------------------------------------------------------- */}
+      {/* 🟪 FOUR VECTOR / 4-PILLAR IMPACT SECTION */}
+      {/* -------------------------------------------------------- */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <Target className="h-5 w-5 text-purple-600" />
+          4-Vector Traction Model
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <VectorPillar title="Acquisition" icon={Users} color="blue" />
+          <VectorPillar title="Retention" icon={Zap} color="green" />
+          <VectorPillar title="Revenue" icon={TrendingUp} color="orange" />
+          <VectorPillar title="Market Validation" icon={LineChart} color="purple" />
+        </div>
+      </section>
+
+      {/* -------------------------------------------------------- */}
+      {/* 🟥 SWOT & RISK */}
+      {/* -------------------------------------------------------- */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+        {/* SWOT */}
+        <Card className="p-5">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">SWOT Summary</CardTitle>
           </CardHeader>
-          <CardContent className="text-xs text-gray-700 space-y-2">
-            <p>
-              <b>Booked:</b> Bosch, Abha Hospital (KSA), Al Borg Diagnostics, IDBI Bank, Rice University.
-            </p>
-            <p>
-              <b>Pilots:</b> Mercedes-Benz, Infoline, eSunScope, SEG AUTOMOTIVE, ZELIOT, CHARA.
-            </p>
-            <p>
-              <b>Pipeline:</b> Vetrina, Saudi Telecom, Sobha Group, Accolade, HDFCergo, Pfizer, Maruti Suzuki, Tata Elxsi.
-            </p>
+          <CardContent className="grid grid-cols-2 gap-6 text-sm">
+            <SwotItem label="Strengths" color="green" />
+            <SwotItem label="Weaknesses" color="yellow" />
+            <SwotItem label="Opportunities" color="blue" />
+            <SwotItem label="Threats" color="red" />
           </CardContent>
         </Card>
 
-        {/* Recognitions & Product Milestones */}
-        <Card className="col-span-1 border-l-4 border-emerald-500 bg-emerald-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-emerald-600" />
-              <CardTitle className="text-sm font-semibold text-emerald-700">
-                Recognitions & Product Milestones
-              </CardTitle>
-            </div>
+        {/* RISK MATRIX */}
+        <Card className="p-5">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Risk Assessment</CardTitle>
           </CardHeader>
-          <CardContent className="text-xs text-gray-700 space-y-2">
-            <ul className="list-disc ml-4 space-y-1">
-              <li>Winners of <b>E-LEVATE 2023</b></li>
-              <li>Incubated at <b>NSRCEL IIMB</b></li>
-              <li>Selected by <b>Microsoft for Startups</b></li>
-            </ul>
-            <div className="pt-2 border-t border-gray-200">
-              <p>
-                <b>Product v1 deployed in 2024.</b> Actively onboarding new customers and signups.
-              </p>
-            </div>
+          <CardContent className="text-sm space-y-3">
+            <RiskRow label="Operational Risk" score="Medium" />
+            <RiskRow label="Financial Risk" score="High" />
+            <RiskRow label="Product Risk" score="Low" />
+            <RiskRow label="Market Risk" score="Medium" />
           </CardContent>
         </Card>
+      </section>
 
-        {/* Financial Traction */}
-        <Card className="col-span-1 border-l-4 border-purple-500 bg-purple-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-purple-600" />
-              <CardTitle className="text-sm font-semibold text-purple-700">
-                Financial Traction
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-xs text-gray-700 space-y-2">
-            <p>
-              <b>Expected Revenue (FY 25-26):</b> $400k
-            </p>
-            <p>
-              <b>Reported FY 23-24 Revenue:</b> ₹4.16L (Datastride Analytics Pvt. Ltd.)
-            </p>
-            <div className="bg-purple-100 text-purple-800 text-[11px] p-2 rounded-md">
-              Continuous growth with early enterprise traction and multi-sector pilots.
-            </div>
-          </CardContent>
-        </Card>
+      {/* -------------------------------------------------------- */}
+      {/* 🟦 GAPS SECTION */}
+      {/* -------------------------------------------------------- */}
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold">Missing / Gap Areas</h2>
 
-        {/* Impact Metrics */}
-        <Card className="col-span-2 border-l-4 border-blue-500 bg-blue-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-blue-600" />
-              <CardTitle className="text-sm font-semibold text-blue-700">
-                Impact & Efficiency Metrics
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-xs text-gray-700 grid grid-cols-2 md:grid-cols-4 gap-2">
-            <div className="bg-white rounded-md p-2 shadow-sm">
-              <p className="font-semibold text-blue-700">Time to Insights</p>
-              <p>&lt; 5 min (90% faster)</p>
-            </div>
-            <div className="bg-white rounded-md p-2 shadow-sm">
-              <p className="font-semibold text-blue-700">Data Volume</p>
-              <p>100 GB (10x Increase)</p>
-            </div>
-            <div className="bg-white rounded-md p-2 shadow-sm">
-              <p className="font-semibold text-blue-700">Budget Saved</p>
-              <p>4x Cost Reduction</p>
-            </div>
-            <div className="bg-white rounded-md p-2 shadow-sm">
-              <p className="font-semibold text-blue-700">Deployment Time</p>
-              <p>2-3 Weeks (80% faster)</p>
-            </div>
-          </CardContent>
-        </Card>
+        <Accordion type="single" collapsible className="mt-4">
+          <AccordionItem value="mandatory">
+            <AccordionTrigger>Mandatory Information Missing</AccordionTrigger>
+            <AccordionContent>
+              {company?.traction?.traction?.gaps.mandatory_information.map((g: string) => (
+                <p key={g} className="text-sm mb-2">• {g}</p>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Business KPIs */}
-        <Card className="col-span-1 border-l-4 border-orange-500 bg-orange-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <LineChart className="w-4 h-4 text-orange-600" />
-              <CardTitle className="text-sm font-semibold text-orange-700">
-                Business KPIs
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-xs text-gray-700 space-y-2">
-            <p><b>CAS:</b> $3k/mo → Target $10k by EOY</p>
-            <p><b>ACV:</b> $150k – $300k</p>
-            <p><b>LTV:</b> $1M+</p>
-            <p><b>Sales Cycle:</b> 9–12 months</p>
-          </CardContent>
-        </Card>
+          <AccordionItem value="optional">
+            <AccordionTrigger>Optional Enhancements</AccordionTrigger>
+            <AccordionContent>
+              {company?.traction?.traction?.gaps.optional_information.map((g: string) => (
+                <p key={g} className="text-sm mb-2">• {g}</p>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </section>
 
-        {/* Case Study */}
-        <Card className="col-span-3 border-l-4 border-pink-500 bg-pink-50/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-pink-600" />
-              <CardTitle className="text-sm font-semibold text-pink-700">
-                Case Study: Abha Hospitals
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="text-xs text-gray-700 space-y-2">
-            <p>
-              <b>Client:</b> 2,000+ Employees | $50M+ Revenue
-            </p>
-            <p>
-              <b>Contract:</b> 80 → 400 subscriptions in 2 years | $60/user/month + $20k setup  
-              → <b>Total Value:</b> $98k/year
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] bg-white p-2 rounded-md shadow-sm">
-              <p>Unified patient data & historical insights</p>
-              <p>Org performance & finance analytics</p>
-              <p>Reduced diagnosis time & faster data access</p>
-              <p>MVP feedback rated “phenomenal” by co-founder</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    </div>
     </TabsContent>
   );
 }
+
+/* -------------------------------------------------------- */
+/* COMPONENTS */
+/* -------------------------------------------------------- */
+
+function KeyMetric({ icon: Icon, label, value }: any) {
+  return (
+    <div className="bg-white/10 backdrop-blur-sm p-5 rounded-xl border border-white/20">
+      <div className="flex items-center gap-3">
+        <Icon className="h-6 w-6 text-white" />
+        <div>
+          <p className="text-blue-100 text-xs">{label}</p>
+          <p className="text-white text-lg font-semibold">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InsightSection({ title, subtitle, items }: any) {
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <p className="text-sm text-gray-500">{subtitle}</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {items.map((item: any) => (
+          <Card key={item.label} className="p-5 shadow-sm">
+            <CardTitle className="text-base">{item.label}</CardTitle>
+            <CardContent className="text-sm text-gray-600 mt-3 leading-relaxed">
+              {item.value}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function VectorPillar({ title, icon: Icon, color }: any) {
+  return (
+    <div className="rounded-xl border p-6 flex flex-col items-center text-center space-y-3 hover:shadow-md transition">
+      <Icon className={`h-8 w-8 text-${color}-600`} />
+      <h3 className="text-sm font-semibold">{title}</h3>
+      <p className="text-xs text-gray-500">
+        Key metrics from this quadrant mapped to growth impact.
+      </p>
+    </div>
+  );
+}
+
+function SwotItem({ label, color }: any) {
+  return (
+    <div>
+      <h4 className={`font-semibold text-${color}-600`}>{label}</h4>
+      <p className="text-gray-600 text-xs mt-1">
+        AI-generated summary will appear here.
+      </p>
+    </div>
+  );
+}
+
+function RiskRow({ label, score }: any) {
+  const colors: any = {
+    High: "bg-red-100 text-red-700",
+    Medium: "bg-yellow-100 text-yellow-700",
+    Low: "bg-green-100 text-green-700",
+  };
+
+  return (
+    <div className="flex justify-between items-center border-b py-2">
+      <span className="text-sm text-gray-700">{label}</span>
+
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-medium ${colors[score] || "bg-gray-100 text-gray-700"}`}
+      >
+        {score}
+      </span>
+    </div>
+  );
+}
+

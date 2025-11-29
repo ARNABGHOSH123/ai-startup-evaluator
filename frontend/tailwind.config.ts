@@ -13,6 +13,14 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        neutral: "var(--neutral)",
+        dark: "var(--dark)",
+        cardborder: "var(--cardborder)",
+        cardborderlight: "var(--cardborderlight)",
+        cardorange: "var(--cardorange)",
+        cardorangelight: "var(--cardorangelight)", 
+        cardgreen: "var(--cardgreen)",
+        cardgreenlight: "var(--cardgreenlight)",
         card: {
           DEFAULT: "var(--card)",
           foreground: "var(--card-foreground)",
