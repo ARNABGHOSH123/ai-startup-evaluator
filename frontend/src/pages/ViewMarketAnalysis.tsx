@@ -120,17 +120,6 @@ export default function ViewMarketAnalysis({
             </p>
           </div>
         )}
-        {industryTrendsData?.market_growth_trends && (
-          <div className="flex flex-col">
-            <h3 className="text-sm font-semibold text-foreground">
-              Market Growth Trends
-            </h3>
-
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {industryTrendsData?.market_growth_trends}
-            </p>
-          </div>
-        )}
         {industryTrendsData?.sector_market_size && (
           <div className="flex flex-col">
             <h3 className="text-sm font-semibold text-foreground">
@@ -195,7 +184,7 @@ export default function ViewMarketAnalysis({
         <DialogClose asChild>
           <Button
             variant="outline"
-            className="w-full"
+            className="w-24 justify-center text-foreground"
             onClick={() => setViewData(false)}
           >
             Close

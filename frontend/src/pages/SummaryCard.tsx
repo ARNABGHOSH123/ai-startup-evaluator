@@ -5,7 +5,7 @@ import { HandCoins, Mail, MapPin, PhoneCallIcon, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import AIGeneratedDealNote from "./AIGeneratedDealNote";
 
-export default function SummaryCard({ company }: { company: any }) {
+export default function SummaryCard({ company, state }: { company: any, state: any }) {
   const bigString = company?.extract_benchmark_agent_response;
   const [openDealNote, setOpenDealNote] = useState(false);
 
@@ -108,7 +108,7 @@ export default function SummaryCard({ company }: { company: any }) {
             {/* <div> */}
             <div className="flex space-x-2 items-center">
               <span className="text-2xl font-bold text-foreground">
-                {company?.company_name || "SIA Analytics"}
+                {state?.company_name}
               </span>
               <span className="bg-blue-100 px-4 h-4 mt-2 text-xs items-center rounded-xl text-dark">
                 {
@@ -116,7 +116,7 @@ export default function SummaryCard({ company }: { company: any }) {
                 }
               </span>
               <span className="bg-green-100 px-4 h-4 mt-2 text-xs items-center rounded-xl text-dark">
-                {company?.stage_of_development || "Seed"}
+                {state?.stage_of_development}
               </span>
               <div className="flex space-x-2 mt-2 items-center text-neutral">
                 <span className="text-neutral text-xs">
@@ -138,14 +138,14 @@ export default function SummaryCard({ company }: { company: any }) {
                 </span>
               </div>
             </div>
-            <div className="text-foreground">
+            <div className="text-foreground text-xs">
               {
                 company?.overview?.overview?.market_size_and_position
                   ?.short_description
               }
             </div>
             {/* </div> */}
-            <div className="grid grid-flow-row grid-cols-11">
+            <div className="grid grid-flow-row grid-cols-10">
               <div className="flex space-x-2 items-center text-neutral col-span-3">
                 <MapPin size={16} />
                 <span className="text-neutral text-xs">
@@ -155,10 +155,10 @@ export default function SummaryCard({ company }: { company: any }) {
                   }
                 </span>
               </div>
-              <div className="flex space-x-2 items-center text-neutral col-span-2 justify-center">
+              <div className="flex space-x-2 items-center text-neutral col-span-3 justify-center">
                 <PhoneCallIcon size={16} />
                 <span className="text-neutral text-xs">
-                  {company?.company_phone_no || "+91 8777741213"}
+                  {state?.company_phone_no}
                 </span>
               </div>
               <div className="flex space-x-2 items-center text-neutral col-span-3 justify-center">
@@ -167,10 +167,10 @@ export default function SummaryCard({ company }: { company: any }) {
                   to={`mailto:${company?.company_email}`}
                   className="text-neutral hover:underline text-xs"
                 >
-                  {company?.company_email || "arnabghosh@gmail.com"}
+                  {state?.company_email}
                 </Link>
               </div>
-              <div className="flex space-x-2 items-center col-span-3 justify-center ">
+              {/* <div className="flex space-x-2 items-center col-span-3 justify-center ">
                 <Link
                   to={company?.parentWebsite}
                   className="text-neutral hover:underline text-xs"
@@ -182,7 +182,7 @@ export default function SummaryCard({ company }: { company: any }) {
                 <span className="bg-green-100 px-4 h-4 text-xs items-center rounded-xl text-dark">
                   Parent
                 </span>
-              </div>
+              </div> */}
             </div>
           </div>
           <div className="flex flex-col space-y-6">

@@ -36,7 +36,7 @@ export default function CompetitorsTab({ company }: any) {
             </div>
           </div>
           <a
-            className="text-sm text-blue-600 underline"
+            className="text-sm text-primary underline"
             href={company.domain_url}
             target="_blank"
           >
@@ -45,7 +45,7 @@ export default function CompetitorsTab({ company }: any) {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-3 text-sm text-gray-700 mb-3">
+        <div className="grid grid-cols-2 gap-3 text-sm text-neutral mb-3">
           {company.team_size && (
             <div className="flex items-center gap-2">
               <Users size={16} /> {company.team_size}
@@ -75,10 +75,10 @@ export default function CompetitorsTab({ company }: any) {
 
         {/* Differentiators */}
         <div className="mb-3">
-          <h4 className="text-sm font-semibold text-gray-800">
+          <h4 className="text-sm font-semibold text-foreground">
             Differentiators
           </h4>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-neutral mt-1">
             {company.differentiators}
           </p>
         </div>

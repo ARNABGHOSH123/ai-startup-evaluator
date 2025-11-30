@@ -1,5 +1,8 @@
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 type ViewModalProps = {
   viewFunding: boolean;
@@ -98,7 +101,11 @@ export default function ViewFundings({
             )}
             {fundingsAndFinancialsData?.financial_projections_review && (
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {fundingsAndFinancialsData?.financial_projections_review}
+                <article className="max-w-none space-y-2">
+                  <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                    {fundingsAndFinancialsData?.financial_projections_review}
+                  </ReactMarkdown>
+                </article>
               </p>
             )}
           </div>
@@ -202,7 +209,7 @@ export default function ViewFundings({
         <DialogClose asChild>
           <Button
             variant="outline"
-            className="w-full"
+            className="w-24 justify-center text-foreground"
             onClick={() => setViewFunding(false)}
           >
             Close

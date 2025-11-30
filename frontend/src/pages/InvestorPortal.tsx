@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   User,
@@ -8,20 +8,19 @@ import {
   Loader,
   AlertTriangle,
   Filter,
-  DollarSignIcon,
   HandCoins,
 } from "lucide-react";
-import { Tooltip } from "@/components/ui/tooltip";
-// import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 type Company = {
   company_name: string;
   founder_name: string;
+  company_email: string;
+  company_phone_no: string;
+  stage_of_development: string;
   company_pitch_deck_gcs_uri: string;
   is_deck_extracted_and_benchmarked: string;
   doc_id: string;
@@ -29,7 +28,7 @@ type Company = {
 
 interface CompanyCardProps {
   company: Company;
-  onCompanyClick: (companyName: string) => void;
+  onCompanyClick: (company: Company) => void;
 }
 
 function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
@@ -78,7 +77,7 @@ function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
     >
       <Card
         className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-border"
-        onClick={() => onCompanyClick(company.doc_id)}
+        onClick={() => onCompanyClick(company)}
         data-testid={`card-company-${company.doc_id}`}
       >
         <CardHeader className="pb-4">
@@ -186,17 +185,13 @@ function CompanyCardSkeleton() {
 }
 
 export default function InvestorPortal() {
-  // const { user, isLoading: authLoading } = useAuth();
-  // const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoadingCompanies, setLoadingCompanies] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
-  // const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
-  //   null
-  // );
+  console.log(companies);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -224,9 +219,17 @@ export default function InvestorPortal() {
     fetchCompanies();
   }, []);
 
-  const handleCompanyClick = (companyId: string) => {
+  const handleCompanyClick = (company: any) => {
     // setSelectedCompanyId(companyName);
-    navigate(`/company/${companyId}`);
+    navigate(`/company/${company?.doc_id}`, {
+      state: {
+        company_name: company.company_name,
+        founder_name: company.founder_name,
+        company_email: company?.company_email,
+        company_phone_no: company?.company_phone_no,
+        stage_of_development: company?.stage_of_development,
+      },
+    });
   };
 
   if (isLoadingCompanies) {
@@ -302,8 +305,8 @@ export default function InvestorPortal() {
           {3 > 0 && (
             <div className="flex flex-row justify-between border border-border rounded-lg text-foreground hover:border-primary p-4">
               <span className="flex flex-col">
-                <span className="text-gray-400">Active Startups</span>
-                <span className="font-bold text-4xl">{3}</span>
+                <span className="text-neutral">Active Startups</span>
+                <span className="font-bold text-4xl">{companies?.length}</span>
               </span>
               <Building2 className="w-16 bg-gradient-to-br from-primary-foreground to-primary-foreground/80 p-3 rounded-2xl h-16 text-primary" />
             </div>
@@ -335,20 +338,21 @@ export default function InvestorPortal() {
                 className="w-full bg-background pl-10 pr-3 py-1.5 border border-border rounded-lg focus:ring-1 focus:ring-primary outline-none text-foreground"
               />
             </div>
-          <span className="flex flex-row space-x-4">
-            {/* Stage Dropdown */}
-            <Filter size={24} className="text-gray-600 mt-1.5" />
-            <select
-              value={stageFilter}
-              onChange={(e) => setStageFilter(e.target.value)}
-              className="px-3 py-1.5 border border-border rounded-lg bg-background focus:ring-1 focus:ring-primary text-foreground"
-            >
-              <option value="All">All Stages</option>
-              <option value="Seed">Seed</option>
-              <option value="Early">Early</option>
-              <option value="Growth">Growth</option>
-              <option value="Transaction">Transaction</option>
-            </select></span>
+            <span className="flex flex-row space-x-4">
+              {/* Stage Dropdown */}
+              <Filter size={24} className="text-gray-600 mt-1.5" />
+              <select
+                value={stageFilter}
+                onChange={(e) => setStageFilter(e.target.value)}
+                className="px-3 py-1.5 border border-border rounded-lg bg-background focus:ring-1 focus:ring-primary text-foreground"
+              >
+                <option value="All">All Stages</option>
+                <option value="Seed">Seed</option>
+                <option value="Early">Early</option>
+                <option value="Growth">Growth</option>
+                <option value="Transaction">Transaction</option>
+              </select>
+            </span>
           </div>
           <div className="flex items-center justify-between">
             {/* Search + Filter Row */}

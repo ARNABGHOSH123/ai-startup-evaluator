@@ -55,7 +55,7 @@ export default function AIGeneratedDealNote({
       <DialogContent className="sm:max-w-md rounded-xl">
         {!loading &&
         extractedData?.extract_benchmark_agent_response?.trim()?.length ? (
-          <article className="prose max-w-none">
+          <article className="max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
               {extractedData?.extract_benchmark_agent_response}
             </ReactMarkdown>
@@ -64,7 +64,7 @@ export default function AIGeneratedDealNote({
           "kjlkjdkajdklaklwekwekrwkerwkerwerwerwre"
         )}
         <DialogClose asChild>
-          <Button variant="outline" onClick={() => setOpenDealNote(false)}>
+          <Button variant="outline" onClick={() => setOpenDealNote(false)} className="w-24 justify-center text-foreground">
             Close
           </Button>
         </DialogClose>

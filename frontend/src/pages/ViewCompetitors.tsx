@@ -178,7 +178,7 @@ export default function ViewCompetitors({
         <DialogClose asChild>
           <Button
             variant="outline"
-            className="w-full"
+            className="w-24 justify-center text-foreground"
             onClick={() => setViewCompetitors(false)}
           >
             Close

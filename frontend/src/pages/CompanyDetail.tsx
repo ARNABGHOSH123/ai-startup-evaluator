@@ -3,28 +3,26 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SummaryCard from "./SummaryCard";
 import FoundingTeam from "./FoundingTeam";
 import Traction from "./Traction";
-import BusinessModel from "./BussinessModel";
-import PartnershipsAndAnalysis from "./PartnershipsAndAnalysis";
+import RisksAndStrategicAnalysis from "./RisksAndStrategicAnalysis";
 import InvestmentRecommendation from "./InvestmentMemo";
 import Overview from "./Overview";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import ComprehensiveAnalysis from "./ComprehensiveAnalysis";
-// import ReactMarkdown from "react-markdown";
-// import remarkGfm from "remark-gfm";
-// import remarkBreaks from "remark-breaks";
+import BussinessModel from "./BussinessModel";
+import ThesisConfig from "./InvestmentWeightage";
 
 type SubAgentResults = Record<string, any>;
 
 export default function CompanyDetail() {
   const { companyId } = useParams<{ companyId: string }>();
-  const [activeTab, setActiveTab] = useState<string>("markedupData");
+  const [activeTab, setActiveTab] = useState<string>("overview");
   const [isLoadingCompDetails, setLoadingCompDetails] = useState(false);
   const [company, setCompDetails] = useState<SubAgentResults | null>(null);
-  console.log(company);
+  const { state } = useLocation();
 
   function DetailSkeleton() {
     return (
@@ -103,7 +101,7 @@ export default function CompanyDetail() {
               import.meta.env.VITE_CLOUD_RUN_SERVICE_URL
             }/sub_agents/${companyId}/${subAgent}`,
             {
-              method: "POST", // or GET depending on your API
+              method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 company_doc_id: companyId,
@@ -137,11 +135,10 @@ export default function CompanyDetail() {
     return <DetailSkeleton />;
   }
 
+  const selectedTab =
+    "data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary";
   return (
     <div className="p-4 bg-muted min-h-screen ">
-      {/* <InvestmentWeightage/>commented for now if need we can uncomment or we can delete */}
-      {/* ---------------- Summary Card ---------------- */}
-
       <div>
         <span>
           <Link to="/investor">
@@ -156,57 +153,56 @@ export default function CompanyDetail() {
           </Link>
         </span>
 
-        <SummaryCard company={company} />
+        <SummaryCard company={company} state={state} />
       </div>
-      {/* <ThesisConfig /> */}
 
       {/* ---------------- Tabs ---------------- */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          {/* <TabsTrigger value="investmentMemo">
-            Investment Recommendation
-          </TabsTrigger> */}
-          <TabsTrigger value="overview">Basic Overview</TabsTrigger>
-          <TabsTrigger value="foundingTeam">Team Profiling</TabsTrigger>
-          <TabsTrigger value="comprehensive">
+          <TabsTrigger value="overview" className={`${selectedTab}`}>
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="foundingTeam" className={`${selectedTab}`}>
+            Team Profiling
+          </TabsTrigger>
+          <TabsTrigger value="comprehensive" className={`${selectedTab}`}>
             Comprehensive Analysis
           </TabsTrigger>
-          <TabsTrigger value="partnership">
-            Partnerships & Strategic Analysis
+          <TabsTrigger value="partnership" className={`${selectedTab}`}>
+            Risk & Strategic Analysis
           </TabsTrigger>
-          <TabsTrigger value="traction">Traction</TabsTrigger>
-          {/*<TabsTrigger value="businessModel">Business Model</TabsTrigger>
-          
-          
-         
-          <TabsTrigger value="industry">Industry & Trends</TabsTrigger>
-          */}
+          <TabsTrigger value="traction" className={`${selectedTab}`}>
+            Traction
+          </TabsTrigger>
+          <TabsTrigger value="businessmodel" className={`${selectedTab}`}>
+            Business Analysis
+          </TabsTrigger>
+          <TabsTrigger value="investmentMemo" className={`${selectedTab}`}>
+            Investment Recommendation
+          </TabsTrigger>
+          <TabsTrigger value="thesis" className={`${selectedTab}`}>
+            Configure Thesis
+          </TabsTrigger>
         </TabsList>
-
-        {/* ------------ Competitors Tab ------------ */}
-        {/* <CompetitorsTab company={company} /> */}
-        {/* ------------ Funding Tab ------------ */}
         <ComprehensiveAnalysis company={company} />
-
-        {/* Industry & Trends*/}
-        {/* <IndustryTab /> */}
-
-        {/* Problem Statement And Solution */}
         <Overview company={company} />
-
-        {/* Founding team */}
         <FoundingTeam company={company} />
-
-        {/* Traction & User Base */}
         <Traction company={company} />
-
-        {/* Business Model & Go to Market */}
-        {/* <BusinessModel /> */}
-        {/* Other */}
-        <PartnershipsAndAnalysis company={company} />
-
-        {/* <InvestmentRecommendation company={company} /> */}
+        <BussinessModel company={company} />
+        <RisksAndStrategicAnalysis company={company} />
+        <InvestmentRecommendation company={company} />
+        <ThesisConfig company={company}/>
       </Tabs>
+
+      {/* Floating Chatbot Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          className="rounded-full w-10 h-10 bg-red-600 hover:bg-red-700 text-white shadow-lg flex items-center justify-center text-xl"
+          onClick={() => console.log("Open chatbot modal")}
+        >
+          <Bot size={16} />
+        </Button>
+      </div>
     </div>
   );
 }

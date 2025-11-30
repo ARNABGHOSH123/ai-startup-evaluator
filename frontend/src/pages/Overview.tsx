@@ -1,33 +1,14 @@
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
 import {
   AlertTriangle,
   Bot,
   Zap,
-  Database,
-  Shield,
   Cpu,
-  BarChart3,
   Brain,
+  Microscope,
+  BarChart2Icon,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip as RechartsTooltip,
-  CartesianGrid,
-  Legend,
-  RadialBarChart,
-  RadialBar,
-} from "recharts";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 
 type InsightSection = {
   type: "insights";
@@ -73,66 +54,147 @@ export type AccordionData = {
   sections: Section[];
 };
 
-// const tamData = [{ name: "Data Analytics", value: 300, fill: "#22c55e" }];
-// const somData = [
-//   { year: 2024, value: 5 },
-//   { year: 2030, value: 60 },
-//   { year: 2034, value: 200 },
-// ];
-
 export default function Overview({ company }: any) {
   const overviewData = company?.overview?.overview;
 
   return (
     <TabsContent value="overview">
-     <div className="grid grid-cols-4">
-      <Card className="rounded-lg border col-span-3 border-border hover:border-primary bg-background">
+      <div className="grid grid-cols-4 gap-4">
+        <Card className="rounded-lg border col-span-3 border-border hover:border-primary bg-background">
           <span className="flex flex-row items-center justify-between">
             <CardHeader className="flex flex-row space-x-2 items-center -mt-3 -ml-2">
-              <Brain className="p-1 rounded-sm bg-cardborderlight text-cardborder" />
-              <CardTitle className="text-sm">{overviewData?.market_size_and_position?.tag_line}</CardTitle>
+              <CardTitle className="text-lg">
+                {overviewData?.market_size_and_position?.tag_line}
+              </CardTitle>
             </CardHeader>
-            {/* <span
-              className="text-xs hover:cursor-pointer text-primary -mt-2 mr-2 font-semibold bg-primary-foreground rounded-xl px-2"
-              onClick={() => setViewFunding(true)}
-            >
-              View Details
-            </span> */}
           </span>
           <CardContent className="space-y-6">
-          {overviewData?.technology_and_innovation?.vision_and_USP && <p className="text-xs text-neutral leading-relaxed -mt-4">
-            {overviewData?.technology_and_innovation?.vision_and_USP}
-          </p>}
-          {overviewData?.problem_statement && (
-          <div className="flex flex-col space-y-2">
-            <h3 className="text-sm flex flex-row space-x-2 items-center -ml-2">
-              <AlertTriangle className="p-1 rounded-sm bg-cardorangelight text-cardorange"/><span className="font-semibold">Problem</span>
-            </h3>
+            {overviewData?.technology_and_innovation?.vision_and_USP && (
+              <div className="flex flex-col space-y-2">
+                <h3 className="text-sm text-cardborder flex flex-row space-x-2 items-center -ml-2">
+                  <Brain className="p-1 rounded-sm bg-cardborderlight" />
+                  <span className="font-semibold">Vision</span>
+                </h3>
+                <p className="text-xs text-foreground leading-relaxed -mt-4">
+                  {overviewData?.technology_and_innovation?.vision_and_USP}
+                </p>
+              </div>
+            )}
+            {overviewData?.problem_statement && (
+              <div className="flex flex-col space-y-2">
+                <h3 className="text-sm text-cardorange flex flex-row space-x-2 items-center -ml-2">
+                  <AlertTriangle className="p-1 rounded-sm bg-cardorangelight" />
+                  <span className="font-semibold">Problem</span>
+                </h3>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {overviewData?.problem_statement}
-            </p>
-          </div>
-        )}
+                <p className="text-xs text-foreground leading-relaxed">
+                  {overviewData?.problem_statement}
+                </p>
+              </div>
+            )}
+            {overviewData?.problem_statement && (
+              <div className="flex flex-col space-y-2">
+                <h3 className="text-sm text-cardgreen flex flex-row space-x-2 items-center -ml-2">
+                  <Bot className="p-1 rounded-sm bg-cardgreenlight" />
+                  <span className="font-semibold">Solution</span>
+                </h3>
 
-        {overviewData?.problem_statement && (
-          <div className="flex flex-col space-y-2">
-            <h3 className="text-sm flex flex-row space-x-2 items-center -ml-2">
-              <Cpu className="p-1 rounded-sm bg-cardgreenlight text-cardgreen"/><span className="font-semibold">Solution</span>
-            </h3>
+                <p className="text-xs text-foreground leading-relaxed">
+                  {overviewData?.solution}
+                </p>
+              </div>
+            )}
+            {overviewData?.technology_and_innovation
+              ?.innovation_and_R_and_D && (
+              <div className="flex flex-col space-y-2">
+                <h3 className="text-sm flex flex-row space-x-2 items-center -ml-2 text-yellow-600">
+                  <Microscope className="p-1 rounded-sm bg-yellow-100" />
+                  <span className="font-semibold">Innovation</span>
+                </h3>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {overviewData?.solution}
-            </p>
-          </div>
-        )}
+                <p className="text-xs text-foreground leading-relaxed">
+                  {
+                    overviewData?.technology_and_innovation
+                      ?.innovation_and_R_and_D
+                  }
+                </p>
+              </div>
+            )}
           </CardContent>
-
-          <CardDescription>
-            placeholder
-          </CardDescription>
         </Card>
-     </div>
+
+        <div className="grid grid-cols-1 gap-y-4">
+          {overviewData?.market_size_and_position?.innovation_cycle_status && (
+            <Card className="rounded-lg border border-border hover:border-primary bg-background">
+              <span className="flex flex-row items-center justify-between"></span>
+              <CardContent className="space-y-6 p-4">
+                <div className="flex flex-col space-y-2">
+                  <h3 className="text-sm flex flex-row space-x-2 items-center -ml-2 text-blue-600">
+                    <Zap className="p-1 rounded-sm bg-blue-100" />
+                    <span className="font-semibold">
+                      {
+                        overviewData?.market_size_and_position
+                          ?.innovation_cycle_status?.status
+                      }
+                    </span>
+                  </h3>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {
+                      overviewData?.market_size_and_position
+                        ?.innovation_cycle_status?.reasoning
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {overviewData?.market_size_and_position?.innovation_cycle_status && (
+            <Card className="rounded-lg border border-border hover:border-primary bg-background">
+              <span className="flex flex-row items-center justify-between"></span>
+              <CardContent className="space-y-6 p-4">
+                <div className="flex flex-col space-y-2">
+                  <h3 className="text-sm flex flex-row space-x-2 items-center -ml-2 text-teal-600">
+                    <BarChart2Icon className="p-1 rounded-sm bg-teal-100" />
+                    <span className="font-semibold">Competitors Summary</span>
+                  </h3>
+                  <span className="text-xs text-muted-foreground">
+                    {
+                      overviewData?.market_size_and_position
+                        ?.competitors_summary?.number_of_competitors
+                    }{" "}
+                    Competitors
+                  </span>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {
+                      overviewData?.market_size_and_position
+                        ?.competitors_summary?.summary
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          {overviewData?.technology_and_innovation?.technology_stack_used && (
+            <Card className="rounded-lg border border-border hover:border-primary bg-background">
+              <span className="flex flex-row items-center justify-between"></span>
+              <CardContent className="space-y-6 p-4">
+                <div className="flex flex-col space-y-2">
+                  <h3 className="text-sm flex flex-row space-x-2 items-center -ml-2 text-pink-600">
+                    <Cpu className="p-1 rounded-sm bg-pink-100" />
+                    <span className="font-semibold">Technology & Stack</span>
+                  </h3>
+                  <p className="text-xs text-foreground leading-relaxed">
+                    {
+                      overviewData?.technology_and_innovation
+                        ?.technology_stack_used
+                    }
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
     </TabsContent>
   );
 }
