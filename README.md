@@ -17,7 +17,7 @@ Solution Capabilities:
 
 ### Architecture
 
-![Architecture Diagram](docs/screenshots/architecture_diagram.svg)
+![Architecture Diagram](docs/screenshots/architecture.png)
 
 ## Technology Stack
 
@@ -54,13 +54,12 @@ Solution Capabilities:
 
 ### Code folders overview
 
-1. agentic_jobs/extract_benchmarking_agent_job: Multi-agent job that extracts and benchmarks startup data. It is triggered when a founder uploads a pitch deck.
-2. agents/ai-to-founder-voice-agent: AI Call Assistant agent that interacts with founders to clarify missing or unclear data.
-3. backend: FastAPI backend that manages API routes, Firestore models, and utility functions.
-4. agents/weightage-adjust-gen-ai-recom-agent: Agent that generates investment recommendations based on adjustable weightages.
-5. frontend: React frontend for founders and investors to interact with the platform.
-
-All the agents are built using Google ADK (Agent Development Kit) framework and deployed on various GCP services depending on their use case and speed requirements.
+1. **_agentic_jobs/extract_benchmarking_agent_job_**: Multi-agent job that extracts and benchmarks startup data. It is triggered when a founder uploads a pitch deck.
+2. **_agents/ai-to-founder-voice-agent_**: AI Call Assistant agent that interacts with founders to clarify missing or unclear data.
+3. **_backend_**: FastAPI backend that manages API routes, Firestore models, and utility functions.
+4. **_agents/weightage-adjust-gen-ai-recom-agent_**: Agent that generates investment recommendations based on adjustable weightages.
+5. **_frontend_**: React frontend for founders and investors to interact with the platform.
+   All the agents are built using Google ADK (Agent Development Kit) framework and deployed on various GCP services depending on their use case and speed requirements.
 
 - Extraction and Benchmarking Agent Job is deployed as a Cloud Run Job that runs asynchronously when triggered by the backend.
 - AI Call Assistant Agent is deployed on Cloud Run with bi-directional streaming support for real-time audio conversation.
@@ -82,8 +81,8 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
 
 ### **_Extraction and Benchmarking Agent Job_**
 
-- Extraction Agent: Parses pitch -> converts data into structured JSON.
-- Benchmark Agent: Validates and scores market size, team experience, category benchmarks, risk analysis, strength indicators. Outputs normalized Deal Note JSON. It uses sub agents:
+- **_Extraction Agent_**: Parses pitch -> converts data into structured JSON.
+- **_Benchmark Agent_**: Validates and scores market size, team experience, category benchmarks, risk analysis, strength indicators. Outputs normalized Deal Note JSON. It uses sub agents:
   - overview_sub_agent.py: Generates company overview from pitch deck.
   - business_model_sub_agent.py: Analyzes the startup's business model.
   - team_profiling_sub_agent.py: Profiles the founding team.
