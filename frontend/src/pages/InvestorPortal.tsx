@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
+  Search,
   User,
   Download,
   Building2,
   Loader,
   AlertTriangle,
+  Filter,
+  HandCoins,
 } from "lucide-react";
-// import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +18,9 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 type Company = {
   company_name: string;
   founder_name: string;
+  company_email: string;
+  company_phone_no: string;
+  stage_of_development: string;
   company_pitch_deck_gcs_uri: string;
   is_deck_extracted_and_benchmarked: string;
   doc_id: string;
@@ -24,7 +28,7 @@ type Company = {
 
 interface CompanyCardProps {
   company: Company;
-  onCompanyClick: (companyName: string) => void;
+  onCompanyClick: (company: Company) => void;
 }
 
 function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
@@ -72,14 +76,14 @@ function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
       data-testid={`wrapper-company-${company.doc_id}`}
     >
       <Card
-        className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-        onClick={() => onCompanyClick(company.doc_id)}
+        className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-border"
+        onClick={() => onCompanyClick(company)}
         data-testid={`card-company-${company.doc_id}`}
       >
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary-foreground to-primary-foreground/80 rounded-lg flex items-center justify-center">
+              <span className="text-primary font-bold text-lg">
                 {getInitials(company.company_name)}
               </span>
             </div>
@@ -181,15 +185,13 @@ function CompanyCardSkeleton() {
 }
 
 export default function InvestorPortal() {
-  // const { user, isLoading: authLoading } = useAuth();
-  // const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoadingCompanies, setLoadingCompanies] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  // const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
-  //   null
-  // );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [stageFilter, setStageFilter] = useState("All");
+  console.log(companies);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -217,9 +219,17 @@ export default function InvestorPortal() {
     fetchCompanies();
   }, []);
 
-  const handleCompanyClick = (companyId: string) => {
+  const handleCompanyClick = (company: any) => {
     // setSelectedCompanyId(companyName);
-    navigate(`/company/${companyId}`);
+    navigate(`/company/${company?.doc_id}`, {
+      state: {
+        company_name: company.company_name,
+        founder_name: company.founder_name,
+        company_email: company?.company_email,
+        company_phone_no: company?.company_phone_no,
+        stage_of_development: company?.stage_of_development,
+      },
+    });
   };
 
   if (isLoadingCompanies) {
@@ -276,14 +286,78 @@ export default function InvestorPortal() {
   //     </div>
   //   );
   // }
+  const filteredCompanies = companies?.filter((company) => {
+    const matchesSearch =
+      company.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.founder_name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStage = stageFilter === "All";
+    // || company.company_stage === stageFilter;
+
+    return matchesSearch && matchesStage;
+  });
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
+        <div className="grid md:grid-cols-4 md:gap-x-6 gap-4">
+          {3 > 0 && (
+            <div className="flex flex-row justify-between border border-border rounded-lg text-foreground hover:border-primary p-4">
+              <span className="flex flex-col">
+                <span className="text-neutral">Active Startups</span>
+                <span className="font-bold text-4xl">{companies?.length}</span>
+              </span>
+              <Building2 className="w-16 bg-gradient-to-br from-primary-foreground to-primary-foreground/80 p-3 rounded-2xl h-16 text-primary" />
+            </div>
+          )}
+          {3 > 0 && (
+            <div className="flex flex-row justify-between border border-border rounded-lg text-foreground hover:border-primary p-4">
+              <span className="flex flex-col">
+                <span className="text-gray-400">Total Valuation</span>
+                <span className="font-bold text-4xl">{100}</span>
+              </span>
+              <HandCoins className="w-16 bg-gradient-to-br from-primary-foreground to-primary-foreground/80 p-3 rounded-2xl h-16 text-primary" />
+            </div>
+          )}
+        </div>
         <div className="mb-8">
+          <div className="mt-6 flex flex-col md:flex-row items-center gap-4">
+            {/* Search Bar */}
+            <div className="relative w-full">
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+
+              <input
+                type="text"
+                placeholder="Search startups by company name or industry..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-background pl-10 pr-3 py-1.5 border border-border rounded-lg focus:ring-1 focus:ring-primary outline-none text-foreground"
+              />
+            </div>
+            <span className="flex flex-row space-x-4">
+              {/* Stage Dropdown */}
+              <Filter size={24} className="text-gray-600 mt-1.5" />
+              <select
+                value={stageFilter}
+                onChange={(e) => setStageFilter(e.target.value)}
+                className="px-3 py-1.5 border border-border rounded-lg bg-background focus:ring-1 focus:ring-primary text-foreground"
+              >
+                <option value="All">All Stages</option>
+                <option value="Seed">Seed</option>
+                <option value="Early">Early</option>
+                <option value="Growth">Growth</option>
+                <option value="Transaction">Transaction</option>
+              </select>
+            </span>
+          </div>
           <div className="flex items-center justify-between">
-            <div>
+            {/* Search + Filter Row */}
+
+            {/* <div>
               <h1
                 className="text-3xl font-bold text-foreground mb-2"
                 data-testid="text-page-title"
@@ -293,8 +367,8 @@ export default function InvestorPortal() {
               <p className="text-muted-foreground">
                 Discover and analyze promising startups in our portfolio
               </p>
-            </div>
-            <Link to="/">
+            </div> */}
+            {/* <Link to="/">
               <Button
                 variant="secondary"
                 className="flex items-center space-x-2"
@@ -303,7 +377,7 @@ export default function InvestorPortal() {
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Home</span>
               </Button>
-            </Link>
+            </Link> */}
           </div>
         </div>
 
@@ -322,12 +396,12 @@ export default function InvestorPortal() {
         )}
 
         {/* Companies Grid */}
-        {companies.length > 0 ? (
+        {companies?.length > 0 ? (
           <div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             data-testid="grid-companies"
           >
-            {companies.map((company) => (
+            {filteredCompanies?.map((company) => (
               <CompanyCard
                 key={company.doc_id}
                 company={company}

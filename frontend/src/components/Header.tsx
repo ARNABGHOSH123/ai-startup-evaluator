@@ -114,7 +114,7 @@ export default function Header() {
               variant="ghost"
               size="sm"
               onClick={toggleTheme}
-              className="p-2 rounded-md hover:bg-accent transition-colors"
+              className="p-2 rounded-md hover:bg-accent transition-colors text-primary"
               title="Toggle theme"
               data-testid="button-theme-toggle"
             >
