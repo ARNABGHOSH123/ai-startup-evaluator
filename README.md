@@ -83,16 +83,16 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
 
 - **_Extraction Agent_**: Parses pitch -> converts data into structured JSON.
 - **_Benchmark Agent_**: Validates and scores market size, team experience, category benchmarks, risk analysis, strength indicators. Outputs normalized Deal Note JSON. It uses sub agents:
-  - overview_sub_agent.py: Generates company overview from pitch deck.
-  - business_model_sub_agent.py: Analyzes the startup's business model.
-  - team_profiling_sub_agent.py: Profiles the founding team.
-  - traction_sub_agent.py: Evaluates the startup's traction.
-  - funding_and_financials_sub_agent.py: Analyzes funding and financial metrics.
-  - competitor_analysis_sub_agent.py: Conducts competitor analysis.
-  - industry_trends_sub_agent.py: Analyzes industry trends.
-  - partnerships_strategic_analysis_sub_agent.py: Evaluates partnerships and strategic positioning.
-- Investment recommendation: Provides investment recommendations.
-- Generates QnAs: Generates questions for the AI Call Assistant to ask the founder for missing or unclear data.
+  - **_overview_sub_agent.py_**: Generates company overview from pitch deck.
+  - **_business_model_sub_agent.py_**: Analyzes the startup's business model.
+  - **_team_profiling_sub_agent.py_**: Profiles the founding team.
+  - **_traction_sub_agent.py_**: Evaluates the startup's traction.
+  - **_funding_and_financials_sub_agent.py_**: Analyzes funding and financial metrics.
+  - **_competitor_analysis_sub_agent.py_**: Conducts competitor analysis.
+  - **_industry_trends_sub_agent.py_**: Analyzes industry trends.
+  - **_partnerships_strategic_analysis_sub_agent.py_**: Evaluates partnerships and strategic positioning.
+- **_Investment recommendation_**: Provides investment recommendations.
+- **_Generates QnAs_**: Generates questions for the AI Call Assistant to ask the founder for missing or unclear data.
 
 ### **_AI Call Assistant_**
 
@@ -198,16 +198,16 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
 
 ## Deployments
 
-1. Frontend (on Cloud Run): ![Link](https://ai-analyst-frontend-service-842669104353.us-central1.run.app)
+1. **_Frontend (on Cloud Run)_**: [Frontend](https://ai-analyst-frontend-service-842669104353.us-central1.run.app)
    ![Cloud Run Service](docs/screenshots/deployed_frontend.png)
-2. Backend (on Cloud Run): ![Link](https://ai-analyst-backend-service-842669104353.us-central1.run.app)
+2. **_Backend (on Cloud Run)_**: [Backend](https://ai-analyst-backend-service-842669104353.us-central1.run.app)
    ![Cloud Run Service](docs/screenshots/deployed_backend.png)
-3. Weightage Engine: Agent Engine. Screenshot provided in AgentOps section above.
-4. Extraction and Benchmarking Agent Job: Cloud Run Job
+3. **_Weightage Engine_**: Agent Engine. Screenshot provided in AgentOps section above.
+4. **_Extraction and Benchmarking Agent Job_**: Cloud Run Job
    ![Cloud Run Job](docs/screenshots/extraction_benchmarking_job.png)
-5. AI Call Assistant Agent: Cloud Run with bi-directional streaming support
+5. **_AI Call Assistant Agent_**: Cloud Run with bi-directional streaming support
    ![Cloud Run Service](docs/screenshots/deployed_audio_agent.png)
-6. Deployment script for Weightage Adjust Gen AI Recom Agent on Agent Engine:
+6. **_Deployment script for Weightage Adjust Gen AI Recom Agent on Agent Engine_**:
    ![Deployment script](docs/screenshots/weightage_agent_deployment_script.png)
 
 ## Repository Contributors
