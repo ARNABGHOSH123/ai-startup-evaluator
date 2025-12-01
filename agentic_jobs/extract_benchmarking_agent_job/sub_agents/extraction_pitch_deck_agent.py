@@ -26,6 +26,7 @@ FIRESTORE_COMPANY_COLLECTION = Config.FIRESTORE_COMPANY_COLLECTION
 async def post_agent_execution(callback_context: CallbackContext) -> None:
     try:
         current_state = callback_context.state.to_dict()
+        print("State after extraction pitch deck sub agent:", current_state)
         corpus_name = current_state.get("rag_corpus_name")
         extraction_pitch_deck_result = json.loads(current_state.get(
             "extraction_pitch_deck_result").removeprefix("```json").removesuffix("```").strip())

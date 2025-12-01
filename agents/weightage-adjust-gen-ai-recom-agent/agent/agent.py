@@ -2,14 +2,12 @@ from google.adk.agents.llm_agent import LlmAgent
 from google.adk.tools.tool_context import ToolContext
 from typing import Optional, Dict, Any
 from google.adk.tools.base_tool import BaseTool
-# from google.cloud import firestore, storage
 from google import auth
 import vertexai
 from vertexai.preview import rag
 from google.adk.agents.callback_context import CallbackContext
 from llm_model_config import llm
 from google.genai import types
-# import json
 from config import Config
 from tools import extract, retrieve, search
 from utils import read_benchmark_framework_text
@@ -19,8 +17,7 @@ GCP_CLOUD_REGION = Config.GCP_CLOUD_REGION
 COMPANY_COLLECTION_NAME = Config.COMPANY_COLLECTION_NAME
 FIRESTORE_DATABASE = Config.FIRESTORE_DATABASE
 AGENT_MODEL = Config.AGENT_MODEL
-
-# firestore_client: firestore.Client = None
+SUB_AGENTS_RAG_CORPUS_PREFIX = Config.SUB_AGENTS_RAG_CORPUS_PREFIX
 
 benchmarking_framework_text = read_benchmark_framework_text()
 
@@ -38,166 +35,39 @@ def initialize_vertex_ai():
         location=Config.GCP_CLOUD_REGION,
         credentials=credentials
     )
-    # firestore_client = firestore.Client(project=GCP_CLOUD_PROJECT, database=FIRESTORE_DATABASE, credentials=credentials) if credentials else firestore.Client(
-    #     project=GCP_CLOUD_PROJECT, database=FIRESTORE_DATABASE)
 
 
-# def chunk_text(text: str, chunk_size: int = 1500) -> List[str]:
-#     """
-#     Splits a large string into smaller chunks to avoid RAG import errors.
-#     Approx 1500 characters is a safe bet for Vertex AI RAG records.
-#     """
-#     if not text:
-#         return []
-#     return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
-
-# # 2. Existing Helper (Kept the same)
-# def flatten_json_to_text(data: Any, level: int = 0) -> str:
-#     """Recursively converts nested JSON/Dict into a readable text format."""
-#     lines = []
-#     indent = "  " * level
-    
-#     if isinstance(data, dict):
-#         for key, value in data.items():
-#             clean_key = key.replace("_", " ").title()
-#             if isinstance(value, (dict, list)):
-#                 lines.append(f"{indent}## {clean_key}")
-#                 lines.append(flatten_json_to_text(value, level + 1))
-#             else:
-#                 lines.append(f"{indent}* **{clean_key}**: {value}")
-#     elif isinstance(data, list):
-#         for item in data:
-#             if isinstance(item, (dict, list)):
-#                 lines.append(flatten_json_to_text(item, level))
-#                 lines.append(f"{indent}---") 
-#             else:
-#                 lines.append(f"{indent}* {item}")
-#     elif data is not None:
-#         lines.append(f"{indent}{data}")
-        
-#     return "\n".join(lines)
-
-# def dump_all_sub_agents_as_text(company_doc_id: str, sub_agents_gcs_uris: List[str]) -> str:
-#     """Dumps all sub-agents results stored in GCS URIs into a single JSONL file in GCS.
-
-#     Args:
-#         company_doc_id (str): The Firestore document ID of the company.
-#         sub_agents_gcs_uris (List[str]): List of GCS URIs containing sub-agents results.
-#     """
-#     credentials, project_id = auth.default(
-#         scopes=["https://www.googleapis.com/auth/cloud-platform"])
-#     storage_client = storage.Client(
-#             project=project_id, credentials=credentials) if credentials else storage.Client(project=project_id)
-#     full_text_content = []
-#     for gcs_uri in sub_agents_gcs_uris:
-#         if not gcs_uri.startswith("gs://"):
-#             print(f"Invalid GCS URI: {gcs_uri}, skipping.")
-#             continue
-
-#         filename = gcs_uri.split("/")[-1]
-#         clean_title = filename.replace(".json", "").replace("_result", "").replace("_sub_agent", "").replace("_", " ").upper()
-
-#         try:
-#             path_parts = gcs_uri[5:].split("/", 1)
-#             bucket = storage_client.bucket(path_parts[0])
-#             blob = bucket.blob(path_parts[1])
-#             raw_content = blob.download_as_text()
-
-#             if not raw_content.strip():
-#                 print(f"Warning: File {gcs_uri} is empty. Skipping.")
-#                 continue
-#             json_data = json.loads(raw_content)
-#             readable_text = flatten_json_to_text(json_data)
-
-#             section = f"\n\n{'='*20}\nSOURCE: {clean_title}\n{'='*20}\n\n"
-#             section += readable_text
-#             full_text_content.append(section)
-#         except Exception as e:
-#             print(f"Skipping {filename}: {e}")
-        
-#     merged_text = "".join(full_text_content)
-#     size_in_bytes = len(merged_text.encode('utf-8'))
-#     size_in_mb = size_in_bytes / (1024 * 1024)
-#     print(f"Total Combined Size: {size_in_mb:.2f} MB")
-
-#     if size_in_mb > 9.5:
-#         print("WARNING: File approaches the 10MB limit. Consider splitting into two files.")
-
-#     output_blob_name = f"processed/{company_doc_id}/sub_agents/all_sub_agents_results.txt"
-#     output_bucket = storage_client.bucket(Config.GCS_BUCKET_NAME)
-#     output_blob = output_bucket.blob(output_blob_name)
-#     output_blob.upload_from_string(merged_text, content_type="text/plain")
-#     print(f"Saved single file: gs://{Config.GCS_BUCKET_NAME}/{output_blob_name}")
-#     return f"gs://{Config.GCS_BUCKET_NAME}/{output_blob_name}"
-
-
-SUB_AGENTS_RAG_CORPUS_PREFIX = Config.SUB_AGENTS_RAG_CORPUS_PREFIX
-
-
-def list_corpus_files(corpus_name):
-    """Lists files in the specified corpus."""
-    files = list(rag.list_files(corpus_name=corpus_name))
-    print(f"Total files in corpus: {len(files)}")
-    for file in files:
-        print(f"File: {file.display_name} - {file.name}")
-
-
-async def prepare_rag_corpus(callback_context: CallbackContext) -> None:
+async def fetch_rag_corpus(callback_context: CallbackContext) -> None:
     """Prepares the RAG corpus for the sub-agents."""
     initialize_vertex_ai()
+
+    # Retrieve the company document ID from the callback context state
     current_state = callback_context.state.to_dict()
     company_doc_id = current_state.get("company_doc_id")
+
+    # Validate that company_doc_id is present
     if not company_doc_id:
         raise ValueError(
             "company_doc_id is missing in the callback context state.")
+
+    # Construct the expected corpus display name
     corpus_display_name = f"{SUB_AGENTS_RAG_CORPUS_PREFIX}_{company_doc_id}"
-    # Check if a corpus for this company already exists to avoid duplicates
+
+    # Check if the corpus already exists in Vertex AI
     existing_corpora = rag.list_corpora()
     for existing_corpus in existing_corpora:
         if existing_corpus.display_name == corpus_display_name:
             print(f"Corpus '{corpus_display_name}' already exists.")
+            # Update state with corpus details for downstream tools
             callback_context.state.update({
                 **callback_context.state.to_dict(),
                 "rag_corpus_display_name": existing_corpus.display_name,
                 "rag_corpus_name": existing_corpus.name
             })
             return None
+
+    # If corpus is not found, raise an error (creation is handled elsewhere)
     raise RuntimeError(f"Corpus '{corpus_display_name}' does not exist.")
-
-    # Create a new RAG corpus if it doesn't exist
-    # corpus = rag.create_corpus(
-    #     display_name=corpus_display_name,
-    #     description=f"RAG corpus for company {company_doc_id}",
-    #     embedding_model_config=rag.EmbeddingModelConfig(
-    #         publisher_model="publishers/google/models/text-multilingual-embedding-002"
-    #     ),
-    #     vector_db=rag.RagManagedDb(retrieval_strategy=rag.KNN()),
-    # )
-    # print(f"Created new corpus: {corpus.display_name} with ID: {corpus.name}")
-    # company_ref = firestore_client.collection(COMPANY_COLLECTION_NAME)
-    # doc_ref = company_ref.document(company_doc_id).get().to_dict()
-    # sub_agents_results = doc_ref.get("sub_agents_results")
-    # sub_agents_gcs_uris = [
-    #     gcs_uri for gcs_uri in sub_agents_results.values() if gcs_uri]
-
-    # # Aggregate sub-agent results into a single text file and upload to GCS
-    # text_uri = dump_all_sub_agents_as_text(company_doc_id=company_doc_id, sub_agents_gcs_uris=sub_agents_gcs_uris)
-    # print(
-    #     f"Importing dump to corpus from GCS URI: {text_uri}")
-
-    # # Import the aggregated file into the RAG corpus
-    # rag.import_files(
-    #     corpus_name=corpus.name,
-    #     paths=[text_uri],
-    # )
-
-    # list_corpus_files(corpus_name=corpus.name)
-    # callback_context.state.update({
-    #     **callback_context.state.to_dict(),
-    #     "rag_corpus_display_name": corpus.display_name,
-    #     "rag_corpus_name": corpus.name
-    # })
-    # return None
 
 
 async def before_tool_callback(tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext) -> Optional[Dict]:
@@ -218,16 +88,22 @@ async def before_tool_callback(tool: BaseTool, args: Dict[str, Any], tool_contex
     Raises:
         ValueError: If required context or arguments are missing.
     """
+    # Retrieve context variables
     tool_name = tool.name
     company_doc_id = tool_context.state.get("company_doc_id")
     rag_corpus_name = tool_context.state.get("rag_corpus_name")
+
+    # Validate company_doc_id
     if not company_doc_id:
         raise ValueError(
             "company_doc_id is missing in the tool context state.")
+
+    # Define tool names
     rag_tool_name = "retrieve"
     web_search_tool_name = "search"
     web_extraction_tool_name = "extract"
 
+    # Validate arguments based on the tool being called
     if tool_name == web_search_tool_name:
         query = args.get("query")
         if not query:
@@ -243,6 +119,8 @@ async def before_tool_callback(tool: BaseTool, args: Dict[str, Any], tool_contex
         if not query:
             raise ValueError(
                 "Query parameter is missing for RAG retrieval tool.")
+        
+        # Inject the corpus name into the tool arguments
         corpus_name = rag_corpus_name
         args['corpus_name'] = corpus_name
     else:
@@ -328,7 +206,7 @@ root_agent = LlmAgent(
     """,
     generate_content_config=types.GenerateContentConfig(temperature=0),
     output_key="weightage_adjustment_recommendation_response",
-    before_agent_callback=prepare_rag_corpus,
+    before_agent_callback=fetch_rag_corpus,
     before_tool_callback=before_tool_callback,
     tools=[extract, search, retrieve]
 )
