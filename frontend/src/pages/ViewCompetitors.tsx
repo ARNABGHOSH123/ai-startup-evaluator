@@ -153,7 +153,8 @@ export default function ViewCompetitors({
     <Dialog open={viewCompetitors}>
       <DialogContent className="rounded-xl p-4 space-y-2 max-h-[80vh] overflow-y-auto max-w-3xl">
         {/* Dropdown Title Area */}
-        <div className="flex space-x-8 items-center">
+        <div className="flex space-x-8 items-center justify-between">
+          <span className="flex space-x-8 items-center">
           <h2 className="text-foreground font-semibold">Competitor Analysis</h2>
 
           <Select value={selectedView} onValueChange={setSelectedView}>
@@ -165,7 +166,14 @@ export default function ViewCompetitors({
               <SelectItem value="domain">Domain-wise</SelectItem>
               <SelectItem value="geography">Geography-wise</SelectItem>
             </SelectContent>
-          </Select>
+          </Select></span>
+          <Button
+            variant="outline"
+            className="w-24 justify-center text-foreground"
+            onClick={() => setViewCompetitors(false)}
+          >
+            Close
+          </Button>
         </div>
 
         {/* Cards */}

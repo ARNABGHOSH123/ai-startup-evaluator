@@ -21,10 +21,18 @@ export default function ViewFundings({
         {(fundingsAndFinancialsData?.adoption_and_investment_momentum ||
           fundingsAndFinancialsData?.funding_history_evaluation) && (
           <div className="flex flex-col">
-            <h3 className="text-sm font-semibold text-foreground">
-              Funding History
-            </h3>
-
+            <span className="flex space-x-8 items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground">
+                Funding History
+              </h3>
+              <Button
+                variant="outline"
+                className="w-24 justify-center text-foreground"
+                onClick={() => setViewFunding(false)}
+              >
+                Close
+              </Button>
+            </span>
             {fundingsAndFinancialsData?.funding_history && (
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {fundingsAndFinancialsData?.funding_history}
