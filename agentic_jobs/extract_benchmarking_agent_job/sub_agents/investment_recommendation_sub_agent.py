@@ -5,7 +5,7 @@ from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from config import Config
 from llm_model_config import report_generation_model
-from tools import save_file_content_to_gcs, update_sub_agent_result_to_firestore
+from utils import update_sub_agent_result_to_firestore, save_file_content_to_gcs
 
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
 GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
@@ -14,6 +14,7 @@ FIRESTORE_COMPANY_COLLECTION = Config.FIRESTORE_COMPANY_COLLECTION
 
 async def post_agent_execution(callback_context: CallbackContext) -> None:
     current_state = callback_context.state.to_dict()
+    corpus_name = current_state.get("rag_corpus_name")
     investment_recommendation_result = json.loads(current_state.get(
         "investment_recommendation_sub_agent_result").removeprefix("```json").removesuffix("```").strip())
     investment_recommendation_summary = investment_recommendation_result.get(

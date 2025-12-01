@@ -12,8 +12,9 @@ from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from google.adk.agents.callback_context import CallbackContext
 from llm_model_config import report_generation_model
-from tools import get_gcs_uri_for_file, save_file_content_to_gcs, analyze_doc_from_uri, update_sub_agent_result_to_firestore
+from tools import get_gcs_uri_for_file, analyze_doc_from_uri
 from config import Config
+from utils import prepare_rag_corpus, update_data_to_corpus, update_sub_agent_result_to_firestore, save_file_content_to_gcs
 
 GOOGLE_CLOUD_PROJECT = Config.GOOGLE_CLOUD_PROJECT
 GOOGLE_CLOUD_REGION = Config.GOOGLE_CLOUD_REGION
@@ -25,6 +26,7 @@ FIRESTORE_COMPANY_COLLECTION = Config.FIRESTORE_COMPANY_COLLECTION
 async def post_agent_execution(callback_context: CallbackContext) -> None:
     try:
         current_state = callback_context.state.to_dict()
+        corpus_name = current_state.get("rag_corpus_name")
         extraction_pitch_deck_result = json.loads(current_state.get(
             "extraction_pitch_deck_result").removeprefix("```json").removesuffix("```").strip())
         extracted_filename = extraction_pitch_deck_result.get(
@@ -43,6 +45,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> None:
                                                  )
         update_sub_agent_result_to_firestore(collection_name=FIRESTORE_COMPANY_COLLECTION, document_id=firestore_doc_id,
                                              sub_agent_field="extraction_pitch_deck_sub_agent_gcs_uri", gcs_uri=gcs_uri)
+        update_data_to_corpus(corpus_name=corpus_name, document_gcs_paths=[gcs_uri])
         print(
             f"Extraction Pitch Deck Agent result saved to GCS URI: {gcs_uri}")
         return None
@@ -72,12 +75,11 @@ extraction_pitch_deck_agent = LlmAgent(
     You have access to ONLY the following TOOLS:
         - 'get_gcs_uri_for_file' : To get the GCS URI of the pitch deck {{file_extension}} file.
         - 'analyze_doc_from_uri' : To analyze the pitch deck {{file_extension}} from the GCS URI and extract structured JSON information.
-        - 'save_file_content_to_gcs' : To save the extracted JSON content to a file in GCS.
     
     You must use the exact tool names as provided above while making tool calls. Dont make up any tool name of your own.
 
     CRITICAL:
-        DONT INCLUDE CHARACTERS LIKE WHITESPACE, QUOTES, OR PUNCTUATION, NEW LINE CHARACTERS ETC. IN AND AROUND THE FILENAME WHILE CALLING THE 'save_file_content_to_gcs' TOOL
+        DONT INCLUDE CHARACTERS LIKE WHITESPACE, QUOTES, OR PUNCTUATION, NEW LINE CHARACTERS ETC. IN AND AROUND THE FILENAME.
 
     
     WORKFLOW (MUST BE IMPLEMENTED SERIALLY IN ORDER):
@@ -104,6 +106,7 @@ extraction_pitch_deck_agent = LlmAgent(
     """,
     output_key="extraction_pitch_deck_result",
     after_agent_callback=post_agent_execution,
+    before_agent_callback=prepare_rag_corpus,
     generate_content_config=types.GenerateContentConfig(temperature=0),
     tools=[get_gcs_uri_for_file, analyze_doc_from_uri],
 )

@@ -5,7 +5,8 @@ from config import Config
 from math import ceil
 from llm_model_config import base_model
 from .visualisation_focus_points import visualisation_focus_points
-from tools import tavily_search, extract_webpage_text, save_file_content_to_gcs, get_all_chart_type_descriptions, get_chart_data
+from tools import tavily_search, extract_webpage_text, get_all_chart_type_descriptions, get_chart_data
+from utils import save_file_content_to_gcs
 
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
 GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER

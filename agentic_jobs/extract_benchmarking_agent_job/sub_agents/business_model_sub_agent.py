@@ -5,7 +5,7 @@ from google.genai import types
 from llm_model_config import report_generation_model
 from tools import extract, search
 from typing import Optional
-from tools import save_file_content_to_gcs, update_sub_agent_result_to_firestore
+from utils import update_sub_agent_result_to_firestore, save_file_content_to_gcs, update_data_to_corpus
 from config import Config
 
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
@@ -15,6 +15,7 @@ FIRESTORE_COMPANY_COLLECTION = Config.FIRESTORE_COMPANY_COLLECTION
 async def post_agent_execution(callback_context: CallbackContext) -> Optional[types.Content]:
     agent_name = callback_context.agent_name
     current_state = callback_context.state.to_dict()
+    corpus_name = current_state.get("rag_corpus_name")
     company_doc_id = current_state.get("firestore_doc_id")
     business_model_sub_agent_result = json.loads(current_state.get(
         "business_model_sub_agent_result").removeprefix("```json").removesuffix("```").strip())
@@ -29,6 +30,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> Optional[ty
                                              )
     update_sub_agent_result_to_firestore(collection_name=FIRESTORE_COMPANY_COLLECTION, document_id=company_doc_id,
                                          sub_agent_field="business_model_sub_agent_gcs_uri", gcs_uri=gcs_uri)
+    update_data_to_corpus(corpus_name=corpus_name, document_gcs_paths=[gcs_uri])
     print(f"Business Model Sub Agent result saved to GCS URI: {gcs_uri}")
 
     return None
