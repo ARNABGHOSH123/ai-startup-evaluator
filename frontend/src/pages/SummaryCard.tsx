@@ -6,14 +6,7 @@ import { Link } from "react-router-dom";
 import AIGeneratedDealNote from "./AIGeneratedDealNote";
 
 export default function SummaryCard({ company, state }: { company: any, state: any }) {
-  const bigString = company?.extract_benchmark_agent_response;
   const [openDealNote, setOpenDealNote] = useState(false);
-
-  // Parent company remains same
-  const parentCompanyRegex =
-    /\*{0,2}Parent Company\*{0,2}:\s*([^(]+?)(?=\s*\()/i;
-  const matchParent = bigString?.match(parentCompanyRegex);
-  const parent_company = matchParent ? matchParent[1].trim() : "";
 
   const handleNotifyInvestor = async () => {
     try {
@@ -96,11 +89,11 @@ export default function SummaryCard({ company, state }: { company: any, state: a
   // ---------- Component Layout ----------
   return (
     <>
-      <AIGeneratedDealNote
+      {/* <AIGeneratedDealNote
         openDealNote={openDealNote}
         setOpenDealNote={setOpenDealNote}
         companyId={company?.doc_id}
-      />
+      /> */}
       <Card className="bg-background shadow-sm rounded-2xl border border-border hover:border-primary pt-5">
         <CardContent className="flex flex-row space-x-4">
           <div className="grid grid-cols-1 gap-y-4 text-sm md:w-3/4">
@@ -193,7 +186,7 @@ export default function SummaryCard({ company, state }: { company: any, state: a
               </Button>
               <Button
                 className="bg-background text-primary hover:border-primary hover:border justify-center px-6"
-                onClick={() => setOpenDealNote(true)}
+                // onClick={() => setOpenDealNote(true)}
               >
                 <img
                   src="/assets/gemini_symbol.png"

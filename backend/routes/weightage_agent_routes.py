@@ -38,7 +38,7 @@ async def fetch_weightage_agent_recommendations(req: WeightageAgentRequest = ...
         async for event in remote_app.async_stream_query(
             user_id=company_doc_id,
             session_id=remote_session["id"],
-            message=message,
+            message=message
         ):
             event_dict = dict(event)
             if 'actions' in event_dict and 'state_delta' in event_dict['actions']:

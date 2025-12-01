@@ -17,10 +17,18 @@ export default function ViewMarketAnalysis({
       <DialogContent className="rounded-xl p-4 space-y-2 max-h-[80vh] overflow-y-auto max-w-3xl">
         {industryTrendsData?.CAGR_analysis && (
           <div className="flex flex-col">
-            <h3 className="text-sm font-semibold text-foreground">
-              CAGR Analysis
-            </h3>
-
+            <span className="flex space-x-8 items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground">
+                CAGR Analysis
+              </h3>
+              <Button
+                variant="outline"
+                className="w-24 justify-center text-foreground -mt-1"
+                onClick={() => setViewData(false)}
+              >
+                Close
+              </Button>
+            </span>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {industryTrendsData?.CAGR_analysis}
             </p>
