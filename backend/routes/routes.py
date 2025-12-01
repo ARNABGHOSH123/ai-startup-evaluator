@@ -1,18 +1,12 @@
 from google.cloud import storage, firestore
 from google import auth
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pathlib import Path as PathlibPath
 import json
-import os
-import requests
 from google.auth.transport.requests import Request
 from fastapi import HTTPException, Path as FastAPIPath
 from datetime import timedelta
 from pydantic import BaseModel
 from config import Config
 from app import app
-from utils import read_text_from_gcs, get_charts_for_a_company, get_charts_for_a_company_async
 from firestore_models import CompanyDoc, FounderDoc, InvestorDoc
 from google.cloud import firestore
 from routes.trigger_extract_benchmark_job import trigger_job_with_filename

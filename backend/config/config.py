@@ -25,6 +25,7 @@ class Config:
     PRODUCTION = os.getenv("PRODUCTION", "False").lower() == "true"
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     GOOGLE_CLOUD_REGION = os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
+    RAG_CORPUS_REGION = os.getenv("RAG_CORPUS_REGION", "europe-west4")
     GCP_PITCH_DECK_INPUT_FOLDER = os.getenv(
         "GCP_PITCH_DECK_INPUT_FOLDER", "uploads")
     GCP_PITCH_DECK_OUTPUT_FOLDER = os.getenv(
@@ -41,4 +42,5 @@ class Config:
         "FIRESTORE_FOUNDER_COLLECTION", "founders")
     FIRESTORE_INVESTOR_COLLECTION = os.getenv(
         "FIRESTORE_INVESTOR_COLLECTION", "investors")
+    WEIGHTAGE_AGENT_ENGINE_RESOURCE_NAME = os.getenv("WEIGHTAGE_AGENT_ENGINE_RESOURCE_NAME")
 

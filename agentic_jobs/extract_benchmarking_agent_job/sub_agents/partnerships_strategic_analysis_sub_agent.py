@@ -5,7 +5,7 @@ from google.adk.agents.callback_context import CallbackContext
 from llm_model_config import report_generation_model
 from tools import extract, search
 from typing import Optional
-from tools import save_file_content_to_gcs, update_sub_agent_result_to_firestore
+from utils import update_sub_agent_result_to_firestore, save_file_content_to_gcs, update_data_to_corpus
 from config import Config
 
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
@@ -15,6 +15,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> Optional[ty
     agent_name = callback_context.agent_name
     current_state = callback_context.state.to_dict()
     company_doc_id = current_state.get("firestore_doc_id")
+    corpus_name = current_state.get("rag_corpus_name")
     partnerships_and_strategic_analysis_sub_agent_result = json.loads(current_state.get(
         "partnerships_and_strategic_analysis_sub_agent_result").removeprefix("```json").removesuffix("```").strip())
     if not partnerships_and_strategic_analysis_sub_agent_result or not company_doc_id:
@@ -28,6 +29,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> Optional[ty
                                        )
     update_sub_agent_result_to_firestore(collection_name=FIRESTORE_COMPANY_COLLECTION, document_id=company_doc_id,
                                          sub_agent_field="partnerships_and_strategic_analysis_sub_agent_gcs_uri", gcs_uri=gcs_uri)
+    update_data_to_corpus(corpus_name=corpus_name, document_gcs_paths=[gcs_uri])
     print(f"Partnerships and Strategic Analysis Sub Agent result saved to GCS URI: {gcs_uri}")
 
     return None
@@ -53,8 +55,7 @@ partnerships_and_strategic_analysis_sub_agent = LlmAgent(
         extract(url="https://www.example.com")
     
     CRITICAL:
-    - YOU MUST USE THE EXACT TOOL NAMES AS PROVIDED ABOVE WHILE MAKING TOOL CALLS. DONT MAKE UP ANY TOOL NAME OF YOUR OWN.
-    - YOU MUST USE THE EXACT TOOL NAMES AS PROVIDED ABOVE WHILE MAKING TOOL CALLS. DO NOT INVENT ANY TOOL NAME OF YOUR OWN. YOU MUST DOUBLE CHECK THE TOOL NAME WITH THE ONES PROVIDED ABOVE BEFORE CALLING A TOOL. For example while requesting for search use 'search' and not any other names like 'ta-vily_search' or 'tavilyWebSearch' or 'tav_search' or 'tav-search', etc.
+   - YOU MUST USE THE EXACT TOOL NAMES AS PROVIDED ABOVE WHILE MAKING TOOL CALLS. DO NOT INVENT ANY TOOL NAME OF YOUR OWN. YOU MUST DOUBLE CHECK THE TOOL NAME WITH THE ONES PROVIDED ABOVE BEFORE CALLING A TOOL.
     - DATA MUST NOT BE MADE UP AND MUST BE REAL AND PROPERLY GROUNDED AND STICK TO THE FACTS. ONLY USE THE INFORMATION FETCHED FROM THE TOOLS AND THE PITCH DECK.
     - IF DATA FOR A FIELD IS NOT AVAILABLE, LEAVE IT BLANK AS "" (Empty String) or [] (Empty Array) following the structure of field as discussed in the format below in THE ** OUTPUT ** section. DO NOT MAKE UP DATA ON YOUR OWN.
 

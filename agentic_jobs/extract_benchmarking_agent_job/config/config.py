@@ -41,7 +41,7 @@ class Config:
     APP_NAME = os.getenv("APP_NAME")
     GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
-    GOOGLE_CLOUD_REGION = os.getenv("GOOGLE_CLOUD_REGION", "asia-south1")
+    GOOGLE_CLOUD_REGION = os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
     REPORT_GENERATION_AGENT_MODEL = os.getenv("REPORT_GENERATION_AGENT_MODEL", "gemini-2.5-pro")
     FAST_AGENT_MODEL = os.getenv("FAST_AGENT_MODEL", "gemini-2.5-flash")
     GCP_PITCH_DECK_INPUT_FOLDER = os.getenv(
@@ -58,3 +58,5 @@ class Config:
     FIRESTORE_DATABASE = os.getenv("FIRESTORE_DATABASE")
     FIRESTORE_COMPANY_COLLECTION = os.getenv(
         "FIRESTORE_COMPANY_COLLECTION", "companies_applied")
+    SUB_AGENTS_RAG_CORPUS_PREFIX = os.getenv(
+        "SUB_AGENTS_RAG_CORPUS_PREFIX", "sub_agents_rag_corpus")
