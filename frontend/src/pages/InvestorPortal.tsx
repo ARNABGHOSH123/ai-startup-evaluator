@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   Filter,
   HandCoins,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -81,32 +82,49 @@ function CompanyCard({ company, onCompanyClick }: CompanyCardProps) {
         data-testid={`card-company-${company.doc_id}`}
       >
         <CardHeader className="pb-4">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-primary-foreground to-primary-foreground/80 rounded-lg flex items-center justify-center">
               <span className="text-primary font-bold text-lg">
                 {getInitials(company.company_name)}
               </span>
             </div>
+            <h3
+              className="text-2xl font-semibold text-foreground mb-2"
+              data-testid={`text-company-name-${company.doc_id}`}
+            >
+              {company.company_name}
+            </h3>
           </div>
-          <h3
-            className="text-lg font-semibold text-foreground mb-2"
-            data-testid={`text-company-name-${company.doc_id}`}
-          >
-            {company.company_name}
-          </h3>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="space-y-3">
-            <div className="flex items-center space-x-2">
-              <User className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center text-sm justify-between space-x-2">
+              <span className="text-neutral">Stage</span>
               <span
-                className="text-sm text-foreground"
+                className="text-xs hover:cursor-pointer text-primary -mt-2 mr-2 font-semibold bg-primary-foreground rounded-2xl p-2 px-3"
+                data-testid={`text-founder-name-${company.doc_id}`}
+              >
+                {company.stage_of_development}
+              </span>
+            </div>
+            <div className="flex items-center text-sm justify-between space-x-2">
+              <span className="text-neutral">Founder</span>
+              <span
+                className="text-foreground"
                 data-testid={`text-founder-name-${company.doc_id}`}
               >
                 {company.founder_name}
               </span>
             </div>
-
+            <div className="flex items-center text-sm justify-between space-x-2">
+              <span className="text-neutral"><Mail/></span>
+              <span
+                className="text-foreground"
+                data-testid={`text-founder-name-${company.doc_id}`}
+              >
+                {company.company_email}
+              </span>
+            </div>
             <div className="flex items-center justify-between pt-3 border-t border-border">
               <Button
                 variant="ghost"
@@ -301,8 +319,11 @@ export default function InvestorPortal() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="grid md:grid-cols-4 md:gap-x-6 gap-4">
-          {3 > 0 && (
+        <div className="grid md:grid-cols-3 md:gap-x-6 gap-4">
+          {
+            <div></div>
+          }
+          {companies?.length > 0 && (
             <div className="flex flex-row justify-between border border-border rounded-lg text-foreground hover:border-primary p-4">
               <span className="flex flex-col">
                 <span className="text-neutral">Active Startups</span>
@@ -311,7 +332,7 @@ export default function InvestorPortal() {
               <Building2 className="w-16 bg-gradient-to-br from-primary-foreground to-primary-foreground/80 p-3 rounded-2xl h-16 text-primary" />
             </div>
           )}
-          {3 > 0 && (
+          {/*3 > 0 && (
             <div className="flex flex-row justify-between border border-border rounded-lg text-foreground hover:border-primary p-4">
               <span className="flex flex-col">
                 <span className="text-gray-400">Total Valuation</span>
@@ -319,7 +340,7 @@ export default function InvestorPortal() {
               </span>
               <HandCoins className="w-16 bg-gradient-to-br from-primary-foreground to-primary-foreground/80 p-3 rounded-2xl h-16 text-primary" />
             </div>
-          )}
+          )*/}
         </div>
         <div className="mb-8">
           <div className="mt-6 flex flex-col md:flex-row items-center gap-4">

@@ -34,10 +34,11 @@ async def fetch_weightage_agent_recommendations(req: WeightageAgentRequest = ...
         remote_session = await remote_app.async_create_session(user_id=company_doc_id, state=req.model_dump())
 
         final_response = None
+        message = f"""Generate AI recommendations for the startup from the input below:- \n {req.model_dump_json()}"""
         async for event in remote_app.async_stream_query(
             user_id=company_doc_id,
             session_id=remote_session["id"],
-            message="Generate AI recommendations for the startup",
+            message=message
         ):
             event_dict = dict(event)
             if 'actions' in event_dict and 'state_delta' in event_dict['actions']:
