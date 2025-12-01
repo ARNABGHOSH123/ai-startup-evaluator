@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { PhoneCallIcon, Star } from "lucide-react";
 import { TabsContent } from "@/components/ui/tabs";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 interface Clarification {
   question: string;
@@ -9,46 +12,10 @@ interface Clarification {
 }
 
 export default function InvestmentRecommendation({ company }: any) {
-  const bigString = company?.extract_benchmark_agent_response || "";
-
-  // Normalize escape sequences like \n → actual newlines
-  const normalizedText = bigString.replace(/\\n/g, "\n");
-
-  function extractBetweenMarkers(
-    text: string,
-    start: string,
-    end: string
-  ): string {
-    const startIndex = text.indexOf(start);
-    if (startIndex === -1) return "";
-
-    const endIndex = text.indexOf(end, startIndex + start.length);
-    const rawSection =
-      endIndex === -1
-        ? text.slice(startIndex + start.length)
-        : text.slice(startIndex + start.length, endIndex);
-
-    // Clean markdown characters like **, *, _, etc.
-    const cleaned = rawSection
-      .replace(/\*/g, "") // remove all asterisks
-      .replace(/_/g, "") // remove underscores if any
-      .replace(/\s+/g, " ") // normalize multiple spaces
-      .replace(/\#/g, "") // remove all asterisks
-      .trim();
-
-    return cleaned;
-  }
-
   const [clarifications, setClarifications] = useState<Clarification[]>([]);
   const [loadingClarifications, setLoadingClarifications] = useState(false);
   const [errorClarifications, setErrorClarifications] = useState<string | null>(
     null
-  );
-
-  const investmentMemoData = extractBetweenMarkers(
-    normalizedText,
-    "*Executive Summary",
-    "#"
   );
 
   const params = useParams();
@@ -92,29 +59,11 @@ export default function InvestmentRecommendation({ company }: any) {
   }
 
   interface InvestmentOverviewData {
-    intro: string;
     sections: TextBlock[];
   }
 
   const investmentData: InvestmentOverviewData = {
-    intro:
-      "Sia presents a high-risk, high-reward investment opportunity backed by a strong technical founding team and early traction with enterprise clients.",
     sections: [
-      {
-        type: "summary",
-        title: "Summary",
-        color: "green",
-        paragraphs: [`${investmentMemoData}`],
-      },
-      // {
-      //   type: "verdict",
-      //   title: "Investment Verdict",
-      //   color: "blue",
-      //   icon: <TrendingUp className="w-5 h-5 text-blue-600" />,
-      //   paragraphs: [
-      //     "Despite high risks typical of the seed stage, Sia’s strong team, IP ownership, and early enterprise traction make it an attractive investment candidate. With the right execution and focus on enterprise sales scaling, it holds potential for substantial returns.",
-      //   ],
-      // },
       !errorClarifications && clarifications.length > 0
         ? {
             type: "summary",
@@ -140,55 +89,6 @@ export default function InvestmentRecommendation({ company }: any) {
     ].filter(Boolean) as TextBlock[],
   };
 
-  /* --------------------------- Rating Data --------------------------- */
-  const [data, setData] = useState([
-    {
-      category: "Market Potential",
-      rating: 3,
-      observation: "Large TAM with moderate competition",
-    },
-    {
-      category: "Product Strength",
-      rating: 4,
-      observation: "Strong IP and differentiation",
-    },
-    {
-      category: "Team Capability",
-      rating: 2,
-      observation: "Good core team but limited scaling experience",
-    },
-    {
-      category: "Financial Stability",
-      rating: 3,
-      observation: "Reasonable runway, early-stage revenue",
-    },
-    {
-      category: "Risk Profile",
-      rating: 4,
-      observation: "Moderate risk due to early-stage market bets",
-    },
-  ]);
-
-  const colorMap: Record<string, string> = {
-    green: "border-green-500 text-green-700",
-    blue: "border-blue-500 text-blue-700",
-    red: "border-red-500 text-red-700",
-    purple: "border-purple-500 text-purple-700",
-  };
-
-  /* --------------------------- Computations --------------------------- */
-  const averageRating = useMemo(() => {
-    const total = data.reduce((sum, item) => sum + item.rating, 0);
-    return total / data.length;
-  }, [data]);
-
-  const progressPercentage = (averageRating / 5) * 100;
-
-  const handleRatingChange = (index: number, rating: number) => {
-    setData((prevData) =>
-      prevData.map((item, i) => (i === index ? { ...item, rating } : item))
-    );
-  };
   const dynamicSections = investmentData.sections.map((sec) => {
     if (sec.title === "Smart Call Insights") {
       return {
@@ -212,129 +112,81 @@ export default function InvestmentRecommendation({ company }: any) {
     return sec;
   });
 
-  /* --------------------------- JSX --------------------------- */
   return (
     <TabsContent value="investmentMemo">
-      {/* Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* LEFT SIDE */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Summary + Verdict Sections */}
-          {dynamicSections
-            .filter((sec) => sec.title !== "Smart Call Insights")
-            .map((sec, idx) => (
-              <div
-                key={idx}
-                className={`bg-white border-l-4 rounded-2xl shadow p-6 ${
-                  colorMap[sec.color]
-                }`}
-              >
-                <h3
-                  className={`text-lg font-semibold mb-3 flex items-center gap-2 ${
-                    colorMap[sec.color].split(" ")[1]
-                  }`}
-                >
-                  {sec.icon && sec.icon}
-                  {sec.title}
-                </h3>
-                {sec.paragraphs.map((text, i) => (
-                  <p
-                    key={i}
-                    className="text-gray-700 text-sm leading-normal mb-4 last:mb-0"
-                  >
-                    {text}
+      <div className="space-y-10">
+        {/* ------------------- Investment Summary (Horizontal Band) ------------------- */}
+        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+          <h2 className="text-xl font-semibold text-indigo-700 mb-3 flex items-center gap-2">
+            <Star className="w-5 h-5 text-indigo-600" />
+            Investment Summary
+          </h2>
+
+          <article className="text-sm text-gray-700 leading-relaxed">
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+              {
+                company?.investment_recommendation?.investment_recommendation
+                  ?.investment_recommendation_summary
+              }
+            </ReactMarkdown>
+          </article>
+        </div>
+
+        {/* ------------------- AI Call Insights (Timeline Layout) ------------------- */}
+        {dynamicSections
+          .filter((sec) => sec.title === "Smart Call Insights")
+          .map((sec, idx) => (
+            <div key={idx}>
+              <h2 className="text-xl font-semibold text-purple-700 flex items-center gap-2 mb-4">
+                <PhoneCallIcon className="w-5 h-5 text-purple-600" />
+                Smart Call Insights
+              </h2>
+
+              {/* Timeline container */}
+              <div className="relative border-l-2 border-purple-300 ml-4 pl-6 space-y-8">
+                {loadingClarifications && (
+                  <p className="text-sm text-gray-600">
+                    Loading voice agent clarifications...
                   </p>
-                ))}
-              </div>
-            ))}
+                )}
 
-          {/* AI CALL INSIGHTS SECTION BELOW */}
-          {dynamicSections
-            .filter((sec) => sec.title === "Smart Call Insights")
-            .map((sec, idx) => (
-              <div
-                key={idx}
-                className={`bg-white border-l-4 rounded-2xl shadow p-6 ${
-                  colorMap[sec.color]
-                }`}
-              >
-                <h3
-                  className={`text-lg font-semibold mb-3 flex items-center gap-2 ${
-                    colorMap[sec.color].split(" ")[1]
-                  }`}
-                >
-                  {sec.icon && sec.icon}
-                  {sec.title}
-                </h3>
-                {sec.paragraphs.map((text, i) => (
-                  <div
-                    key={i}
-                    className="text-gray-700 text-sm leading-normal mb-4 last:mb-0"
-                  >
-                    {text}
-                  </div>
-                ))}
-              </div>
-            ))}
-        </div>
+                {errorClarifications && (
+                  <p className="text-sm text-red-600">{errorClarifications}</p>
+                )}
 
-        {/* RIGHT SIDE — WEIGHTAGE + RISK-REWARD */}
-        <div className="col-span-1 space-y-6">
-          {/* Weightage (Key Evaluation Metrics) */}
-          <div className="bg-white border-l-4 border-yellow-400 rounded-2xl shadow p-6">
-            <h3 className="text-lg font-semibold text-yellow-700 mb-4">
-              Key Evaluation Metrics
-            </h3>
+                {!loadingClarifications &&
+                  !errorClarifications &&
+                  clarifications?.map((item, i) => (
+                    <div
+                      key={i}
+                      className="relative group transition-all duration-300"
+                    >
+                      {/* Dot */}
+                      <div className="absolute -left-9 w-4 h-4 bg-purple-500 rounded-full border-4 border-white shadow"></div>
 
-            <div className="space-y-4">
-              {data.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col border-b border-gray-100 pb-3 last:border-b-0"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-700">
-                      {item.category}
-                    </span>
-                    <div className="flex cursor-pointer">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          onClick={() => handleRatingChange(index, i + 1)}
-                          className={`w-5 h-5 transition-all ${
-                            i < item.rating
-                              ? "text-yellow-500 fill-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
+                      {/* Timeline card */}
+                      <div className="bg-white border border-purple-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
+                        <p className="font-semibold text-purple-700 text-sm mb-1">
+                          Q{i + 1}. {item.question}
+                        </p>
+
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {item.response}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {item.observation}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+                  ))}
 
-          {/* 📊 Risk-Reward Indicator */}
-          <div className="bg-white rounded-2xl shadow p-6 border-l-4 border-blue-400">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">
-              Risk-Reward Profile
-            </h4>
-            <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
-              <div
-                className="h-3 rounded-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-                title="Dynamic Risk-Reward Indicator"
-              />
+                {clarifications.length === 0 &&
+                  !loadingClarifications &&
+                  !errorClarifications && (
+                    <p className="text-sm text-gray-600">
+                      No clarifications available for this company.
+                    </p>
+                  )}
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1 text-right">
-              Low → High Risk & Reward ({averageRating.toFixed(1)} / 5)
-            </p>
-          </div>
-        </div>
+          ))}
       </div>
     </TabsContent>
   );
