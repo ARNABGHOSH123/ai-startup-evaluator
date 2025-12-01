@@ -15,6 +15,7 @@ FIRESTORE_COMPANY_COLLECTION = Config.FIRESTORE_COMPANY_COLLECTION
 async def post_agent_execution(callback_context: CallbackContext) -> Optional[types.Content]:
     agent_name = callback_context.agent_name
     current_state = callback_context.state.to_dict()
+    print("State after industry trends sub agent:", current_state)
     company_doc_id = current_state.get("firestore_doc_id")
     corpus_name = current_state.get("rag_corpus_name")
     industry_trends_sub_agent_result = json.loads(current_state.get(
