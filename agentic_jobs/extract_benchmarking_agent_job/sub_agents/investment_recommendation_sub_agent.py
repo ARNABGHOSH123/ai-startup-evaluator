@@ -5,7 +5,7 @@ from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from config import Config
 from llm_model_config import report_generation_model
-from utils import update_sub_agent_result_to_firestore, save_file_content_to_gcs
+from utils import update_sub_agent_result_to_firestore, save_file_content_to_gcs, update_data_to_corpus
 
 GCS_BUCKET_NAME = Config.GCS_BUCKET_NAME
 GCP_PITCH_DECK_OUTPUT_FOLDER = Config.GCP_PITCH_DECK_OUTPUT_FOLDER
@@ -31,6 +31,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> None:
                                        )
     update_sub_agent_result_to_firestore(collection_name=FIRESTORE_COMPANY_COLLECTION, document_id=firestore_doc_id,
                                          sub_agent_field="investment_recommendation_sub_agent_gcs_uri", gcs_uri=gcs_uri)
+    update_data_to_corpus(corpus_name=corpus_name, document_gcs_paths=[gcs_uri])
     print(
         f"Investment Recommendation Sub Agent result saved to GCS URI: {gcs_uri}")
     return None

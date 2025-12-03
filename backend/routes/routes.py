@@ -276,7 +276,7 @@ async def get_companies_list():
             data = doc.to_dict() or {}
             created_at = data.get("created_at")
             investment_recommendation_sub_agent_gcs_uri = data.get("sub_agents_results", {}).get("investment_recommendation_sub_agent_gcs_uri", "")
-            if investment_recommendation_sub_agent_gcs_uri is None:  # Only show the companies which have benchmark completed
+            if investment_recommendation_sub_agent_gcs_uri == "":  # Only show the companies which have benchmark completed
                 continue
             # Convert Firestore timestamp to ISO string if possible
             if created_at is not None and hasattr(created_at, "isoformat"):

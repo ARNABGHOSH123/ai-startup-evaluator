@@ -40,6 +40,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> Optional[ty
 competitor_analysis_sub_agent = LlmAgent(
     name="competitor_analysis_sub_agent",
     model=report_generation_model,
+    include_contents='none',
     description="An agent that generates the competitor analysis of the startup company",
     instruction=f"""
     You are an expert in researching and generating detailed competitor analysis of startup companies based on their pitch decks and official websites.
@@ -198,9 +199,12 @@ competitor_analysis_sub_agent = LlmAgent(
     CRITICAL:
     - ENSURE THAT ALL THE INFORMATION PROVIDED IN THE OUTPUT IS REAL AND PROPERLY GROUNDED BASED ON THE DATA FETCHED FROM THE TOOLS AND THE PITCH DECK. DO NOT MAKE UP ANY DATA.
     - EXAMPLE OUTPUT SHOWS SHORT TEXTS AND IS ONLY FOR YOUR REFERENCE. IN REAL OUTPUT, PROVIDE DETAILED INSIGHTS AND ANALYSIS UNDER EACH KEY AS PER THE TASKS MENTIONED ABOVE.
+    - WHILE CREATING DATA FOR "geography_wise_competitor_analysis" field, YOU MUST NOT PUT COMPANIES WHOSE HEADQUARTERS ARE NOT IN THE SAME COUNTRY AS THE STARTUP COMPANY. IF THE STARTUP COMPANY IS FROM INDIA, ONLY COMPANIES WHOSE HEADQUARTERS ARE IN INDIA SHOULD BE LISTED UNDER THIS FIELD.
     
     YOU MUST RETURN THE JSON OUTPUT AS SPECIFIED ABOVE AND NOTHING ELSE.
 
+    CRITICAL INSTRUCTION FOR FINAL OUTPUT:
+    When you have gathered all necessary information and are ready to generate the final JSON output, DO NOT call any tool. Simply output the JSON text as your final response to the user.
     """,
     output_key="competitor_analysis_sub_agent_result",
     after_agent_callback=post_agent_execution,

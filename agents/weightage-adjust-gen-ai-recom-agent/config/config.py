@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from google.cloud import secretmanager
-import google.auth
 
 if os.path.exists(".env.development") and not os.getenv("PRODUCTION"):
     load_dotenv(dotenv_path=os.path.join(

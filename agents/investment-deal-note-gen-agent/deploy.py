@@ -3,9 +3,7 @@ from vertexai import agent_engines
 from agent import root_agent
 from config import Config
 
-# TODO: Fill in these values for your project
 PROJECT_ID = Config.GCP_CLOUD_PROJECT
-# For other options, see https://cloud.google.com/vertex-ai/generative-ai/docs/agent-engine/overview#supported-regions
 LOCATION = Config.GCP_CLOUD_REGION
 STAGING_BUCKET = Config.DEPLOYMENT_STAGING_BUCKET
 
@@ -40,9 +38,9 @@ remote_app = agent_engines.create(
         "PyMuPDF",
         "uvicorn[standard]"
     ],
-    extra_packages=["assets", "tools", "llm_model_config", "agent", "utils", "config"],
-    display_name="weightage-adjust-gen-ai-recom-agent",
-    description="An agent that accepts investor weightage adjustments and generates updated startup recommendations based on Gen AI analysis.",
+    extra_packages=["assets", "tools", "llm_model_config", "sub_agents", "agent", "utils", "config"],
+    display_name="Investment Deal Note Gen Agent",
+    description="An agent that generates investment deal notes for startups based on investor preferences and benchmarking analysis using Gen AI.",
     env_vars={
         "GCS_BUCKET_NAME": Config.GCS_BUCKET_NAME,
         "GCP_CLOUD_PROJECT": Config.GCP_CLOUD_PROJECT,
@@ -58,8 +56,7 @@ remote_app = agent_engines.create(
     },
 )
 
-# Replace <RESOURCE_NAME> with your deployed agent resource name
-# remote_app = agent_engines.get("<RESOURCE_NAME>")
+# remote_app = agent_engines.get("<RESOURCE_NAME>")  # Replace <RESOURCE_NAME> with your deployed agent resource name
 
 # remote_app.update(env_vars={
 #     "GCS_BUCKET_NAME": Config.GCS_BUCKET_NAME,
@@ -67,13 +64,14 @@ remote_app = agent_engines.create(
 #     "GCP_CLOUD_REGION": Config.GCP_CLOUD_REGION,
 #     "AGENT_MODEL": Config.AGENT_MODEL,
 #     "GCP_PITCH_DECK_OUTPUT_FOLDER": Config.GCP_PITCH_DECK_OUTPUT_FOLDER,
+#     # "GOOGLE_API_KEY": Config.GOOGLE_API_KEY,
 #     "GOOGLE_GENAI_USE_VERTEXAI": "True",
 #     "TAVILY_API_KEY": Config.TAVILY_API_KEY,
 #     "SUB_AGENTS_RAG_CORPUS_PREFIX": Config.SUB_AGENTS_RAG_CORPUS_PREFIX,
 #     "COMPANY_COLLECTION_NAME": Config.COMPANY_COLLECTION_NAME,
 #     "FIRESTORE_DATABASE": Config.FIRESTORE_DATABASE,
 #     "DEPLOYMENT_STAGING_BUCKET": Config.DEPLOYMENT_STAGING_BUCKET,
-# }, extra_packages=["assets", "tools", "llm_model_config", "agent", "utils", "config"], display_name="Weightage Adjust Gen AI Recom Agent")
+# })
 
 # print(f"Deployment finished!")
 # print(f"Resource Name: {remote_app.resource_name}")

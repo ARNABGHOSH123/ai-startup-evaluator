@@ -13,7 +13,6 @@ async def retrieve(query: str, corpus_name: str, top_k: int = 10, vector_distanc
     Returns:
         List[str]: The retrieved contexts as a list of strings.
     """
-    print("Corpus Name:", corpus_name)
     response = rag.retrieval_query(
         text=query,
         rag_resources=[

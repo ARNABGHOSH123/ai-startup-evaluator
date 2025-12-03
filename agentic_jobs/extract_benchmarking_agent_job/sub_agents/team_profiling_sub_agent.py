@@ -38,6 +38,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> Optional[ty
 team_profiling_sub_agent = LlmAgent(
     name="team_profiling_sub_agent",
     model=report_generation_model,
+    include_contents='none',
     description="An agent that generates the detailed team profiling of the startup company",
     instruction=f"""
     You are an expert in researching and generating detailed team profiling of startup companies based on their pitch decks and official websites.
@@ -167,6 +168,9 @@ team_profiling_sub_agent = LlmAgent(
     - EXAMPLE OUTPUT SHOWS SHORT TEXTS AND IS ONLY FOR YOUR REFERENCE. IN REAL OUTPUT, PROVIDE DETAILED INSIGHTS AND ANALYSIS UNDER EACH KEY AS PER THE TASKS MENTIONED ABOVE.
     
     YOU MUST RETURN THE JSON OUTPUT AS SPECIFIED ABOVE AND NOTHING ELSE.
+
+    CRITICAL INSTRUCTION FOR FINAL OUTPUT:
+    When you have gathered all necessary information and are ready to generate the final JSON output, DO NOT call any tool. Simply output the JSON text as your final response to the user.
 
     """,
     output_key="team_profiling_sub_agent_result",
