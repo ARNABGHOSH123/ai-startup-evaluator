@@ -112,6 +112,7 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
   - Founder–AI conversation
   - Risks & traction
 - Investor can generate investment recommendations based on adjustable weightages using Weightage Adjust Gen AI Recom Agent deployed on Agent Engine using the tab "Configure Thesis"
+- Investor can generate detailed investment deal note using Investment Deal Note Gen Agent deployed on Agent Engine using the button "Generate Deal Note"
 
 ---
 
