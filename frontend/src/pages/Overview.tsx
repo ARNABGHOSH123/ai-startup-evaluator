@@ -148,7 +148,8 @@ export default function Overview({ company }: any) {
               </CardContent>
             </Card>
           )}
-          {overviewData?.market_size_and_position?.innovation_cycle_status && (
+          {overviewData?.market_size_and_position?.competitors_summary
+            ?.number_of_competitors && (
             <Card className="rounded-lg border border-border hover:border-primary bg-background">
               <span className="flex flex-row items-center justify-between"></span>
               <CardContent className="space-y-6 p-4">

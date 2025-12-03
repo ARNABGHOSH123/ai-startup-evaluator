@@ -5,7 +5,13 @@ import { HandCoins, Mail, MapPin, PhoneCallIcon, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import AIGeneratedDealNote from "./AIGeneratedDealNote";
 
-export default function SummaryCard({ company, state }: { company: any, state: any }) {
+export default function SummaryCard({
+  company,
+  state,
+}: {
+  company: any;
+  state: any;
+}) {
   const [openDealNote, setOpenDealNote] = useState(false);
 
   const handleNotifyInvestor = async () => {
@@ -105,7 +111,8 @@ export default function SummaryCard({ company, state }: { company: any, state: a
               </span>
               <span className="bg-blue-100 px-4 h-4 mt-2 text-xs items-center rounded-xl text-dark">
                 {
-                  company?.competitor_analysis?.competitor_analysis?.company_domain
+                  company?.competitor_analysis?.competitor_analysis
+                    ?.company_domain
                 }
               </span>
               <span className="bg-green-100 px-4 h-4 mt-2 text-xs items-center rounded-xl text-dark">

@@ -59,6 +59,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> None:
 extraction_pitch_deck_agent = LlmAgent(
     name="extraction_pitch_deck_agent",
     model=report_generation_model,
+    include_contents='none',
     planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
         include_thoughts=False
     )),

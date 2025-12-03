@@ -94,6 +94,7 @@ def generate_dynamic_instruction(ctx: ReadonlyContext) -> str:
 generate_qna_agent = LlmAgent(
     name=f"generate_qna_agent",
     model=report_generation_model,
+    include_contents='none',
     description=f"An agent that understands the gaps in the sub agents and creates a list of questions to be asked to the startup founder for further clarification.",
     instruction=generate_dynamic_instruction,
     generate_content_config=types.GenerateContentConfig(temperature=0),

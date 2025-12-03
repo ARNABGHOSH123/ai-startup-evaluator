@@ -39,6 +39,7 @@ async def post_agent_execution(callback_context: CallbackContext) -> Optional[ty
 industry_trends_sub_agent = LlmAgent(
     name="industry_trends_sub_agent",
     model=report_generation_model,
+    include_contents='none',
     description="An agent that generates detailed industry trends analysis for startup companies",
     instruction=f"""
     You are an expert in researching and generating detailed industry trends analysis.
@@ -134,6 +135,9 @@ industry_trends_sub_agent = LlmAgent(
     - EXAMPLE OUTPUT SHOWS SHORT TEXTS AND IS ONLY FOR YOUR REFERENCE. IN REAL OUTPUT, PROVIDE DETAILED INSIGHTS AND ANALYSIS UNDER EACH KEY AS PER THE TASKS MENTIONED ABOVE.
     
     YOU MUST RETURN THE JSON OUTPUT AS SPECIFIED ABOVE AND NOTHING ELSE.
+
+    CRITICAL INSTRUCTION FOR FINAL OUTPUT:
+    When you have gathered all necessary information and are ready to generate the final JSON output, DO NOT call any tool. Simply output the JSON text as your final response to the user.
 
     """,
     output_key="industry_trends_sub_agent_result",
