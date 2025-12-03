@@ -17,7 +17,7 @@ Solution Capabilities:
 
 ### Architecture
 
-![Architecture Diagram](docs/screenshots/architecture.png)
+![Architecture Diagram](docs/screenshots/architecture.jpg)
 
 ## Technology Stack
 
