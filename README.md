@@ -159,7 +159,7 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
   - Choose agents folder same as for extraction and benchmarking agent job.
   - Provide the JSON input in the initial state from the agent's instructions.
     ![Investment deal note gen agent](docs/screenshots/investment_adk_web.png)
-  - Result will be like (from Agent Engine):
+  - Result will be like (adk web):
     ![Investment deal note gen agent result](docs/screenshots/investment_deal_note_result.png)
 
 ---
