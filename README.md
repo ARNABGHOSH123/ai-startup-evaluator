@@ -58,12 +58,14 @@ Solution Capabilities:
 2. **_agents/ai-to-founder-voice-agent_**: AI Call Assistant agent that interacts with founders to clarify missing or unclear data.
 3. **_backend_**: FastAPI backend that manages API routes, Firestore models, and utility functions.
 4. **_agents/weightage-adjust-gen-ai-recom-agent_**: Agent that generates investment recommendations based on adjustable weightages.
-5. **_frontend_**: React frontend for founders and investors to interact with the platform.
+5. **_agents/investment-deal-note-gen-agent_**: Agent that generates detailed investment deal notes for investors.
+6. **_frontend_**: React frontend for founders and investors to interact with the platform.
    All the agents are built using Google ADK (Agent Development Kit) framework and deployed on various GCP services depending on their use case and speed requirements.
 
 - Extraction and Benchmarking Agent Job is deployed as a Cloud Run Job that runs asynchronously when triggered by the backend.
 - AI Call Assistant Agent is deployed on Cloud Run with bi-directional streaming support for real-time audio conversation.
 - Weightage Adjust Gen AI Recom Agent is deployed on Agent Engine for scalable agent execution. Tracing, AgentOps and Observability are enabled for this agent via Agent Engine.
+- Investment Deal Note Gen Agent is also deployed on Agent Engine for generating detailed investment deal notes.
 
 ### CI/CD
 
@@ -141,6 +143,7 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
      - After the conversation is over, the complete conversation will be available in the GCP cloud storage (updates the qna with the answers).
        ![Audio agent](docs/screenshots/ai_audio_interaction.png)
 9. How to run the Weightage Adjust Gen AI Recom Agent locally:
+
    - Navigate to agents/weightage-adjust-gen-ai-recom-agent
    - Run "adk web":
      - Choose agents folder same as for extraction and benchmarking agent job.
@@ -148,6 +151,16 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
        ![Weightage adjust agent](docs/screenshots/weightage_agent_adk_web.png)
      - Result will be like (from Agent Engine):
        ![Weightage adjust agent result](docs/screenshots/generate_recom_agent_agent_engine.png)
+
+10. How to run the Investment Deal Note Gen Agent locally:
+
+- Navigate to agents/investment-deal-note-gen-agent
+- Run "adk web":
+  - Choose agents folder same as for extraction and benchmarking agent job.
+  - Provide the JSON input in the initial state from the agent's instructions.
+    ![Investment deal note gen agent](docs/screenshots/investment_adk_web.png)
+  - Result will be like (from Agent Engine):
+    ![Investment deal note gen agent result](docs/screenshots/investment_deal_note_result.png)
 
 ---
 
@@ -202,13 +215,14 @@ cloudbuild.yaml is used for building and deploying Docker images to Google Cloud
    ![Cloud Run Service](docs/screenshots/deployed_frontend.png)
 2. **_Backend (on Cloud Run)_**: [Backend](https://ai-analyst-backend-service-842669104353.us-central1.run.app)
    ![Cloud Run Service](docs/screenshots/deployed_backend.png)
-3. **_Weightage Engine_**: Agent Engine. Screenshot provided in AgentOps section above.
+3. **_Weightage Agent_**: Agent Engine. Screenshot provided in AgentOps section above.
 4. **_Extraction and Benchmarking Agent Job_**: Cloud Run Job
    ![Cloud Run Job](docs/screenshots/extraction_benchmarking_job.png)
 5. **_AI Call Assistant Agent_**: Cloud Run with bi-directional streaming support
    ![Cloud Run Service](docs/screenshots/deployed_audio_agent.png)
-6. **_Deployment script for Weightage Adjust Gen AI Recom Agent on Agent Engine_**:
-   ![Deployment script](docs/screenshots/weightage_agent_deployment_script.png)
+6. **_Investment deal note Agent_**:
+   ![Deal note Agent on Agent Engine](docs/screenshots/investment_deal_note_AE.png)
+   ![Deal note Agent working](docs/screenshots/investment_deal_note_working.png)
 
 ## Repository Contributors
 
