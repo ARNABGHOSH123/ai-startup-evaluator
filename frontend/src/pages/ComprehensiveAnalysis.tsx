@@ -228,7 +228,7 @@ export default function ComprehensiveAnalysis({ company }: any) {
                 )}
             </CardContent>
 
-            <CardDescription>
+            <CardDescription className="-mt-4">
               <div className="space-y-6">
                 {(mode?.toString()?.toLowerCase() === "domain"
                   ? topThreeDomainWise

@@ -142,11 +142,13 @@ export default function ViewCompetitors({
 
   // Select data based on dropdown
   const displayedData =
-    selectedView === "all"
-      ? [...(domainWise || []), ...(geographyWise || [])]
-      : selectedView === "domain"
-      ? domainWise
-      : geographyWise;
+    [...(domainWise || []), ...(geographyWise || [])]
+      .filter((item, index, self) =>{ 
+       return index === self.findIndex((x) => x.name === item.name)
+})
+      // : selectedView === "domain"
+      // ? domainWise
+      // : geographyWise;
 
   return (
     <Dialog open={viewCompetitors}>

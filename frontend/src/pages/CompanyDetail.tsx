@@ -23,7 +23,7 @@ export default function CompanyDetail() {
   const [isLoadingCompDetails, setLoadingCompDetails] = useState(false);
   const [company, setCompDetails] = useState<SubAgentResults | null>(null);
   const { state } = useLocation();
-console.log("here :", companyId)
+
   function DetailSkeleton() {
     return (
       <div className="min-h-screen bg-background">
