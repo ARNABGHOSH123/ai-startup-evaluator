@@ -209,7 +209,6 @@ export default function InvestorPortal() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("All");
-  console.log(companies);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -424,7 +423,7 @@ export default function InvestorPortal() {
           >
             {filteredCompanies?.map((company) => (
               <CompanyCard
-                key={company.doc_id}
+                key={company?.doc_id}
                 company={company}
                 onCompanyClick={handleCompanyClick}
               />

@@ -158,13 +158,16 @@ export default function Overview({ company }: any) {
                     <BarChart2Icon className="p-1 rounded-sm bg-teal-100" />
                     <span className="font-semibold">Competitors Summary</span>
                   </h3>
-                  <span className="text-xs text-muted-foreground">
-                    {
-                      overviewData?.market_size_and_position
-                        ?.competitors_summary?.number_of_competitors
-                    }{" "}
-                    Competitors
-                  </span>
+                  {overviewData?.market_size_and_position?.competitors_summary
+                    ?.number_of_competitors && (
+                    <span className="text-xs text-muted-foreground">
+                      {
+                        overviewData?.market_size_and_position
+                          ?.competitors_summary?.number_of_competitors
+                      }{" "}
+                      Competitors
+                    </span>
+                  )}
                   <p className="text-xs text-foreground leading-relaxed">
                     {
                       overviewData?.market_size_and_position
