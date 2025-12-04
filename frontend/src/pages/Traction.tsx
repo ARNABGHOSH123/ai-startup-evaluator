@@ -11,7 +11,6 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 
 export default function Traction({ company }: any) {
-  
   const colors = [
     { bg: "bg-blue-100", text: "text-blue-700" },
     { bg: "bg-green-100", text: "text-green-700" },
@@ -62,7 +61,7 @@ export default function Traction({ company }: any) {
                         </AccordionTrigger>
 
                         <AccordionContent className="px-3 py-2">
-                          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                          <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                             <article className="max-w-none text-xs">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -70,7 +69,7 @@ export default function Traction({ company }: any) {
                                 {value}
                               </ReactMarkdown>
                             </article>
-                          </p>
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
                     );
@@ -113,7 +112,7 @@ export default function Traction({ company }: any) {
                         </AccordionTrigger>
 
                         <AccordionContent className="px-3 py-2">
-                          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                          <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                             <article className="max-w-none text-xs">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -121,7 +120,7 @@ export default function Traction({ company }: any) {
                                 {value}
                               </ReactMarkdown>
                             </article>
-                          </p>
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
                     );
@@ -167,7 +166,7 @@ export default function Traction({ company }: any) {
                         </AccordionTrigger>
 
                         <AccordionContent className="px-3 py-2">
-                          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                          <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                             <article className="max-w-none text-xs">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -175,7 +174,7 @@ export default function Traction({ company }: any) {
                                 {value}
                               </ReactMarkdown>
                             </article>
-                          </p>
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
                     );
@@ -185,7 +184,7 @@ export default function Traction({ company }: any) {
             </CardContent>
           </Card>
         )}
-         {tractionData?.customer_acquisition_and_growth_metrics && (
+        {tractionData?.customer_acquisition_and_growth_metrics && (
           <Card className="shadow-sm border rounded-lg">
             <CardHeader>
               <CardTitle className="text-sm">Growth Metrics</CardTitle>
@@ -219,7 +218,7 @@ export default function Traction({ company }: any) {
                         </AccordionTrigger>
 
                         <AccordionContent className="px-3 py-2">
-                          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                          <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                             <article className="max-w-none text-xs">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -227,7 +226,7 @@ export default function Traction({ company }: any) {
                                 {value}
                               </ReactMarkdown>
                             </article>
-                          </p>
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
                     );
@@ -273,7 +272,7 @@ export default function Traction({ company }: any) {
                         </AccordionTrigger>
 
                         <AccordionContent className="px-3 py-2">
-                          <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                          <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                             <article className="max-w-none text-xs">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -281,7 +280,7 @@ export default function Traction({ company }: any) {
                                 {value}
                               </ReactMarkdown>
                             </article>
-                          </p>
+                          </div>
                         </AccordionContent>
                       </AccordionItem>
                     );
@@ -300,7 +299,7 @@ export default function Traction({ company }: any) {
             </CardHeader>
             <CardContent className="space-y-4">
               {tractionData?.stage_specific_focus_areas?.map((stage: any) => (
-                <article className="max-w-none text-xs">
+                <article key={stage} className="max-w-none text-xs">
                   <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                     {stage}
                   </ReactMarkdown>

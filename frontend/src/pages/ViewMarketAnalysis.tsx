@@ -1,5 +1,4 @@
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type ViewModalProps = {
   viewData: boolean;
@@ -13,7 +12,7 @@ export default function ViewMarketAnalysis({
   industryTrendsData,
 }: ViewModalProps) {
   return (
-    <Dialog open={viewData}>
+    <Dialog open={viewData} onOpenChange={setViewData}>
       <DialogContent className="rounded-xl p-4 space-y-2 max-h-[80vh] overflow-y-auto max-w-3xl">
         {industryTrendsData?.CAGR_analysis && (
           <div className="flex flex-col">
@@ -21,13 +20,6 @@ export default function ViewMarketAnalysis({
               <h3 className="text-sm font-semibold text-foreground">
                 CAGR Analysis
               </h3>
-              <Button
-                variant="outline"
-                className="w-24 justify-center text-foreground -mt-1"
-                onClick={() => setViewData(false)}
-              >
-                Close
-              </Button>
             </span>
             <p className="text-xs text-muted-foreground leading-relaxed">
               {industryTrendsData?.CAGR_analysis}
@@ -187,17 +179,6 @@ export default function ViewMarketAnalysis({
             {marketData?.innovation_cycle_status?.reasoning}
           </p>
         </div> */}
-
-        {/* Footer */}
-        <DialogClose asChild>
-          <Button
-            variant="outline"
-            className="w-24 justify-center text-foreground"
-            onClick={() => setViewData(false)}
-          >
-            Close
-          </Button>
-        </DialogClose>
       </DialogContent>
     </Dialog>
   );

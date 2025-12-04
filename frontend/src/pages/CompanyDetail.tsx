@@ -17,65 +17,65 @@ import ThesisConfig from "./InvestmentWeightage";
 
 type SubAgentResults = Record<string, any>;
 
+function DetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Skeleton className="h-6 w-32 mb-4" />
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <Skeleton className="h-8 w-64 mb-2" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+          <div className="flex items-center space-x-3">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-36" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          </div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex justify-between items-center mb-4"
+                  >
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CompanyDetail() {
   const { companyId } = useParams<{ companyId: string }>();
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isLoadingCompDetails, setLoadingCompDetails] = useState(false);
   const [company, setCompDetails] = useState<SubAgentResults | null>(null);
   const { state } = useLocation();
-console.log("here :", companyId)
-  function DetailSkeleton() {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Skeleton className="h-6 w-32 mb-4" />
-          <div className="flex items-start justify-between mb-8">
-            <div>
-              <Skeleton className="h-8 w-64 mb-2" />
-              <Skeleton className="h-5 w-96" />
-            </div>
-            <div className="flex items-center space-x-3">
-              <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-36" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-48" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-3/4" />
-                </CardContent>
-              </Card>
-            </div>
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex justify-between items-center mb-4"
-                    >
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-4 w-16" />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     const fetchMultipleRequests = async () => {
@@ -191,7 +191,7 @@ console.log("here :", companyId)
         <BussinessModel company={company} />
         <RisksAndStrategicAnalysis company={company} />
         <InvestmentRecommendation company={company} />
-        <ThesisConfig company={company}/>
+        <ThesisConfig company={company} />
       </Tabs>
 
       {/* Floating Chatbot Button */}

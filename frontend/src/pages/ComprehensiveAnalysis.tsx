@@ -51,7 +51,7 @@ export default function ComprehensiveAnalysis({ company }: any) {
   const [viewData, setViewData] = useState(false);
   const [viewCompetitors, setViewCompetitors] = useState(false);
   const [viewFunding, setViewFunding] = useState(false);
-  const [mode, setMode] = useState<"geographical" | "domain">(defaultMode);
+  const [mode /*setMode*/] = useState<"geographical" | "domain">(defaultMode);
 
   return (
     <>
@@ -155,7 +155,7 @@ export default function ComprehensiveAnalysis({ company }: any) {
           </Card>
 
           {/* Competitor Analysis*/}
-          <Card className="rounded-lg border border-border hover:border-primary bg-background">
+          <Card className="rounded-lg border border-border hover:border-primary bg-background pb-8">
             <span className="flex flex-row items-center justify-between">
               <CardHeader className="flex flex-row space-x-2 items-center -mt-3 -ml-2">
                 <ChartNoAxesCombined className="p-1 rounded-sm bg-cardorangelight text-cardorange" />
@@ -287,13 +287,13 @@ export default function ComprehensiveAnalysis({ company }: any) {
             </span>
             <CardContent className="text-foreground">
               {fundingsAndFinancialsData?.financial_projections_review && (
-                <p className="text-xs leading-relaxed">
+                <div className="text-xs leading-relaxed">
                   <article className="max-w-none space-y-2">
                     <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                       {fundingsAndFinancialsData?.financial_projections_review}
                     </ReactMarkdown>
                   </article>
-                </p>
+                </div>
               )}
             </CardContent>
           </Card>

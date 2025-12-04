@@ -26,7 +26,7 @@ export default function SignupModal({
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (formData: any) => {
-    const { firstName, lastName, email, password, role } = formData;
+    const { firstName, email, password, role } = formData;
 
     try {
       setLoading(true);

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
+// import ReactMarkdown from "react-markdown";
+// import remarkGfm from "remark-gfm";
+// import remarkBreaks from "remark-breaks";
 import {
   Radar,
   RadarChart,
@@ -71,11 +71,11 @@ export default function FourVectorAnalysis({ data }: Props) {
 
   return (
     <div className="space-y-6">
-       <ViewFourVector
-              viewData={viewData}
-              setViewData={setViewData}
-              sections={sections}
-            />
+      <ViewFourVector
+        viewData={viewData}
+        setViewData={setViewData}
+        sections={sections}
+      />
       {/* Radar Chart */}
       <Card className="rounded-lg border border-border hover:border-primary bg-background">
         <span className="flex flex-row items-center justify-between">

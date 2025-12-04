@@ -1,6 +1,13 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
-import { Users, Dot, GraduationCap, Target, BriefcaseBusiness, BadgeCheck } from "lucide-react";
+import {
+  Users,
+  Dot,
+  GraduationCap,
+  Target,
+  BriefcaseBusiness,
+  BadgeCheck,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function FoundingTeam({ company }: any) {
@@ -13,30 +20,30 @@ export default function FoundingTeam({ company }: any) {
         }
       </p>
       {company?.team_profiling?.team_profiling?.team_strength_overview
-          ?.summary_paragraph && (
-          <Card className="lg:col-span-1 border-l-4 border-cardborder bg-cardborderlight shadow-sm">
-            <CardHeader className="pb-2">
-              <div className="flex items-center text-cardborder gap-2">
-                <Users className="w-4 h-4" />
-                <CardTitle className="text-sm font-semibold">
-                  Team Strength
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-dark space-y-2">
-              {company?.team_profiling?.team_profiling?.team_strength_overview?.bullet_points?.map(
-                (point: string) => (
-                  <span className="flex space-x-2">
-                    <span>
-                      <Dot size={32} />
-                    </span>
-                    <span className="text-xs">{point}</span>
+        ?.summary_paragraph && (
+        <Card className="lg:col-span-1 border-l-4 border-cardborder bg-cardborderlight shadow-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center text-cardborder gap-2">
+              <Users className="w-4 h-4" />
+              <CardTitle className="text-sm font-semibold">
+                Team Strength
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="text-dark space-y-2">
+            {company?.team_profiling?.team_profiling?.team_strength_overview?.bullet_points?.map(
+              (point: string) => (
+                <span key={point} className="flex space-x-2">
+                  <span>
+                    <Dot size={32} />
                   </span>
-                )
-              )}
-            </CardContent>
-          </Card>
-        )}
+                  <span className="text-xs">{point}</span>
+                </span>
+              )
+            )}
+          </CardContent>
+        </Card>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 p-4">
         {/* Individual Team Cards */}
 
@@ -62,54 +69,54 @@ export default function FoundingTeam({ company }: any) {
 
                   <CardContent className="mt-2">
                     <span className="flex flex-col space-y-4">
-                    <span>
-                      {member?.educational_qualifications && (
-                        <span className="flex space-x-2">
-                          <span>
-                            <GraduationCap size={16} />
+                      <span>
+                        {member?.educational_qualifications && (
+                          <span className="flex space-x-2">
+                            <span>
+                              <GraduationCap size={16} />
+                            </span>
+                            <span className="text-xs">
+                              {member?.educational_qualifications}
+                            </span>
                           </span>
-                          <span className="text-xs">
-                            {member?.educational_qualifications}
+                        )}
+                      </span>
+                      <span>
+                        {member?.vision_and_motivation && (
+                          <span className="flex space-x-2">
+                            <span>
+                              <Target size={16} />
+                            </span>
+                            <span className="text-xs">
+                              {member?.vision_and_motivation}
+                            </span>
                           </span>
-                        </span>
-                      )}
-                    </span>
-                    <span>
-                      {member?.vision_and_motivation && (
-                        <span className="flex space-x-2">
-                          <span>
-                            <Target size={16} />
+                        )}
+                      </span>
+                      <span>
+                        {member?.professional_background && (
+                          <span className="flex space-x-2">
+                            <span>
+                              <BriefcaseBusiness size={16} />
+                            </span>
+                            <span className="text-xs">
+                              {member?.professional_background}
+                            </span>
                           </span>
-                          <span className="text-xs">
-                            {member?.vision_and_motivation}
+                        )}
+                      </span>
+                      <span>
+                        {member?.industry_expertise && (
+                          <span className="flex space-x-2">
+                            <span>
+                              <BadgeCheck size={16} />
+                            </span>
+                            <span className="text-xs">
+                              {member?.industry_expertise}
+                            </span>
                           </span>
-                        </span>
-                      )}
-                    </span>
-                    <span>
-                      {member?.professional_background && (
-                        <span className="flex space-x-2">
-                          <span>
-                            <BriefcaseBusiness size={16} />
-                          </span>
-                          <span className="text-xs">
-                            {member?.professional_background}
-                          </span>
-                        </span>
-                      )}
-                    </span>
-                    <span>
-                      {member?.industry_expertise && (
-                        <span className="flex space-x-2">
-                          <span>
-                            <BadgeCheck size={16} />
-                          </span>
-                          <span className="text-xs">
-                            {member?.industry_expertise}
-                          </span>
-                        </span>
-                      )}
-                    </span>
+                        )}
+                      </span>
                     </span>
                   </CardContent>
                 </Card>
