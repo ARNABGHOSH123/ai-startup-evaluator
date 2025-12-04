@@ -7,41 +7,43 @@ import AIGeneratedDealNote from "./AIGeneratedDealNote";
 
 export default function SummaryCard({
   company,
+  companyId,
   state,
 }: {
   company: any;
+  companyId: string;
   state: any;
 }) {
   const [openDealNote, setOpenDealNote] = useState(false);
 
-  const handleNotifyInvestor = async () => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/send_notification_email`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            companyId: company?.doc_id || "xmkcfJcIfRMDIImxjWt3",
-            founderName: company?.founder_name || "Arnab",
-            founderEmail:
-              company?.company_email || "arnabghosh31031998@gmail.com",
-          }),
-        }
-      );
+  // const handleNotifyInvestor = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_CLOUD_RUN_SERVICE_URL}/send_notification_email`,
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({
+  //           companyId: companyId,
+  //           founderName: company?.founder_name,
+  //           founderEmail:
+  //             company?.company_email,
+  //         }),
+  //       }
+  //     );
 
-      const data = await response.json();
+  //     const data = await response.json();
 
-      if (data.success) {
-        alert("Email notification sent!");
-      } else {
-        alert("Failed to send email.");
-      }
-    } catch (error) {
-      console.error("Email error:", error);
-      alert("Error sending email");
-    }
-  };
+  //     if (data.success) {
+  //       alert("Email notification sent!");
+  //     } else {
+  //       alert("Failed to send email.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Email error:", error);
+  //     alert("Error sending email");
+  //   }
+  // };
 
   // ---------- Score Dots UI ----------
   function ScoreCircle({ value }: { value: number }) {
@@ -85,7 +87,7 @@ export default function SummaryCard({
         </svg>
 
         {/* Center Percentage */}
-        <div className="absolute text-lg font-bold text-primary">
+        <div className="absolute text-lg font-bold text-foreground">
           {value?.toFixed(0)}%
         </div>
       </div>
@@ -95,11 +97,11 @@ export default function SummaryCard({
   // ---------- Component Layout ----------
   return (
     <>
-      {/* <AIGeneratedDealNote
+      <AIGeneratedDealNote
         openDealNote={openDealNote}
         setOpenDealNote={setOpenDealNote}
-        companyId={company?.doc_id}
-      /> */}
+        companyId={companyId}
+      />
       <Card className="bg-background shadow-sm rounded-2xl border border-border hover:border-primary pt-5">
         <CardContent className="flex flex-row space-x-4">
           <div className="grid grid-cols-1 gap-y-4 text-sm md:w-3/4">
@@ -187,13 +189,21 @@ export default function SummaryCard({
           </div>
           <div className="flex flex-col space-y-6">
             <span className="flex space-x-4">
-              <Button className="text-secondary" onClick={handleNotifyInvestor}>
+              <Button
+                className="text-secondary"
+                // onClick={handleNotifyInvestor}
+              >
                 <HandCoins />
                 Express Interest
               </Button>
               <Button
                 className="bg-background text-primary hover:border-primary hover:border justify-center px-6"
-                // onClick={() => setOpenDealNote(true)}
+                onClick={() =>
+                  state?.company_name?.toString()?.toLowerCase() ===
+                  "sia analytics"
+                    ? setOpenDealNote(true)
+                    : setOpenDealNote(false)
+                }
               >
                 <img
                   src="/assets/gemini_symbol.png"
