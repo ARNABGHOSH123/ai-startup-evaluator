@@ -51,19 +51,21 @@ export default function ViewCompetitors({
             </div>
 
             <div className="grid grid-cols-2 gap-y-1 text-[10px] text-neutral mb-2">
-              {<span className="flex items-center gap-1">
-                {company.b2b_b2c && (
-                  <span className="px-2 py-[2px] text-[10px] bg-primary-foreground font-medium text-primary rounded-full">
-                    {company.b2b_b2c}
-                  </span>
-                )}
+              {
+                <span className="flex items-center gap-1">
+                  {company.b2b_b2c && (
+                    <span className="px-2 py-[2px] text-[10px] bg-primary-foreground font-medium text-primary rounded-full">
+                      {company.b2b_b2c}
+                    </span>
+                  )}
 
-                {company.status && (
-                  <span className="px-2 py-[2px] text-[10px] bg-cardborderlight text-cardborder rounded-full">
-                    {company.status}
-                  </span>
-                )}
-              </span>}
+                  {company.status && (
+                    <span className="px-2 py-[2px] text-[10px] bg-cardborderlight text-cardborder rounded-full">
+                      {company.status}
+                    </span>
+                  )}
+                </span>
+              }
 
               {company.headquarters && (
                 <div className="flex items-center gap-1 text-[10px] text-neutral">
@@ -108,12 +110,9 @@ export default function ViewCompetitors({
 
         {company.differentiators && (
           <div className="mb-2">
-             <h4 className="font-semibold text-xs text-foreground">
-              Features
-            </h4>
+            <h4 className="font-semibold text-xs text-foreground">Features</h4>
             <p className="text-xs text-neutral leading-snug mt-1">
-              {company.detailed_offerings_and_features
-}
+              {company.detailed_offerings_and_features}
             </p>
           </div>
         )}
@@ -155,9 +154,11 @@ export default function ViewCompetitors({
         {/* Dropdown Title Area */}
         <div className="flex space-x-8 items-center justify-between">
           <span className="flex space-x-8 items-center">
-          <h2 className="text-foreground font-semibold">Competitor Analysis</h2>
+            <h2 className="text-foreground font-semibold">
+              Competitor Analysis
+            </h2>
 
-          <Select value={selectedView} onValueChange={setSelectedView}>
+            {/* <Select value={selectedView} onValueChange={setSelectedView}>
             <SelectTrigger className="w-40 h-8 text-xs outline-none text-primary">
               <SelectValue placeholder="Select View" className="outline-none"/>
             </SelectTrigger>
@@ -166,7 +167,8 @@ export default function ViewCompetitors({
               <SelectItem value="domain">Domain-wise</SelectItem>
               <SelectItem value="geography">Geography-wise</SelectItem>
             </SelectContent>
-          </Select></span>
+          </Select> */}
+          </span>
           <Button
             variant="outline"
             className="w-24 justify-center text-foreground"

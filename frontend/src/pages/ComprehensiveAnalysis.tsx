@@ -172,36 +172,41 @@ export default function ComprehensiveAnalysis({ company }: any) {
               {competitorData?.domain_wise_competitor_analysis?.length > 0 &&
                 competitorData?.geography_wise_competitor_analysis?.length >
                   0 && (
-                  <div
-                    onClick={() =>
-                      setMode(
-                        mode === "geographical" ? "domain" : "geographical"
-                      )
-                    }
-                    className="inline-flex items-center border border-border rounded-full overflow-hidden cursor-pointer select-none bg-muted w-auto"
-                  >
-                    {/* Geographical */}
-                    <span
-                      className={`px-3 py-1 text-xs font-medium transition-colors ${
-                        mode === "geographical"
-                          ? "bg-primary text-background"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      Geographical
-                    </span>
+                  // <div
+                  //   onClick={() =>
+                  //     setMode(
+                  //       mode === "geographical" ? "domain" : "geographical"
+                  //     )
+                  //   }
+                  //   className="inline-flex items-center border border-border rounded-full overflow-hidden cursor-pointer select-none bg-muted w-auto"
+                  // >
+                  //   {/* Geographical */}
+                  //   <span
+                  //     className={`px-3 py-1 text-xs font-medium transition-colors ${
+                  //       mode === "geographical"
+                  //         ? "bg-primary text-background"
+                  //         : "text-muted-foreground"
+                  //     }`}
+                  //   >
+                  //     Geographical
+                  //   </span>
 
-                    {/* Domain */}
-                    <span
-                      className={`px-3 py-1 text-xs font-medium transition-colors ${
-                        mode === "domain"
-                          ? "bg-primary text-background"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      Domain
-                    </span>
-                  </div>
+                  //   {/* Domain */}
+                  //   <span
+                  //     className={`px-3 py-1 text-xs font-medium transition-colors ${
+                  //       mode === "domain"
+                  //         ? "bg-primary text-background"
+                  //         : "text-muted-foreground"
+                  //     }`}
+                  //   >
+                  //     Domain
+                  //   </span>
+                  // </div>
+                  <span
+                    className={`py-1 text-sm font-semibold text-cardorange`}
+                  >
+                    Top 3 Competitors
+                  </span>
                 )}
               {competitorData?.domain_wise_competitor_analysis?.length > 0 &&
                 competitorData?.geography_wise_competitor_analysis?.length ===
