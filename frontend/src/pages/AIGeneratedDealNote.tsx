@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type AIDealNoteProps = {
   openDealNote: boolean;
@@ -56,7 +55,7 @@ export default function AIGeneratedDealNote({
   }, [companyId]);
 
   return (
-    <Dialog open={openDealNote}>
+    <Dialog open={openDealNote} onOpenChange={setOpenDealNote}>
       <DialogContent className="rounded-xl p-4 space-y-2 max-h-[80vh] overflow-y-auto max-w-4xl">
         {!loading && extractedData?.deal_note ? (
           <article className="max-w-none space-y-3">
@@ -67,15 +66,6 @@ export default function AIGeneratedDealNote({
         ) : (
           "No Data"
         )}
-        <DialogClose asChild>
-          <Button
-            variant="outline"
-            onClick={() => setOpenDealNote(false)}
-            className="w-24 justify-center text-foreground"
-          >
-            Close
-          </Button>
-        </DialogClose>
       </DialogContent>
     </Dialog>
   );

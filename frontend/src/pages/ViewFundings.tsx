@@ -1,5 +1,4 @@
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
@@ -16,7 +15,7 @@ export default function ViewFundings({
   fundingsAndFinancialsData,
 }: ViewModalProps) {
   return (
-    <Dialog open={viewFunding}>
+    <Dialog open={viewFunding} onOpenChange={setViewFunding}>
       <DialogContent className="rounded-xl p-4 space-y-2 max-h-[80vh] overflow-y-auto max-w-3xl">
         {(fundingsAndFinancialsData?.adoption_and_investment_momentum ||
           fundingsAndFinancialsData?.funding_history_evaluation) && (
@@ -25,13 +24,6 @@ export default function ViewFundings({
               <h3 className="text-sm font-semibold text-foreground">
                 Funding History
               </h3>
-              <Button
-                variant="outline"
-                className="w-24 justify-center text-foreground"
-                onClick={() => setViewFunding(false)}
-              >
-                Close
-              </Button>
             </span>
             {fundingsAndFinancialsData?.funding_history && (
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -108,13 +100,13 @@ export default function ViewFundings({
               </p>
             )}
             {fundingsAndFinancialsData?.financial_projections_review && (
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <div className="text-xs text-muted-foreground leading-relaxed">
                 <article className="max-w-none space-y-2">
                   <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                     {fundingsAndFinancialsData?.financial_projections_review}
                   </ReactMarkdown>
                 </article>
-              </p>
+              </div>
             )}
           </div>
         )}
@@ -212,17 +204,6 @@ export default function ViewFundings({
             </p>
           </div>
         )}
-
-        {/* Footer */}
-        <DialogClose asChild>
-          <Button
-            variant="outline"
-            className="w-24 justify-center text-foreground"
-            onClick={() => setViewFunding(false)}
-          >
-            Close
-          </Button>
-        </DialogClose>
       </DialogContent>
     </Dialog>
   );

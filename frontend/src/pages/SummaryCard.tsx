@@ -80,7 +80,11 @@ export default function SummaryCard({
             strokeWidth={strokeWidth}
             fill="none"
             strokeDasharray={circumference}
-            strokeDashoffset={circumference - progress}
+            strokeDashoffset={
+              !isNaN(circumference) && !isNaN(progress)
+                ? circumference - progress
+                : 0
+            }
             strokeLinecap="round"
             className="transition-all duration-500 ease-out"
           />

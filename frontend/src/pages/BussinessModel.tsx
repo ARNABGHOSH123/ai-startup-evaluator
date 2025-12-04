@@ -94,7 +94,7 @@ export default function BussinessModel({ company }: any) {
                 </h3>
                 {bussinessModelData?.key_partnerships
                   ?.distribution_partners && (
-                  <p className="text-xs text-foreground leading-relaxed -mt-4">
+                  <div className="text-xs text-foreground leading-relaxed -mt-4">
                     <article className="max-w-none space-y-2">
                       <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                         {
@@ -103,7 +103,7 @@ export default function BussinessModel({ company }: any) {
                         }
                       </ReactMarkdown>
                     </article>
-                  </p>
+                  </div>
                 )}
               </div>
             )}
@@ -115,7 +115,7 @@ export default function BussinessModel({ company }: any) {
                   <span className="font-semibold">Strategic Alliances</span>
                 </h3>
                 {bussinessModelData?.key_partnerships?.strategic_alliances && (
-                  <p className="text-xs text-foreground leading-relaxed -mt-4">
+                  <div className="text-xs text-foreground leading-relaxed -mt-4">
                     <article className="max-w-none space-y-2">
                       <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                         {
@@ -124,7 +124,7 @@ export default function BussinessModel({ company }: any) {
                         }
                       </ReactMarkdown>
                     </article>
-                  </p>
+                  </div>
                 )}
               </div>
             )}
@@ -137,7 +137,7 @@ export default function BussinessModel({ company }: any) {
                 </h3>
                 {bussinessModelData?.key_partnerships
                   ?.supplier_relationships && (
-                  <p className="text-xs text-foreground leading-relaxed -mt-4">
+                  <div className="text-xs text-foreground leading-relaxed -mt-4">
                     <article className="max-w-none space-y-2">
                       <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                         {
@@ -146,7 +146,7 @@ export default function BussinessModel({ company }: any) {
                         }
                       </ReactMarkdown>
                     </article>
-                  </p>
+                  </div>
                 )}
               </div>
             )}
@@ -188,7 +188,7 @@ export default function BussinessModel({ company }: any) {
                           </AccordionTrigger>
 
                           <AccordionContent className="px-3 py-2">
-                            <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                            <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                               <article className="max-w-none text-xs">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -196,7 +196,7 @@ export default function BussinessModel({ company }: any) {
                                   {value}
                                 </ReactMarkdown>
                               </article>
-                            </p>
+                            </div>
                           </AccordionContent>
                         </AccordionItem>
                       );
@@ -240,7 +240,7 @@ export default function BussinessModel({ company }: any) {
                           </AccordionTrigger>
 
                           <AccordionContent className="px-3 py-2">
-                            <p className="text-sm leading-relaxed whitespace-pre-line text-foreground">
+                            <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                               <article className="max-w-none text-xs">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -248,7 +248,7 @@ export default function BussinessModel({ company }: any) {
                                   {value}
                                 </ReactMarkdown>
                               </article>
-                            </p>
+                            </div>
                           </AccordionContent>
                         </AccordionItem>
                       );

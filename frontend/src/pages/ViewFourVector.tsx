@@ -1,5 +1,4 @@
-import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type ViewModalProps = {
   viewData: boolean;
@@ -13,11 +12,14 @@ export default function ViewFourVector({
   sections,
 }: ViewModalProps) {
   return (
-    <Dialog open={viewData}>
+    <Dialog open={viewData} onOpenChange={setViewData}>
       <DialogContent className="rounded-xl p-4 space-y-2 max-h-[80vh] overflow-y-auto max-w-3xl">
         <span className="text-lg font-semibold">Four Vector Analysis</span>
         {sections.map((s: any) => (
-          <div className="flex flex-col border border-border hover:border-primary rounded-lg p-2 space-y-2">
+          <div
+            key={s.title}
+            className="flex flex-col border border-border hover:border-primary rounded-lg p-2 space-y-2"
+          >
             <span className="flex justify-between">
               <h3 className="text-sm font-semibold text-foreground">
                 {s.title}
@@ -34,16 +36,6 @@ export default function ViewFourVector({
             <span className="text-xs text-neutral"> {s.body.reasoning}</span>
           </div>
         ))}
-        {/* Footer */}
-        <DialogClose asChild>
-          <Button
-            variant="outline"
-            className="w-24 justify-center text-foreground"
-            onClick={() => setViewData(false)}
-          >
-            Close
-          </Button>
-        </DialogClose>
       </DialogContent>
     </Dialog>
   );
